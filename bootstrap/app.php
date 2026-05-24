@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\AuditLogMiddleware;
+use App\Http\Middleware\CdnCacheHeaders;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             "admin" => AdminMiddleware::class,
             "audit" => AuditLogMiddleware::class,
+            "cdn"   => CdnCacheHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
