@@ -1,0 +1,46 @@
+.credits-page__header {
+    margin-bottom: 2rem;
+}
+
+.credits-page__balance {
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.credits-page__balance-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--sh-color-primary, #7c3aed);
+    line-height: 1;
+}
+
+.credits-page__packages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.credits-page__package {
+    text-align: center;
+}
+
+.credits-page__package-name {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.credits-page__package-credits {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--sh-color-primary, #7c3aed);
+    margin-bottom: 0.25rem;
+}
+
+.credits-page__package-price {
+    font-size: 1.25rem;
+    color: var(--sh-color-muted, #888);
+    margin-bottom: 1rem;
+}

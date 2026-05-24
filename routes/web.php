@@ -8,6 +8,7 @@ use App\Http\Controllers\Creation\UploadController;
 use App\Http\Controllers\Studio\ClipController;
 use App\Http\Controllers\Studio\CoverController;
 use App\Http\Controllers\Studio\ReelController;
+use App\Http\Controllers\Payments\CheckoutController;
 
 Route::get("/", function () {
     return view("welcome");
@@ -29,4 +30,7 @@ Route::middleware(["auth"])->group(function () {
     Route::patch("/studio/{clip}/visibility", [ClipController::class, "updateVisibility"])->name("studio.visibility");
     Route::post("/studio/{clip}/cover", [CoverController::class, "store"])->name("studio.cover");
     Route::post("/studio/{clip}/reel", [ReelController::class, "store"])->name("studio.reel");
+
+    Route::get("/credits", [CheckoutController::class, "index"])->name("credits");
+    Route::post("/credits/checkout", [CheckoutController::class, "createIntent"])->name("credits.checkout");
 });
