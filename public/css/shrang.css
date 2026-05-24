@@ -1,0 +1,49 @@
+/* Shrang Global CSS - .sh-* namespace */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body.sh-body { font-family: sans-serif; font-size: 16px; line-height: 1.6; background: #fff; color: #2c2c2a; }
+
+/* Layout */
+.sh-page-wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+.sh-nav { background: #1a1a1a; padding: 16px 0; }
+.sh-nav__logo { color: #fff; text-decoration: none; font-size: 22px; font-weight: 700; }
+.sh-main { min-height: 70vh; padding: 40px 0; }
+.sh-footer { background: #f1efe8; padding: 20px 0; text-align: center; color: #888; }
+
+/* Buttons */
+.sh-btn { display: inline-block; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 15px; font-weight: 500; text-decoration: none; transition: opacity 0.2s; }
+.sh-btn:hover { opacity: 0.85; }
+.sh-btn--primary { background: #533ab7; color: #fff; }
+.sh-btn--ghost { background: transparent; border: 1px solid #533ab7; color: #533ab7; }
+.sh-btn--danger { background: #a32d2d; color: #fff; }
+.sh-btn--sm { padding: 6px 14px; font-size: 13px; }
+.sh-btn--lg { padding: 14px 28px; font-size: 17px; }
+
+/* Forms */
+.sh-input, .sh-select, .sh-textarea { width: 100%; padding: 10px 14px; border: 1px solid #d3d1c7; border-radius: 8px; font-size: 15px; background: #fff; color: #2c2c2a; }
+.sh-input:focus, .sh-select:focus, .sh-textarea:focus { outline: none; border-color: #533ab7; }
+.sh-input--error { border-color: #a32d2d; }
+.sh-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 5px; }
+.sh-field { margin-bottom: 16px; }
+.sh-field-error { color: #a32d2d; font-size: 13px; margin-top: 4px; }
+
+/* Cards */
+.sh-card { background: #fff; border: 1px solid #d3d1c7; border-radius: 12px; padding: 24px; }
+.sh-card--sm { padding: 16px; }
+
+/* Notices */
+.sh-notice { padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
+.sh-notice--info { background: #e6f1fb; color: #185fa5; }
+.sh-notice--success { background: #eaf3de; color: #3b6d11; }
+.sh-notice--warning { background: #faeeda; color: #854f0b; }
+.sh-notice--danger { background: #fcebeb; color: #a32d2d; }
+
+/* Badges */
+.sh-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.sh-badge--lang { background: #eeedfe; color: #3c3489; }
+
+/* RTL support */
+[dir="rtl"] .sh-input, [dir="rtl"] .sh-textarea { text-align: right; }
+.sh-script-rtl { direction: rtl; text-align: right; font-size: 18px; }
+.sh-script-ltr { direction: ltr; text-align: left; }
