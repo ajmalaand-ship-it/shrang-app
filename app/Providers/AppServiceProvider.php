@@ -1,5 +1,7 @@
 <?php
 namespace App\Providers;
+use App\Models\Clip;
+use App\Policies\ClipPolicy;
 use App\Services\AI\AIProviderInterface;
 use App\Services\AI\AIService;
 use App\Services\AI\AIUsageTracker;
@@ -8,6 +10,7 @@ use App\Services\AI\GeminiProvider;
 use App\Services\AI\LyriaProvider;
 use App\Services\AI\StabilityProvider;
 use App\Services\AI\ElevenLabsProvider;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,5 +37,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->useLangPath(resource_path("lang"));
+        Gate::policy(Clip::class, ClipPolicy::class);
     }
 }

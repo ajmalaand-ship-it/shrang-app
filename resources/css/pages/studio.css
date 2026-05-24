@@ -1,0 +1,36 @@
+.studio-page__header {
+    margin-bottom: 1.5rem;
+}
+
+.studio-page__grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.studio-page__lyrics {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--sh-color-border, #e5e7eb);
+    white-space: pre-wrap;
+    line-height: 1.8;
+}
+
+.studio-page__player {
+    padding: 1.5rem;
+    background: var(--sh-color-surface, #f9fafb);
+    border-radius: var(--sh-radius, 0.5rem);
+    margin-bottom: 1rem;
+}
+
+.studio-page__actions .sh-field + .sh-field {
+    border-top: 1px solid var(--sh-color-border, #e5e7eb);
+    padding-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .studio-page__grid {
+        grid-template-columns: 1fr;
+    }
+}
