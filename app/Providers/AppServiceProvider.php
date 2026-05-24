@@ -1,24 +1,38 @@
 <?php
-
 namespace App\Providers;
-
+use App\Services\AI\AIProviderInterface;
+use App\Services\AI\AIService;
+use App\Services\AI\AIUsageTracker;
+use App\Services\AI\FakeAIProvider;
+use App\Services\AI\GeminiProvider;
+use App\Services\AI\LyriaProvider;
+use App\Services\AI\StabilityProvider;
+use App\Services\AI\ElevenLabsProvider;
 use Illuminate\Support\ServiceProvider;
-
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        $this->app->bind(AIProviderInterface::class, function ($app) {
+            if (config("ai.fake.enabled") || app()->environment("testing")) {
+                return new FakeAIProvider();
+            }
+            return match (config("ai.default_music_provider", "lyria")) {
+                "gemini"     => new GeminiProvider(),
+                "stability"  => new StabilityProvider(),
+                "elevenlabs" => new ElevenLabsProvider(),
+                default      => new LyriaProvider(),
+            };
+        });
+        $this->app->singleton(AIService::class, function ($app) {
+            return new AIService(
+                $app->make(AIProviderInterface::class),
+                new AIUsageTracker()
+            );
+        });
     }
-
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        $this->app->useLangPath(resource_path('lang'));
+        $this->app->useLangPath(resource_path("lang"));
     }
 }
