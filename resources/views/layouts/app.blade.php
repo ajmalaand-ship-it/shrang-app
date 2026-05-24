@@ -12,6 +12,14 @@
     <nav class="sh-nav">
         <div class="sh-page-wrap">
             <a href="/" class="sh-nav__logo">Shrang</a>
+            <div class="sh-lang-selector">
+                @foreach (['ps' => 'پښتو', 'fa' => 'دری', 'ur' => 'اردو', 'ar' => 'عربي', 'hi' => 'हि', 'en' => 'EN'] as $code => $label)
+                    <a href="{{ route('lang.switch', $code) }}"
+                       class="sh-lang-selector__option {{ app()->getLocale() === $code ? 'sh-lang-selector__option--active' : '' }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </div>
         </div>
     </nav>
     <main class="sh-main">
