@@ -1,0 +1,10 @@
+[24-May-2026 12:15:47 UTC] PHP Warning:  require(/home/shrang/public_html/staging.shrang.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/shrang/public_html/staging.shrang.com/artisan on line 10
+[24-May-2026 12:15:47 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/shrang/public_html/staging.shrang.com/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php83/root/usr/share/pear') in /home/shrang/public_html/staging.shrang.com/artisan:10
+Stack trace:
+#0 {main}
+  thrown in /home/shrang/public_html/staging.shrang.com/artisan on line 10
+[24-May-2026 12:18:40 UTC] PHP Warning:  require(/home/shrang/public_html/staging.shrang.com/vendor/autoload.php): Failed to open stream: No such file or directory in /home/shrang/public_html/staging.shrang.com/artisan on line 10
+[24-May-2026 12:18:40 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/shrang/public_html/staging.shrang.com/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php83/root/usr/share/pear') in /home/shrang/public_html/staging.shrang.com/artisan:10
+Stack trace:
+#0 {main}
+  thrown in /home/shrang/public_html/staging.shrang.com/artisan on line 10
