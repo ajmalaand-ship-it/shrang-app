@@ -7,6 +7,7 @@
     <title>{{ config('app.name', 'Shrang') }} - @yield('title', 'AI Music')</title>
     <link rel="stylesheet" href="{{ asset('css/shrang.css') }}">
     @yield('page_css')
+    @yield('head_extra')
 </head>
 <body class="sh-body">
     <nav class="sh-nav">

@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\Creation\CreateController;
 use App\Http\Controllers\Creation\SongController;
 use App\Http\Controllers\Creation\BedMusicController;
@@ -15,6 +16,7 @@ Route::get("/", function () {
 });
 
 Route::get("/lang/{code}", [LanguageController::class, "switch"])->name("lang.switch");
+Route::get("/player/{clip}", [PlayerController::class, "show"])->name("player.show");
 
 Route::get("/login", function () {
     return view("auth.login");
