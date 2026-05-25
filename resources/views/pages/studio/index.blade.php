@@ -2,88 +2,184 @@
 
 @section('title', $clip->title . ' — Clip Studio')
 
-@if ($clip->status === 'processing')
-@section('head_extra')
-<meta http-equiv="refresh" content="5">
-@endsection
-@endif
-
 @section('content')
-<div class="sh-page-wrap">
+<div class="sh-page-wrap sh-page-wrap--wide">
 
-    <div class="sh-section">
-        <h1 class="sh-heading">{{ $clip->title }}</h1>
-        <span class="sh-badge sh-badge--lang">{{ strtoupper($clip->language) }}</span>
+    {{-- Header --}}
+    <div class="studio-page__header">
+        <a href="{{ route('dashboard') }}" class="sh-btn sh-btn--ghost sh-btn--sm">← My Clips</a>
+        <h1 class="sh-heading" style="margin-top:0.75rem;">{{ $clip->title }}</h1>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+            <span class="sh-badge sh-badge--lang">{{ strtoupper($clip->language) }}</span>
+            @if($clip->script_direction === 'rtl')<span class="sh-badge">RTL</span>@endif
+            <span class="sh-badge sh-badge--status">{{ ucfirst($clip->status) }}</span>
+        </div>
     </div>
 
-    @if (session('success'))
+    {{-- Flash --}}
+    @if(session('success'))
         <div class="sh-notice sh-notice--success">{{ session('success') }}</div>
     @endif
+    @if(session('error'))
+        <div class="sh-notice sh-notice--danger">{{ session('error') }}</div>
+    @endif
 
-    {{-- PROCESSING STATE --}}
-    @if ($clip->status === 'processing')
+    {{-- PROCESSING --}}
+    @if($clip->status === 'processing')
         <div class="sh-card">
-            <div class="sh-card__body" style="text-align:center; padding: 3rem;">
-                <p class="sh-heading" style="margin-bottom:1rem;">Generating your song...</p>
-                <p class="sh-text-muted">This usually takes 30–60 seconds. This page refreshes automatically every 5 seconds.</p>
-                <div style="margin-top:2rem;">
-                    <div class="sh-phoneme-hint">Please wait while your song is being created.</div>
-                </div>
+            <div class="sh-card__body studio-processing">
+                <p class="sh-heading">Generating your song...</p>
+                <p class="sh-text-muted">This usually takes 30–180 seconds. Page will refresh automatically.</p>
             </div>
         </div>
+        <script>
+        (function(){
+            var jobId = '{{ $latestJob ? $latestJob->id : '' }}';
+            if (!jobId) { setTimeout(function(){ location.reload(); }, 5000); return; }
+            var tries = 0;
+            function poll(){
+                tries++;
+                if(tries > 60) return;
+                fetch('/api/jobs/' + jobId + '/status', {headers:{'Accept':'application/json'}})
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    if(d.status === 'done' || d.status === 'failed'){ location.reload(); }
+                    else { setTimeout(poll, 3000); }
+                })
+                .catch(function(){ setTimeout(poll, 5000); });
+            }
+            setTimeout(poll, 3000);
+        })();
+        </script>
 
-    {{-- FAILED STATE --}}
-    @elseif ($clip->status === 'failed')
+    {{-- FAILED --}}
+    @elseif($clip->status === 'failed')
         <div class="sh-card">
             <div class="sh-card__body">
                 <div class="sh-notice sh-notice--danger">
-                    Song generation failed. Your credits have been released.
-                    @if ($latestJob && $latestJob->error_message)
+                    Generation failed. Your credits have been released.
+                    @if($latestJob && $latestJob->error_message)
                         <br><small>{{ $latestJob->error_message }}</small>
                     @endif
                 </div>
-                <a href="{{ route('create') }}" class="sh-btn sh-btn--primary" style="margin-top:1rem; display:inline-block;">
-                    Try Again
-                </a>
+                <a href="{{ route('create') }}" class="sh-btn sh-btn--primary">Try Again</a>
             </div>
         </div>
 
-    {{-- READY STATE --}}
+    {{-- READY --}}
     @else
-        <div class="sh-card">
-            <div class="sh-card__header">Your Song</div>
-            <div class="sh-card__body">
 
-                {{-- Audio player --}}
-                @if ($audioAsset && $audioAsset->cdn_url)
-                    <audio controls style="width:100%; margin-bottom:1rem;">
-                        <source src="{{ $audioAsset->cdn_url }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                    <p style="font-size:0.8rem; color:#888; margin-top:0.5rem;">
-                        {{ $clip->title }} &mdash; {{ strtoupper($clip->language) }}
-                    </p>
+        {{-- Main grid: cover left, player right --}}
+        <div class="studio-page__grid">
+
+            {{-- LEFT: Cover image --}}
+            <div class="studio-cover">
+                @if($coverAsset && $coverAsset->cdn_url)
+                    <img src="{{ $coverAsset->cdn_url }}"
+                         alt="Cover for {{ $clip->title }}"
+                         class="studio-cover__img">
                 @else
-                    <div class="sh-notice sh-notice--info">
-                        Song generated. Audio file is being processed.
+                    <div class="studio-cover__placeholder">
+                        <div class="studio-cover__placeholder-icon">♪</div>
+                        <p class="studio-cover__placeholder-label">No cover image yet</p>
                     </div>
                 @endif
 
-                {{-- Lyrics --}}
-                <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--sh-color-border, #e5e7eb);">
-                    <label class="sh-label">Lyrics</label>
-                    <p class="{{ $clip->script_direction === 'rtl' ? 'sh-script-rtl' : '' }}" style="line-height:1.8; margin-top:0.5rem;">
-                        {{ $clip->lyrics_input }}
-                    </p>
+                {{-- Generate / Regenerate cover form --}}
+                <form method="POST" action="{{ route('studio.cover', $clip) }}" class="studio-cover__form">
+                    @csrf
+                    <input type="text" name="description" class="sh-input"
+                           placeholder="Describe the cover (optional)">
+                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
+                        {{ $coverAsset ? 'Regenerate Cover' : 'Generate Cover' }}
+                    </button>
+                </form>
+            </div>
+
+            {{-- RIGHT: Audio player + clip details --}}
+            <div class="studio-panel">
+
+                {{-- Audio player --}}
+                @if($audioAsset && $audioAsset->cdn_url)
+                    <div class="sh-card">
+                        <div class="sh-card__header">
+                            Audio
+                            <span class="sh-badge">
+                                @if($audioAsset->type === 'bed_audio') Bed Music
+                                @elseif($audioAsset->type === 'uploaded_audio') Uploaded
+                                @else Song @endif
+                            </span>
+                        </div>
+                        <div class="sh-card__body">
+                            <audio controls class="studio-player__audio">
+                                <source src="{{ $audioAsset->cdn_url }}"
+                                        type="{{ $audioAsset->mime_type ?? 'audio/mpeg' }}">
+                            </audio>
+                            @if($audioAsset->duration_seconds)
+                                <p class="studio-player__duration sh-text-muted">
+                                    Duration: {{ gmdate('i:s', $audioAsset->duration_seconds) }}
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                @else
+                    <div class="sh-notice sh-notice--info">Audio file is being processed.</div>
+                @endif
+
+                {{-- Clip details --}}
+                <div class="sh-card">
+                    <div class="sh-card__header">Details</div>
+                    <div class="sh-card__body">
+                        <div class="studio-details__row">
+                            <span class="sh-label">Language</span>
+                            <span class="sh-badge sh-badge--lang">{{ strtoupper($clip->language) }}</span>
+                        </div>
+                        <div class="studio-details__row">
+                            <span class="sh-label">Visibility</span>
+                            <span class="sh-badge">{{ ucfirst($clip->visibility) }}</span>
+                        </div>
+                        @if($latestJob && $latestJob->credits_charged !== null)
+                        <div class="studio-details__row">
+                            <span class="sh-label">Credits used</span>
+                            <span>{{ $latestJob->credits_charged }}</span>
+                        </div>
+                        @endif
+                        <div class="studio-details__row">
+                            <span class="sh-label">Created</span>
+                            <span>{{ $clip->created_at->diffForHumans() }}</span>
+                        </div>
+                    </div>
                 </div>
 
+            </div>{{-- end .studio-panel --}}
+        </div>{{-- end .studio-page__grid --}}
+
+        {{-- Lyrics --}}
+        @if($clip->lyrics_input && (!$audioAsset || $audioAsset->type !== 'bed_audio'))
+        <div class="sh-card">
+            <div class="sh-card__header">Lyrics</div>
+            <div class="sh-card__body">
+                <div class="studio-page__lyrics {{ $clip->script_direction === 'rtl' ? 'sh-script-rtl' : '' }}"
+                     dir="{{ $clip->script_direction }}">
+                    {!! nl2br(e($clip->lyrics_input)) !!}
+                </div>
             </div>
         </div>
+        @endif
 
         {{-- Actions --}}
-        <div class="sh-card" style="margin-top:1.5rem;">
+        <div class="sh-card studio-page__actions">
             <div class="sh-card__header">Actions</div>
             <div class="sh-card__body">
+
+                {{-- Download --}}
+                @if($audioAsset && $audioAsset->cdn_url)
+                <div class="sh-field">
+                    <label class="sh-label">Download</label>
+                    <a href="{{ $audioAsset->cdn_url }}" download
+                       class="sh-btn sh-btn--primary">↓ Download Audio</a>
+                </div>
+                @endif
 
                 {{-- Visibility --}}
                 <div class="sh-field">
@@ -98,29 +194,50 @@
                     </form>
                 </div>
 
-                {{-- Generate Cover --}}
-                <div class="sh-field" style="margin-top:1.5rem;">
-                    <label class="sh-label">Generate Cover Image</label>
-                    <form method="POST" action="{{ route('studio.cover', $clip) }}">
-                        @csrf
-                        <input type="text" name="description" class="sh-input"
-                               placeholder="Describe the cover (optional)" style="margin-bottom:0.5rem;">
-                        <button type="submit" class="sh-btn sh-btn--ghost">Generate Cover</button>
-                    </form>
+                {{-- Reel --}}
+                <div class="sh-field">
+                    <label class="sh-label">Reel</label>
+                    @if($reel && $reel->cdn_url)
+                        <a href="{{ $reel->cdn_url }}" download
+                           class="sh-btn sh-btn--ghost">↓ Download Reel</a>
+                    @else
+                        <form method="POST" action="{{ route('studio.reel', $clip) }}">
+                            @csrf
+                            <button type="submit" class="sh-btn sh-btn--ghost">Create Reel</button>
+                        </form>
+                    @endif
                 </div>
 
-                {{-- Create Reel --}}
-                <div class="sh-field" style="margin-top:1.5rem;">
-                    <label class="sh-label">Create Reel</label>
-                    <form method="POST" action="{{ route('studio.reel', $clip) }}">
-                        @csrf
-                        <button type="submit" class="sh-btn sh-btn--ghost">Create Reel</button>
-                    </form>
+                {{-- Share --}}
+                @if($clip->visibility === 'public')
+                <div class="sh-field">
+                    <label class="sh-label">Share</label>
+                    <button type="button" class="sh-btn sh-btn--ghost"
+                            onclick="studioShareLink(this)"
+                            data-url="{{ route('player.show', $clip) }}">
+                        Copy Share Link
+                    </button>
                 </div>
+                @endif
 
             </div>
         </div>
-    @endif
 
-</div>
+    @endif{{-- end ready state --}}
+
+</div>{{-- end sh-page-wrap --}}
+
+<script>
+function studioShareLink(btn) {
+    var url = btn.getAttribute('data-url');
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function(){
+            btn.textContent = 'Copied!';
+            setTimeout(function(){ btn.textContent = 'Copy Share Link'; }, 2000);
+        });
+    } else {
+        window.prompt('Copy this link:', url);
+    }
+}
+</script>
 @endsection
