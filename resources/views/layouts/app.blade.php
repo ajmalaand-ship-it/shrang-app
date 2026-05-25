@@ -27,6 +27,7 @@
                 <div class="sh-nav__credits">
                     <strong>{{ auth()->user()->credit_balance }}</strong> credits
                 </div>
+                <a href="{{ route('account') }}" class="sh-btn sh-btn--ghost sh-btn--sm">Account</a>
                 <form method="POST" action="{{ route('logout') }}" style="display:inline;">
                     @csrf
                     <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Log out</button>

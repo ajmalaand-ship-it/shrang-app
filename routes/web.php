@@ -56,4 +56,9 @@ Route::middleware(["auth"])->group(function () {
 
     Route::get("/credits", [CheckoutController::class, "index"])->name("credits");
     Route::post("/credits/checkout", [CheckoutController::class, "createIntent"])->name("credits.checkout");
+    Route::get("/account", [App\Http\Controllers\AccountController::class, "show"])->name("account");
+    Route::patch("/account/profile", [App\Http\Controllers\AccountController::class, "updateProfile"])->name("account.profile");
+    Route::patch("/account/preferences", [App\Http\Controllers\AccountController::class, "updatePreferences"])->name("account.preferences");
+    Route::patch("/account/password", [App\Http\Controllers\AccountController::class, "updatePassword"])->name("account.password");
+    Route::delete("/account", [App\Http\Controllers\AccountController::class, "destroy"])->name("account.destroy");
 });
