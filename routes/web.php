@@ -16,6 +16,7 @@ use App\Http\Controllers\Studio\ClipController;
 use App\Http\Controllers\Studio\CoverController;
 use App\Http\Controllers\Studio\ReelController;
 use App\Http\Controllers\Payments\CheckoutController;
+use App\Http\Controllers\DashboardController;
 
 // Public
 Route::get("/", function () { return view("welcome"); });
@@ -41,6 +42,8 @@ Route::post("/logout", [LogoutController::class, "store"])->name("logout")->midd
 
 // Authenticated
 Route::middleware(["auth"])->group(function () {
+    Route::get("/dashboard", [DashboardController::class, "index"])->name("dashboard");
+    Route::get("/dashboard", [DashboardController::class, "index"])->name("dashboard");
     Route::get("/create", [CreateController::class, "index"])->name("create");
     Route::post("/create/song", [SongController::class, "store"])->name("create.song");
     Route::post("/create/bed", [BedMusicController::class, "store"])->name("create.bed");
