@@ -19,6 +19,7 @@
         </a>
         <ul class="sh-nav__links">
             <li><a href="{{ route('create') }}">Create</a></li>
+            <li><a href="{{ route('discover') }}">Discover</a></li>
             <li><a href="{{ route('dashboard') }}">My Clips</a></li>
             <li><a href="{{ route('credits') }}">Credits</a></li>
         </ul>

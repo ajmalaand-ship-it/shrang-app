@@ -21,6 +21,11 @@ use App\Http\Controllers\DashboardController;
 // Public
 Route::get("/", function () { return view("welcome"); });
 Route::get("/lang/{code}", [LanguageController::class, "switch"])->name("lang.switch");
+Route::get("/discover", [App\Http\Controllers\DiscoverController::class, "index"])->name("discover");
+Route::post("/discover/{slug}/play", [App\Http\Controllers\DiscoverController::class, "trackPlay"])->name("discover.play");
+Route::post("/discover/{slug}/like", [App\Http\Controllers\DiscoverController::class, "like"])->name("discover.like");
+Route::post("/discover/{slug}/unlike", [App\Http\Controllers\DiscoverController::class, "unlike"])->name("discover.unlike");
+Route::post("/discover/{slug}/download", [App\Http\Controllers\DiscoverController::class, "download"])->name("discover.download");
 Route::get("/player/{slug}", [PlayerController::class, "show"])->name("player.show");
 
 // Auth — guests only

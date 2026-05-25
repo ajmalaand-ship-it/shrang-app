@@ -47,6 +47,18 @@
                class="admin-sidebar__link {{ request()->routeIs('admin.language-hints.*') ? 'active' : '' }}">
                 🌐 Language Hints
             </a>
+            <a href="{{ route('admin.discover.index') }}"
+               class="admin-sidebar__link {{ request()->routeIs('admin.discover.*') ? 'active' : '' }}">
+                🔍 Discover
+            </a>
+            <a href="{{ route('admin.packages.index') }}"
+               class="admin-sidebar__link {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
+                💳 Credit Packages
+            </a>
+            <a href="{{ route('admin.payments.index') }}"
+               class="admin-sidebar__link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+                💰 Payments
+            </a>
             <a href="{{ route('admin.audit-log.index') }}"
                class="admin-sidebar__link {{ request()->routeIs('admin.audit-log.*') ? 'active' : '' }}">
                 📋 Audit Log

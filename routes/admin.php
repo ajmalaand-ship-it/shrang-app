@@ -30,4 +30,14 @@ Route::prefix("admin")->name("admin.")->middleware(["auth", "admin", "audit"])->
     Route::post("/language-hints", [LanguageHintController::class, "store"])->name("language-hints.store");
     Route::delete("/language-hints/{languageHint}", [LanguageHintController::class, "destroy"])->name("language-hints.destroy");
 
+    Route::get("/packages", [\App\Http\Controllers\Admin\CreditPackageController::class, "index"])->name("packages.index");
+    Route::post("/packages", [\App\Http\Controllers\Admin\CreditPackageController::class, "store"])->name("packages.store");
+    Route::patch("/packages/{package}", [\App\Http\Controllers\Admin\CreditPackageController::class, "update"])->name("packages.update");
+    Route::patch("/packages/{package}/toggle", [\App\Http\Controllers\Admin\CreditPackageController::class, "toggle"])->name("packages.toggle");
+    Route::get("/discover", [App\Http\Controllers\Admin\DiscoverController::class, "index"])->name("discover.index");
+    Route::post("/discover/{clip}/feature", [App\Http\Controllers\Admin\DiscoverController::class, "feature"])->name("discover.feature");
+    Route::delete("/discover/{clip}/unfeature", [App\Http\Controllers\Admin\DiscoverController::class, "unfeature"])->name("discover.unfeature");
+    Route::patch("/discover/{clip}/pin", [App\Http\Controllers\Admin\DiscoverController::class, "pin"])->name("discover.pin");
+    Route::patch("/discover/{clip}/block", [App\Http\Controllers\Admin\DiscoverController::class, "block"])->name("discover.block");
+    Route::get("/payments", [\App\Http\Controllers\Admin\PaymentController::class, "index"])->name("payments.index");
 });
