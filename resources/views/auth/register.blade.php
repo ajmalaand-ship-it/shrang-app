@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Log in — Shrang</title>
+    <title>Create Account — Shrang</title>
     
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -190,15 +190,11 @@
             <span class="auth-logo__arabic">شرنګ</span>
             <span class="auth-logo__latin">Shrang</span>
         </a>
-        <h1 class="auth-title">Welcome back</h1>
-        <p class="auth-sub">Log in to create your music</p>
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-sub">Start with 20 free credits</p>
 
-        @if (session('success'))
-            <div class="notice-success">{{ session('success') }}</div>
-        @endif
-
-        @if ($errors->has('email') && !$errors->has('password'))
-            <div class="notice-error">{{ $errors->first('email') }}</div>
+        @if ($errors->any())
+            <div class="notice-error">{{ $errors->first() }}</div>
         @endif
 
         
@@ -214,26 +210,42 @@
             <div class="divider">or</div>
 
 
-        <form method="POST" action="{{ route('login.store') }}">
+        <form method="POST" action="{{ route('register.store') }}">
             @csrf
             <div class="field">
+                <label for="name">Full name</label>
+                <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus>
+                @error('name') <span class="field-error">{{ $message }}</span> @enderror
+            </div>
+            <div class="field">
                 <label for="email">Email address</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required>
                 @error('email') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="field">
                 <label for="password">Password</label>
-                <input id="password" type="password" name="password" required>
+                <input id="password" type="password" name="password" required minlength="8">
                 @error('password') <span class="field-error">{{ $message }}</span> @enderror
             </div>
-            <div class="remember-row">
-                <label><input type="checkbox" name="remember"> Remember me</label>
-                <a href="{{ route('password.request') }}">Forgot password?</a>
+            <div class="field">
+                <label for="password_confirmation">Confirm password</label>
+                <input id="password_confirmation" type="password" name="password_confirmation" required>
             </div>
-            <button type="submit" class="btn-primary">Log in</button>
+            <div class="field">
+                <label for="language">Your preferred language</label>
+                <select id="language" name="language">
+                    <option value="en">English</option>
+                    <option value="ps">پښتو — Pashto</option>
+                    <option value="fa">دری — Dari</option>
+                    <option value="ur">اردو — Urdu</option>
+                    <option value="ar">العربية — Arabic</option>
+                    <option value="hi">हिन्दी — Hindi</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top:0.5rem;">Create Account</button>
         </form>
 
-        <p class="auth-link">Don't have an account? <a href="{{ route('register') }}">Sign up free</a></p>
+        <p class="auth-link">Already have an account? <a href="{{ route('login') }}">Log in</a></p>
     </div>
 </body>
 </html>
