@@ -46,10 +46,21 @@ class LyriaProvider implements AIProviderInterface
         try {
             $url = "{$this->baseUrl}/v1beta/models/{$model}:generateContent?key={$this->apiKey}";
             $response = Http::withHeaders(["Content-Type" => "application/json"])->timeout(120)->post($url, $payload);
+            Log::info("LyriaProvider raw response", ["body" => substr($response->body(), 0, 500)]);
             if ($response->successful()) {
                 $data = $response->json();
-                $audioData = $data["candidates"][0]["content"]["parts"][0]["inlineData"]["data"] ?? null;
-                return ["status" => "done", "audio_data" => $audioData, "duration_seconds" => 60, "provider" => $this->providerName()];
+                $audioData = null;
+                $lyrics = null;
+                $parts = $data["candidates"][0]["content"]["parts"] ?? [];
+                foreach ($parts as $part) {
+                    if (isset($part["inlineData"]["data"])) {
+                        $audioData = $part["inlineData"]["data"];
+                    }
+                    if (isset($part["text"])) {
+                        $lyrics = $part["text"];
+                    }
+                }
+                return ["status" => "done", "audio_data" => $audioData, "lyrics" => $lyrics, "duration_seconds" => 60, "provider" => $this->providerName()];
             }
             Log::error("LyriaProvider error", ["status" => $response->status(), "body" => $response->body()]);
             return ["status" => "error", "error" => $response->body(), "provider" => $this->providerName()];

@@ -55,13 +55,18 @@
             <div class="sh-card__body">
 
                 {{-- Audio player --}}
-                @if ($audioAsset)
+                @if ($audioAsset && $audioAsset->cdn_url)
                     <audio controls style="width:100%; margin-bottom:1rem;">
                         <source src="{{ $audioAsset->cdn_url }}" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
+                    <p style="font-size:0.8rem; color:#888; margin-top:0.5rem;">
+                        {{ $clip->title }} &mdash; {{ strtoupper($clip->language) }}
+                    </p>
                 @else
-                    <div class="sh-notice sh-notice--info">Audio is ready. Player coming soon.</div>
+                    <div class="sh-notice sh-notice--info">
+                        Song generated. Audio file is being processed.
+                    </div>
                 @endif
 
                 {{-- Lyrics --}}

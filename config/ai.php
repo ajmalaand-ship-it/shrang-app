@@ -21,7 +21,4 @@ return [
         "api_key"  => env("STABILITY_API_KEY", ""),
         "base_url" => env("STABILITY_BASE_URL", "https://api.stability.ai"),
     ],
-    "fake" => [
-        "enabled" => env("AI_FAKE_PROVIDER", false),
-    ],
 ];

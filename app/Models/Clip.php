@@ -23,4 +23,8 @@ class Clip extends Model
     {
         return $this->hasMany(GenerationJob::class);
     }
+    public function mediaAssets(): HasMany
+    {
+        return $this->hasMany(MediaAsset::class);
+    }
 }

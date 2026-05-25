@@ -29,22 +29,31 @@ class GenerateSongJob implements ShouldQueue
             $prompt = $promptService->buildSongPrompt($this->params);
             $result = $aiService->generateMusic(array_merge($this->params, ["prompt" => $prompt]));
             if ($result["status"] === "done") {
-                $job->update(["status" => "done", "progress_pct" => 100, "credits_charged" => $job->credits_reserved, "completed_at" => now()]);
+                $job->update(["status" => "done", "progress_pct" => 100, "credits_charged" => $job->credits_reserved, "completed_at" => now(), "provider_response" => $result]);
                 Clip::where("id", $job->clip_id)->update(["status" => "ready"]);
                 $creditService->commitReservation($this->generationJobId);
-                if (!empty($result["audio_url"])) {
+                $audioData = $result["audio_data"] ?? null;
+                $audioUrl  = $result["audio_url"] ?? null;
+                if ($audioData || $audioUrl) {
+                    $storageKey = $audioUrl ?? "audio/" . $this->generationJobId . ".mp3";
+                    if ($audioData) {
+                        $filename = "audio/" . $this->generationJobId . ".mp3";
+                        \Illuminate\Support\Facades\Storage::disk("public")->put($filename, base64_decode($audioData));
+                        $storageKey = $filename;
+                        $audioUrl   = \Illuminate\Support\Facades\Storage::disk("public")->url($filename);
+                    }
                     MediaAsset::create([
-                        "clip_id"        => $job->clip_id,
-                        "user_id"        => $this->params["user_id"],
+                        "clip_id"           => $job->clip_id,
+                        "user_id"           => $this->params["user_id"],
                         "generation_job_id" => $this->generationJobId,
-                        "type"           => "song_audio",
-                        "storage_disk"   => "public",
-                        "storage_key"    => $result["audio_url"],
-                        "cdn_url"        => $result["audio_url"],
-                        "mime_type"      => "audio/mpeg",
-                        "file_size_bytes"=> 0,
-                        "is_primary"     => true,
-                        "is_temp"        => false,
+                        "type"              => "song_audio",
+                        "storage_disk"      => "public",
+                        "storage_key"       => $storageKey,
+                        "cdn_url"           => $audioUrl,
+                        "mime_type"         => "audio/mpeg",
+                        "file_size_bytes"   => $audioData ? strlen(base64_decode($audioData)) : 0,
+                        "is_primary"        => true,
+                        "is_temp"           => false,
                     ]);
                 }
             } else {

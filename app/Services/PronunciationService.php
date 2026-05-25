@@ -39,13 +39,9 @@ class PronunciationService
 
     private function hintsForLanguage(string $languageCode): Collection
     {
-        return Cache::remember(
-            "pronunciation_hints:{$languageCode}",
-            self::CACHE_TTL,
-            fn () => LanguageHint::query()
-                ->where('language_code', $languageCode)
-                ->where('is_active', true)
-                ->get(['id', 'word', 'prompt_injection', 'phoneme_hint', 'provider'])
-        );
+        return LanguageHint::query()
+            ->where('language_code', $languageCode)
+            ->where('is_active', true)
+            ->get(['id', 'word', 'prompt_injection', 'phoneme_hint', 'provider']);
     }
 }
