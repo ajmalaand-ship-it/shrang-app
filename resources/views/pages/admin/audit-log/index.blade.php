@@ -1,4 +1,4 @@
-@extends("layouts.app")
+@extends("layouts.admin")
 @section("title", "Audit Log — Admin")
 @section("content")
 <div class="sh-page-wrap admin-page">
