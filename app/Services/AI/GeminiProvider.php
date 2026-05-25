@@ -36,7 +36,34 @@ class GeminiProvider implements AIProviderInterface
 
     public function generateCover(array $params): array
     {
-        return ["status" => "skipped", "provider" => $this->providerName()];
+        $prompt = $params["prompt"] ?? "A beautiful artistic music album cover";
+        $payload = [
+            "contents" => [["parts" => [["text" => $prompt]]]],
+            "generationConfig" => ["responseModalities" => ["IMAGE"]],
+        ];
+        try {
+            $url = "{$this->baseUrl}/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key={$this->apiKey}";
+            $response = Http::withHeaders(["Content-Type" => "application/json"])->timeout(60)->post($url, $payload);
+            if ($response->successful()) {
+                $data = $response->json();
+                $imageData = null;
+                $mimeType  = "image/png";
+                $parts = $data["candidates"][0]["content"]["parts"] ?? [];
+                foreach ($parts as $part) {
+                    if (isset($part["inlineData"]["data"]) && !($part["thought"] ?? false)) {
+                        $imageData = $part["inlineData"]["data"];
+                        $mimeType  = $part["inlineData"]["mimeType"] ?? "image/png";
+                        break;
+                    }
+                }
+                return ["status" => "done", "image_data" => $imageData, "mime_type" => $mimeType, "provider" => $this->providerName()];
+            }
+            Log::error("GeminiProvider cover error", ["status" => $response->status(), "body" => $response->body()]);
+            return ["status" => "error", "error" => $response->body(), "provider" => $this->providerName()];
+        } catch (\Exception $e) {
+            Log::error("GeminiProvider cover exception", ["message" => $e->getMessage()]);
+            return ["status" => "error", "error" => $e->getMessage(), "provider" => $this->providerName()];
+        }
     }
 
     public function providerName(): string

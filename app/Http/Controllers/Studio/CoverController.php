@@ -9,18 +9,18 @@ class CoverController extends Controller
 {
     public function store(Request $request, Clip $clip): RedirectResponse
     {
-        $this->authorize("generateCover", $clip);
+        $this->authorize("update", $clip);
         $validated = $request->validate([
             "description" => ["nullable", "string", "max:500"],
         ]);
         GenerateCoverImageJob::dispatch($clip->id, [
             "user_id"     => $request->user()->id,
-            "lyrics"      => $clip->lyrics_input,
             "title"       => $clip->title,
+            "lyrics"      => $clip->lyrics_input,
             "description" => $validated["description"] ?? "",
-        ])->onQueue("media-processing");
-        return redirect()
-            ->route("studio.show", $clip)
-            ->with("success", "Cover generation started.");
+            "language"    => $clip->language,
+        ])->onQueue("ai-generation");
+        return redirect()->route("studio.show", $clip)
+            ->with("success", "Cover image is being generated. Refresh in a few seconds.");
     }
 }
