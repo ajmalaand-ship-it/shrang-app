@@ -2,6 +2,7 @@
 namespace App\Jobs;
 use App\Models\Clip;
 use App\Models\GenerationJob;
+use App\Models\MediaAsset;
 use App\Services\AI\AIService;
 use App\Services\CreditService;
 use App\Services\PromptService;
@@ -31,6 +32,21 @@ class GenerateSongJob implements ShouldQueue
                 $job->update(["status" => "done", "progress_pct" => 100, "credits_charged" => $job->credits_reserved, "completed_at" => now()]);
                 Clip::where("id", $job->clip_id)->update(["status" => "ready"]);
                 $creditService->commitReservation($this->generationJobId);
+                if (!empty($result["audio_url"])) {
+                    MediaAsset::create([
+                        "clip_id"        => $job->clip_id,
+                        "user_id"        => $this->params["user_id"],
+                        "generation_job_id" => $this->generationJobId,
+                        "type"           => "song_audio",
+                        "storage_disk"   => "public",
+                        "storage_key"    => $result["audio_url"],
+                        "cdn_url"        => $result["audio_url"],
+                        "mime_type"      => "audio/mpeg",
+                        "file_size_bytes"=> 0,
+                        "is_primary"     => true,
+                        "is_temp"        => false,
+                    ]);
+                }
             } else {
                 $this->handleFailure($job, $result["error"] ?? "Unknown error", $creditService);
             }
@@ -42,6 +58,7 @@ class GenerateSongJob implements ShouldQueue
     private function handleFailure(GenerationJob $job, string $error, CreditService $creditService): void
     {
         $job->update(["status" => "failed", "error_message" => $error, "completed_at" => now()]);
+        Clip::where("id", $job->clip_id)->update(["status" => "failed"]);
         $creditService->releaseReservation($this->generationJobId);
         Log::error("GenerateSongJob failed", ["generation_job_id" => $this->generationJobId, "error" => $error]);
     }

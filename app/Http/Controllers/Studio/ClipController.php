@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Studio;
 use App\Http\Controllers\Controller;
 use App\Models\Clip;
+use App\Models\MediaAsset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -10,10 +11,12 @@ class ClipController extends Controller
     public function show(Request $request, Clip $clip): View
     {
         $this->authorize("view", $clip);
-        $mediaAssets = $clip->generationJobs()
-            ->with("clip")
-            ->get();
-        return view("pages.studio.index", compact("clip", "mediaAssets"));
+        $latestJob  = $clip->generationJobs()->latest()->first();
+        $audioAsset = MediaAsset::where("clip_id", $clip->id)
+            ->where("type", "song_audio")
+            ->where("is_primary", true)
+            ->first();
+        return view("pages.studio.index", compact("clip", "latestJob", "audioAsset"));
     }
     public function updateVisibility(Request $request, Clip $clip): RedirectResponse
     {
@@ -22,8 +25,6 @@ class ClipController extends Controller
             "visibility" => ["required", "in:public,private"],
         ]);
         $clip->update(["visibility" => $validated["visibility"]]);
-        return redirect()
-            ->route("studio.show", $clip)
-            ->with("success", "Visibility updated.");
+        return redirect()->route("studio.show", $clip)->with("success", "Visibility updated.");
     }
 }

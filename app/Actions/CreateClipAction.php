@@ -17,7 +17,7 @@ class CreateClipAction
             "lyrics_input"     => $data["lyrics"] ?? "",
             "language"         => $language,
             "script_direction" => $direction,
-            "status"           => "draft",
+            "status"           => "processing",
             "visibility"       => "private",
         ]);
         $job = GenerationJob::create([
