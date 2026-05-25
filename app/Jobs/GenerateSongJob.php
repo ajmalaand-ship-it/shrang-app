@@ -1,7 +1,9 @@
 <?php
 namespace App\Jobs;
+use App\Models\Clip;
 use App\Models\GenerationJob;
 use App\Services\AI\AIService;
+use App\Services\CreditService;
 use App\Services\PromptService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,12 +16,11 @@ class GenerateSongJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     public int $timeout = 600;
     public int $tries   = 3;
-    public array $backoff = [60, 120, 300];
     public function __construct(
         private readonly string $generationJobId,
         private readonly array  $params
     ) {}
-    public function handle(AIService $aiService, PromptService $promptService): void
+    public function handle(AIService $aiService, PromptService $promptService, CreditService $creditService): void
     {
         $job = GenerationJob::findOrFail($this->generationJobId);
         try {
@@ -27,31 +28,21 @@ class GenerateSongJob implements ShouldQueue
             $prompt = $promptService->buildSongPrompt($this->params);
             $result = $aiService->generateMusic(array_merge($this->params, ["prompt" => $prompt]));
             if ($result["status"] === "done") {
-                $job->update([
-                    "status"           => "done",
-                    "progress_pct"     => 100,
-                    "credits_charged"  => $job->credits_reserved,
-                    "provider_response"=> $result,
-                    "completed_at"     => now(),
-                ]);
+                $job->update(["status" => "done", "progress_pct" => 100, "credits_charged" => $job->credits_reserved, "completed_at" => now()]);
+                Clip::where("id", $job->clip_id)->update(["status" => "ready"]);
+                $creditService->commitReservation($this->generationJobId);
             } else {
-                $this->handleFailure($job, $result["error"] ?? "Unknown error");
+                $this->handleFailure($job, $result["error"] ?? "Unknown error", $creditService);
             }
         } catch (\Exception $e) {
-            $this->handleFailure($job, $e->getMessage());
+            $this->handleFailure($job, $e->getMessage(), $creditService);
             throw $e;
         }
     }
-    private function handleFailure(GenerationJob $job, string $error): void
+    private function handleFailure(GenerationJob $job, string $error, CreditService $creditService): void
     {
-        $job->update([
-            "status"        => "failed",
-            "error_message" => $error,
-            "completed_at"  => now(),
-        ]);
-        Log::error("GenerateSongJob failed", [
-            "generation_job_id" => $this->generationJobId,
-            "error"             => $error,
-        ]);
+        $job->update(["status" => "failed", "error_message" => $error, "completed_at" => now()]);
+        $creditService->releaseReservation($this->generationJobId);
+        Log::error("GenerateSongJob failed", ["generation_job_id" => $this->generationJobId, "error" => $error]);
     }
 }
