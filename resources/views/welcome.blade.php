@@ -422,18 +422,15 @@
         </a>
         <ul class="nav__links">
             <li><a href="#how-it-works">How it works</a></li>
+            <li><a href="{{ route('discover') }}">Discover</a></li>
             @auth
-                <li><a href="{{ route('create') }}">Create</a></li>
-                <li>
-                    <form method="POST" action="{{ route('logout') }}" style="display:inline;">
-                        @csrf
-                        <button type="submit" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.875rem;font-family:inherit;">Log out</button>
-                    </form>
-                </li>
+                <li><a href="{{ route('dashboard') }}">My Clips</a></li>
+                <li><a href="{{ route('credits') }}">Credits</a></li>
+                <li><a href="{{ route('account') }}">Account</a></li>
                 <li><a href="{{ route('create') }}" class="nav__cta">Create Music</a></li>
             @else
                 <li><a href="{{ route('login') }}">Log in</a></li>
-                <li><a href="{{ route('register') }}" class="nav__cta">Start Creating</a></li>
+                <li><a href="{{ route('register') }}" class="nav__cta">Start Creating Free</a></li>
             @endauth
         </ul>
         <div class="lang-switcher">

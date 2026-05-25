@@ -13,15 +13,15 @@
 <body>
 
     <nav class="sh-nav">
-        <a href="{{ route('create') }}" class="sh-nav__logo">
+        <a href="/" class="sh-nav__logo">
             <span class="sh-nav__logo-arabic">شرنګ</span>
             <span class="sh-nav__logo-latin">Shrang</span>
         </a>
         <ul class="sh-nav__links">
-            <li><a href="{{ route('create') }}">Create</a></li>
-            <li><a href="{{ route('discover') }}">Discover</a></li>
-            <li><a href="{{ route('dashboard') }}">My Clips</a></li>
-            <li><a href="{{ route('credits') }}">Credits</a></li>
+            <li><a href="{{ route('create') }}" class="{{ request()->routeIs('create*') ? 'active' : '' }}">Create</a></li>
+            <li><a href="{{ route('discover') }}" class="{{ request()->routeIs('discover*') ? 'active' : '' }}">Discover</a></li>
+            <li><a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">My Clips</a></li>
+            <li><a href="{{ route('credits') }}" class="{{ request()->routeIs('credits*') ? 'active' : '' }}">Credits</a></li>
         </ul>
         <div class="sh-nav__right">
             @auth

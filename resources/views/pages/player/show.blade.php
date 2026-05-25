@@ -81,7 +81,7 @@
     </div>
 
     {{-- Lyrics --}}
-    @if($clip->lyrics_input && $audioAsset && $audioAsset->type !== 'bed_audio')
+    @if($clip->lyrics_input && $audioUrl)
     <div class="sh-card">
         <div class="sh-card__header">Lyrics</div>
         <div class="sh-card__body">
