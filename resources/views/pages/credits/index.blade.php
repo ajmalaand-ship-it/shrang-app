@@ -1,84 +1,104 @@
-@extends("layouts.app")
+@extends('layouts.app')
+@section('title', 'Buy Credits')
+@section('head_extra')
+@endsection
+@section('content')
+<div class="sh-page-wrap sh-page-wrap--narrow">
 
-@section("title", __("ui.credits.balance"))
+    <div style="margin-bottom:2rem;">
+        <h1 class="sh-heading">Credits</h1>
+        <p class="sh-text-muted">Use credits to create songs, bed music, covers, and reels.</p>
+    </div>
 
-@section("content")
-<div class="sh-page-wrap credits-page">
-
-    <header class="sh-section credits-page__header">
-        <h1 class="sh-heading">{{ __("ui.credits.balance") }}</h1>
-        <p class="credits-page__balance">
-            <span class="credits-page__balance-number">{{ $balance }}</span>
-            <span class="sh-text-muted">{{ __("ui.credits.unit") }}</span>
-        </p>
-    </header>
-
-    @if (session("success"))
-        <div class="sh-notice sh-notice--success">{{ session("success") }}</div>
+    @if(session('success') || request('success'))
+        <div class="sh-notice sh-notice--success">Payment successful! Your credits have been added.</div>
+    @endif
+    @if(request('cancelled'))
+        <div class="sh-notice sh-notice--warning">Payment cancelled. No charges were made.</div>
     @endif
 
-    <section class="sh-section">
-        <h2 class="sh-subheading">{{ __("ui.credits.buy") }}</h2>
-
-        @if ($packages->isEmpty())
-            <p class="sh-text-muted">No credit packages available yet.</p>
-        @else
-            <div class="credits-page__packages">
-                @foreach ($packages as $package)
-                    <div class="sh-card credits-page__package">
-                        <div class="sh-card__body">
-                            <h3 class="credits-page__package-name">{{ $package->name }}</h3>
-                            <p class="credits-page__package-credits">
-                                {{ number_format($package->credits) }}
-                                <span class="sh-text-muted">{{ __("ui.credits.unit") }}</span>
-                            </p>
-                            <p class="credits-page__package-price">
-                                ${{ number_format($package->price_cents / 100, 2) }}
-                                {{ $package->currency }}
-                            </p>
-                            <button class="sh-btn sh-btn--primary"
-                                    onclick="startCheckout('{{ $package->id }}')">
-                                {{ __("ui.credits.buy") }}
-                            </button>
-                        </div>
-                    </div>
-                @endforeach
+    {{-- Current balance --}}
+    <div class="sh-card" style="margin-bottom:2rem;">
+        <div class="sh-card__body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+            <div>
+                <div class="sh-label">Your current balance</div>
+                <div style="font-size:2.5rem;font-weight:700;color:var(--sh-orange);">{{ number_format($balance) }}</div>
+                <div class="sh-text-muted" style="font-size:0.85rem;">credits available</div>
             </div>
-        @endif
-    </section>
+            <div style="font-size:0.85rem;color:var(--sh-text-muted);line-height:2;">
+                <div>Song — 10 credits</div>
+                <div>Bed Music — 5 credits</div>
+                <div>Cover Image — 3 credits</div>
+                <div>Reel — 5 credits</div>
+            </div>
+        </div>
+    </div>
 
-    <section class="sh-section">
-        <h2 class="sh-subheading">{{ __("ui.credits.history") }}</h2>
-        <p class="sh-text-muted">Credit history coming in Phase 9.</p>
-    </section>
+    {{-- Packages --}}
+    <h2 class="sh-heading--sm" style="margin-bottom:1rem;">Buy Credits</h2>
+    <div class="credits-packages" style="margin-bottom:2rem;">
+        @foreach($packages as $package)
+        <div class="sh-card credits-package">
+            <div class="sh-card__body" style="text-align:center;">
+                <div class="credits-package__name">{{ $package->name }}</div>
+                <div class="credits-package__credits">
+                    {{ number_format($package->credits) }}
+                    <span class="sh-text-muted" style="font-size:1rem;font-weight:400;"> credits</span>
+                </div>
+                <div class="credits-package__price">${{ number_format($package->price_cents / 100, 2) }}</div>
+                <div class="sh-text-muted" style="font-size:0.8rem;margin-bottom:1.25rem;">
+                    ~{{ floor($package->credits / 10) }} songs or {{ floor($package->credits / 5) }} bed tracks
+                </div>
+                <form method="POST" action="{{ route('credits.buy') }}">
+                    @csrf
+                    <input type="hidden" name="package_id" value="{{ $package->id }}">
+                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--full">
+                        Buy {{ $package->name }}
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endforeach
+    </div>
+
+    {{-- Credit history --}}
+    <h2 class="sh-heading--sm" style="margin-bottom:1rem;">Credit History</h2>
+    <div class="sh-card">
+        <div class="sh-card__body" style="padding:0;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse(auth()->user()->creditTransactions()->latest()->take(20)->get() as $tx)
+                    <tr>
+                        <td>{{ $tx->created_at->format('d M Y') }}</td>
+                        <td>
+                            <span class="sh-badge {{ $tx->type === 'credit' ? 'sh-badge--status-ready' : 'sh-badge--status-failed' }}">
+                                {{ ucfirst($tx->type) }}
+                            </span>
+                        </td>
+                        <td style="font-weight:600;color:{{ $tx->type === 'credit' ? 'var(--sh-success)' : 'var(--sh-danger)' }};">
+                            {{ $tx->type === 'credit' ? '+' : '-' }}{{ number_format($tx->amount) }}
+                        </td>
+                        <td class="sh-text-muted">{{ str_replace('_', ' ', $tx->reason) }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" style="text-align:center;color:var(--sh-text-muted);padding:2rem;">
+                            No transactions yet.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 </div>
-@endsection
-
-@section("page_js")
-<script>
-const csrfToken = document.querySelector("meta[name=csrf-token]").content;
-
-async function startCheckout(packageId) {
-    try {
-        const response = await fetch("/credits/checkout", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken,
-                "Accept": "application/json",
-            },
-            body: JSON.stringify({ package_id: packageId }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            alert(data.error || "Something went wrong.");
-            return;
-        }
-        alert("Stripe checkout coming soon. Client secret: " + data.client_secret);
-    } catch (err) {
-        alert("Connection error. Please try again.");
-    }
-}
-</script>
 @endsection

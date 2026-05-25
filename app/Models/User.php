@@ -42,6 +42,10 @@ class User extends Authenticatable
         return $this->role === "admin";
     }
 
+    public function creditTransactions()
+    {
+        return $this->hasMany(\App\Models\CreditTransaction::class);
+    }
     public function clips()
     {
         return $this->hasMany(\App\Models\Clip::class);

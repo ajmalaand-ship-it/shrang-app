@@ -536,3 +536,8 @@ img { max-width: 100%; display: block; }
 
 .admin-table-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--sh-border); }
 .admin-table-row:last-child { border-bottom: none; }
+
+.credits-packages{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;}
+.credits-package__name{font-size:1rem;font-weight:600;margin-bottom:.5rem;}
+.credits-package__credits{font-size:2rem;font-weight:700;color:var(--sh-orange);}
+.credits-package__price{font-size:1.25rem;font-weight:600;margin-bottom:.5rem;}

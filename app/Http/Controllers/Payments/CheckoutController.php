@@ -21,6 +21,15 @@ class CheckoutController extends Controller
         $balance = $this->creditService->spendableBalance($request->user());
         return view("pages.credits.index", compact("packages", "balance"));
     }
+    public function checkout(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $validated = $request->validate([
+            "package_id" => ["required", "uuid", "exists:credit_packages,id"],
+        ]);
+        $package = \App\Models\CreditPackage::findOrFail($validated["package_id"]);
+        $url = $this->paymentService->createCheckoutSession($request->user(), $package);
+        return redirect()->away($url);
+    }
     public function createIntent(Request $request): JsonResponse
     {
         $validated = $request->validate([

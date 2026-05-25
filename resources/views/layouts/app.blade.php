@@ -46,5 +46,6 @@
         <a href="{{ route('dashboard') }}">My Clips</a>
     </footer>
 
+    @yield("page_js")
 </body>
 </html>
