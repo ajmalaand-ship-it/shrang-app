@@ -13,7 +13,7 @@ class ClipController extends Controller
         $this->authorize("view", $clip);
         $latestJob  = $clip->generationJobs()->latest()->first();
         $audioAsset = MediaAsset::where("clip_id", $clip->id)
-            ->where("type", "song_audio")
+            ->whereIn("type", ["song_audio", "bed_audio", "uploaded_audio"])
             ->where("is_primary", true)
             ->first();
         return view("pages.studio.index", compact("clip", "latestJob", "audioAsset"));
