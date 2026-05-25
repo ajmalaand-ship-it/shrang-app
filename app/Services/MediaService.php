@@ -6,18 +6,6 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 class MediaService
 {
-    public function signedDownloadUrl(MediaAsset $asset, int $minutesTtl = 60): string
-    {
-        if ($asset->cdn_url) {
-            return URL::temporarySignedRoute(
-                "api.download",
-                now()->addMinutes($minutesTtl),
-                ["asset" => $asset->id]
-            );
-        }
-        return Storage::disk($asset->storage_disk ?? "public")
-            ->temporaryUrl($asset->storage_key, now()->addMinutes($minutesTtl));
-    }
     public function storeTemp(string $disk, string $path, string $mimeType, int $fileSize): MediaAsset
     {
         return MediaAsset::create([
@@ -29,6 +17,14 @@ class MediaService
             "is_primary"       => false,
             "type"             => "uploaded_audio",
         ]);
+    }
+    public function signedDownloadUrl(MediaAsset $asset, int $minutesTtl = 60): string
+    {
+        if ($asset->cdn_url) {
+            return $asset->cdn_url;
+        }
+        return \Illuminate\Support\Facades\Storage::disk($asset->storage_disk ?? "public")
+            ->temporaryUrl($asset->storage_key, now()->addMinutes($minutesTtl));
     }
     public function publicUrl(MediaAsset $asset): string
     {

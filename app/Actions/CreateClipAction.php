@@ -11,12 +11,19 @@ class CreateClipAction
     {
         $language  = $data["language"] ?? "en";
         $direction = $this->languageService->getDirection($language)->value;
+        $base = \Illuminate\Support\Str::slug($data["title"] ?? "clip") ?: "clip";
+        $slug = $base;
+        $i = 2;
+        while (Clip::where("slug", $slug)->exists()) {
+            $slug = $base . "-" . $i++;
+        }
         $clip = Clip::create([
             "user_id"          => $data["user_id"],
             "title"            => $data["title"] ?? "Untitled",
             "lyrics_input"     => $data["lyrics"] ?? "",
             "language"         => $language,
             "script_direction" => $direction,
+            "slug"             => $slug,
             "status"           => "processing",
             "visibility"       => "private",
         ]);

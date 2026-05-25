@@ -21,7 +21,7 @@ use App\Http\Controllers\DashboardController;
 // Public
 Route::get("/", function () { return view("welcome"); });
 Route::get("/lang/{code}", [LanguageController::class, "switch"])->name("lang.switch");
-Route::get("/player/{clip}", [PlayerController::class, "show"])->name("player.show");
+Route::get("/player/{slug}", [PlayerController::class, "show"])->name("player.show");
 
 // Auth — guests only
 Route::middleware("guest")->group(function () {

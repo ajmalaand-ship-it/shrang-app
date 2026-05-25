@@ -11,6 +11,7 @@ class Clip extends Model
         "user_id", "title", "lyrics_input", "language",
         "script_direction", "status", "visibility",
         "ai_metadata", "cover_image_key",
+        "slug",
     ];
     protected $casts = [
         "ai_metadata" => "array",
@@ -26,5 +27,9 @@ class Clip extends Model
     public function mediaAssets(): HasMany
     {
         return $this->hasMany(MediaAsset::class);
+    }
+    public function reels(): HasMany
+    {
+        return $this->hasMany(MediaAsset::class)->where("type", "reel_video");
     }
 }
