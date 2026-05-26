@@ -30,20 +30,26 @@
             <div class="sh-card__body studio-processing">
                 <p class="sh-heading">Generating your song...</p>
                 <p class="sh-text-muted">This usually takes 30–180 seconds. Page will refresh automatically.</p>
+                <div class="studio-progress" style="margin-top:1.5rem;"><div class="studio-progress__bar" id="progress-bar" style="width:5%"></div></div>
+                <p class="sh-text-muted" id="progress-msg" style="font-size:0.8rem;margin-top:0.5rem;text-align:center;">Starting...</p>
             </div>
         </div>
         <script>
+        var fakeP=5; var fakeInt=setInterval(function(){if(fakeP<85){fakeP+=Math.random()*2;var b=document.getElementById('progress-bar');if(b)b.style.width=fakeP+'%';}},2000);
         (function(){
             var jobId = '{{ $latestJob ? $latestJob->id : '' }}';
+            var csrfToken = document.querySelector('meta[name=csrf-token]') ? document.querySelector('meta[name=csrf-token]').content : '';
             if (!jobId) { setTimeout(function(){ location.reload(); }, 5000); return; }
             var tries = 0;
             function poll(){
                 tries++;
-                if(tries > 60) return;
-                fetch('/api/jobs/' + jobId + '/status', {headers:{'Accept':'application/json'}})
+                if(tries > 80){ location.reload(); return; }
+                fetch('/api/jobs/' + jobId + '/status', {headers:{'Accept':'application/json','X-CSRF-TOKEN':csrfToken,'X-Requested-With':'XMLHttpRequest'}})
                 .then(function(r){ return r.json(); })
                 .then(function(d){
-                    if(d.status === 'done' || d.status === 'failed'){ location.reload(); }
+                    if(d.progress_pct>0){var b=document.getElementById('progress-bar');if(b)b.style.width=d.progress_pct+'%';}
+                    if(d.progress_message){var m=document.getElementById('progress-msg');if(m)m.textContent=d.progress_message;}
+                    if(d.status === 'done' || d.status === 'failed'){ clearInterval(fakeInt); setTimeout(function(){location.reload();},800); }
                     else { setTimeout(poll, 3000); }
                 })
                 .catch(function(){ setTimeout(poll, 5000); });
@@ -228,6 +234,31 @@
 </div>{{-- end sh-page-wrap --}}
 
 <script>
+// Cover polling - runs when cover is being generated
+(function(){
+    var hasCover = {{ $coverAsset ? 'true' : 'false' }};
+    var sessionMsg = '{{ session("success") }}';
+    if (!hasCover && sessionMsg.indexOf('generated') !== -1) {
+        var clipId = '{{ $clip->id }}';
+        var csrfToken = document.querySelector('meta[name=csrf-token]') ? document.querySelector('meta[name=csrf-token]').content : '';
+        var coverTries = 0;
+        function pollCover(){
+            coverTries++;
+            if(coverTries > 40) return;
+            fetch('/api/clips/' + clipId + '/status', {
+                headers:{'Accept':'application/json','X-CSRF-TOKEN':csrfToken,'X-Requested-With':'XMLHttpRequest'}
+            })
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+                if(d.cover_ready){ location.reload(); }
+                else { setTimeout(pollCover, 4000); }
+            })
+            .catch(function(){ setTimeout(pollCover, 6000); });
+        }
+        setTimeout(pollCover, 4000);
+    }
+})();
+
 function studioShareLink(btn) {
     var url = btn.getAttribute('data-url');
     if (navigator.clipboard) {
