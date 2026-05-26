@@ -56,9 +56,18 @@ class LyriaProvider implements AIProviderInterface
                     if (isset($part["inlineData"]["data"])) {
                         $audioData = $part["inlineData"]["data"];
                     }
+                    if (isset($part["inline_data"]["data"])) {
+                        $audioData = $part["inline_data"]["data"];
+                    }
                     if (isset($part["text"])) {
                         $lyrics = $part["text"];
                     }
+                }
+                if ($audioData === null) {
+                    $finishReason = $data["candidates"][0]["finishReason"] ?? "unknown";
+                    $finishMessage = $data["candidates"][0]["finishMessage"] ?? "No audio returned.";
+                    Log::warning("LyriaProvider: no audio in response", ["finishReason" => $finishReason, "finishMessage" => $finishMessage]);
+                    return ["status" => "error", "error" => "No audio returned. Reason: " . $finishReason . ". " . $finishMessage, "provider" => $this->providerName()];
                 }
                 return ["status" => "done", "audio_data" => $audioData, "lyrics" => $lyrics, "duration_seconds" => 60, "provider" => $this->providerName()];
             }
