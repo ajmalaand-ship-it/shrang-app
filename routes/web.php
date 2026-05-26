@@ -19,7 +19,7 @@ use App\Http\Controllers\Payments\CheckoutController;
 use App\Http\Controllers\DashboardController;
 
 // Public
-Route::get("/", function () { return view("welcome"); });
+Route::get("/", [App\Http\Controllers\HomeController::class, "index"]);
 Route::get("/lang/{code}", [LanguageController::class, "switch"])->name("lang.switch");
 Route::get("/about", fn() => view("pages.static.about"))->name("about");
 Route::get("/how-it-works", fn() => view("pages.static.how-it-works"))->name("how-it-works");
