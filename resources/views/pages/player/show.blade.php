@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.public')
 @section('title', $clip->title . ' — Shrang')
 @section('head_extra')
 <x-og-meta

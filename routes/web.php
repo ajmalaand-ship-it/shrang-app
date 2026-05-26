@@ -21,6 +21,14 @@ use App\Http\Controllers\DashboardController;
 // Public
 Route::get("/", function () { return view("welcome"); });
 Route::get("/lang/{code}", [LanguageController::class, "switch"])->name("lang.switch");
+Route::get("/about", fn() => view("pages.static.about"))->name("about");
+Route::get("/how-it-works", fn() => view("pages.static.how-it-works"))->name("how-it-works");
+Route::get("/pricing", fn() => view("pages.static.pricing"))->name("pricing");
+Route::get("/faq", fn() => view("pages.static.faq"))->name("faq");
+Route::get("/terms", fn() => view("pages.static.terms"))->name("terms");
+Route::get("/privacy", fn() => view("pages.static.privacy"))->name("privacy");
+Route::get("/support", fn() => view("pages.static.support"))->name("support");
+Route::post("/support", [App\Http\Controllers\SupportController::class, "store"])->name("support.store");
 Route::get("/discover", [App\Http\Controllers\DiscoverController::class, "index"])->name("discover");
 Route::post("/discover/{slug}/play", [App\Http\Controllers\DiscoverController::class, "trackPlay"])->name("discover.play");
 Route::post("/discover/{slug}/like", [App\Http\Controllers\DiscoverController::class, "like"])->name("discover.like");

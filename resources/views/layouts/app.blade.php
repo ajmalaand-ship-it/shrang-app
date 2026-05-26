@@ -28,11 +28,21 @@
                 <div class="sh-nav__credits">
                     <strong>{{ auth()->user()->credit_balance }}</strong> credits
                 </div>
-                <a href="{{ route('account') }}" class="sh-btn sh-btn--ghost sh-btn--sm">Account</a>
-                <form method="POST" action="{{ route('logout') }}" style="display:inline;">
-                    @csrf
-                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Log out</button>
-                </form>
+                <div class="sh-nav__account">
+                    <button class="sh-nav__account-btn">
+                        {{ auth()->user()->name }} ▾
+                    </button>
+                    <div class="sh-nav__dropdown">
+                        <a href="{{ route('dashboard') }}">My Clips</a>
+                        <a href="{{ route('credits') }}">Credits & Billing</a>
+                        <a href="{{ route('account') }}">Account Settings</a>
+                        <div class="sh-nav__dropdown-divider"></div>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit">Log out</button>
+                        </form>
+                    </div>
+                </div>
             @endauth
         </div>
     </nav>
@@ -47,6 +57,28 @@
         <a href="{{ route('dashboard') }}">My Clips</a>
     </footer>
 
-    @yield("page_js")
+    @auth
+<nav class="sh-bottom-nav">
+    <div class="sh-bottom-nav__items">
+        <a href="{{ route('create') }}" class="sh-bottom-nav__item {{ request()->routeIs('create*') ? 'active' : '' }}">
+            <span class="sh-bottom-nav__icon">🎵</span>
+            <span>Create</span>
+        </a>
+        <a href="{{ route('discover') }}" class="sh-bottom-nav__item {{ request()->routeIs('discover*') ? 'active' : '' }}">
+            <span class="sh-bottom-nav__icon">🔍</span>
+            <span>Discover</span>
+        </a>
+        <a href="{{ route('dashboard') }}" class="sh-bottom-nav__item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <span class="sh-bottom-nav__icon">📂</span>
+            <span>My Clips</span>
+        </a>
+        <a href="{{ route('account') }}" class="sh-bottom-nav__item {{ request()->routeIs('account*') ? 'active' : '' }}">
+            <span class="sh-bottom-nav__icon">👤</span>
+            <span>Account</span>
+        </a>
+    </div>
+</nav>
+@endauth
+@yield("page_js")
 </body>
 </html>
