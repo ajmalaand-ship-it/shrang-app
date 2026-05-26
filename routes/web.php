@@ -29,6 +29,10 @@ Route::get("/terms", fn() => view("pages.static.terms"))->name("terms");
 Route::get("/privacy", fn() => view("pages.static.privacy"))->name("privacy");
 Route::get("/support", fn() => view("pages.static.support"))->name("support");
 Route::post("/support", [App\Http\Controllers\SupportController::class, "store"])->name("support.store");
+Route::middleware(["auth"])->group(function () {
+    Route::get("/studio/job-status/{job}", [App\Http\Controllers\Api\JobStatusController::class, "show"])->name("studio.job.status");
+    Route::get("/studio/clip-status/{clip}", [App\Http\Controllers\Api\ClipStatusController::class, "show"])->name("studio.clip.status");
+});
 Route::get("/discover", [App\Http\Controllers\DiscoverController::class, "index"])->name("discover");
 Route::post("/discover/{slug}/play", [App\Http\Controllers\DiscoverController::class, "trackPlay"])->name("discover.play");
 Route::post("/discover/{slug}/like", [App\Http\Controllers\DiscoverController::class, "like"])->name("discover.like");
