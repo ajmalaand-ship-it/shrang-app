@@ -31,7 +31,7 @@
                 <p class="sh-heading">Generating your song...</p>
                 <p class="sh-text-muted">This usually takes 30–180 seconds. Page will refresh automatically.</p>
                 <div class="studio-progress" style="margin-top:1.5rem;"><div class="studio-progress__bar studio-progress__bar--pulse" id="progress-bar"></div></div>
-                <p class="sh-text-muted" id="progress-msg" style="font-size:0.8rem;margin-top:0.5rem;text-align:center;">Starting...</p>
+                
             </div>
         </div>
         <script>

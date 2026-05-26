@@ -23,6 +23,7 @@ class JobMonitorController extends Controller
             return back()->with("error", "Only failed jobs can be retried.");
         }
         $jobClass = $job->job_class;
+        if (empty($jobClass) || !class_exists($jobClass)) {
             return back()->with("error", "Job class not found: " . $jobClass);
         }
         $job->update([
