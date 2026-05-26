@@ -68,6 +68,8 @@ Route::middleware(["auth"])->group(function () {
 
     Route::get("/studio/{clip}", [ClipController::class, "show"])->name("studio.show");
     Route::patch("/studio/{clip}/visibility", [ClipController::class, "updateVisibility"])->name("studio.visibility");
+    Route::patch("/studio/{clip}/rename", [ClipController::class, "rename"])->name("studio.rename");
+    Route::delete("/studio/{clip}", [ClipController::class, "destroy"])->name("studio.delete");
     Route::post("/studio/{clip}/cover", [CoverController::class, "store"])->name("studio.cover");
     Route::post("/studio/{clip}/reel", [ReelController::class, "store"])->name("studio.reel");
 

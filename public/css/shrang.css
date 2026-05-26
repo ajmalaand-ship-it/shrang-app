@@ -767,3 +767,30 @@ img { max-width: 100%; display: block; }
     .create-path__header { padding:1rem; }
     .create-path__form { padding:0 1rem 1rem; }
 }
+
+/* ── STUDIO PHASE C ─────────────────────────────────────────── */
+.studio-cover-wrap { display:flex; gap:1.5rem; align-items:flex-start; }
+.studio-cover-preview { flex-shrink:0; width:160px; }
+.studio-cover-preview .studio-cover__img { width:160px; height:160px; object-fit:cover; border-radius:var(--sh-radius-lg); }
+.studio-cover-preview .studio-cover__placeholder { width:160px; height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--sh-dark-3); border-radius:var(--sh-radius-lg); }
+.studio-cover-actions { flex:1; }
+.studio-lyrics { font-size:1rem; line-height:2; white-space:pre-wrap; color:var(--sh-text-primary); }
+.studio-lyrics--rtl { text-align:right; direction:rtl; font-size:1.1rem; line-height:2.2; }
+.studio-lyrics--ltr { text-align:left; direction:ltr; }
+.studio-action-row { display:flex; align-items:center; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--sh-dark-4); gap:1rem; }
+.studio-action-row:last-child { border-bottom:none; }
+.studio-action-row--danger .studio-action-label { color:var(--sh-danger, #e05555); }
+.studio-action-label { font-size:0.875rem; color:var(--sh-text-muted); }
+.studio-rename-form { display:flex; gap:0.5rem; flex:1; }
+.studio-rename-form .sh-input--sm { flex:1; }
+.sh-btn--danger { background:transparent; border:1px solid var(--sh-danger, #e05555); color:var(--sh-danger, #e05555); }
+.sh-btn--danger:hover { background:var(--sh-danger, #e05555); color:#fff; }
+.sh-input--sm { padding:0.4rem 0.75rem; font-size:0.875rem; }
+.sh-select--sm { padding:0.4rem 0.75rem; font-size:0.875rem; }
+@media(max-width:600px){
+    .studio-cover-wrap { flex-direction:column; }
+    .studio-cover-preview { width:100%; }
+    .studio-cover-preview .studio-cover__img { width:100%; height:220px; }
+    .studio-cover-preview .studio-cover__placeholder { width:100%; height:160px; }
+    .studio-rename-form { flex-direction:column; }
+}

@@ -34,4 +34,26 @@ class ClipController extends Controller
         $clip->update(['visibility' => $validated['visibility']]);
         return redirect()->route('studio.show', $clip)->with('success', 'Visibility updated.');
     }
+    public function rename(Request $request, Clip $clip): RedirectResponse
+    {
+        $this->authorize('update', $clip);
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:200'],
+        ]);
+        $clip->update(['title' => $validated['title']]);
+        return redirect()->route('studio.show', $clip)->with('success', 'Clip renamed.');
+    }
+    public function destroy(Request $request, Clip $clip): RedirectResponse
+    {
+        $this->authorize('delete', $clip);
+        $clip->mediaAssets()->each(function ($asset) {
+            if ($asset->storage_key) {
+                \Illuminate\Support\Facades\Storage::disk($asset->storage_disk ?? 'public')->delete($asset->storage_key);
+            }
+            $asset->delete();
+        });
+        $clip->generationJobs()->delete();
+        $clip->delete();
+        return redirect()->route('dashboard')->with('success', 'Clip deleted.');
+    }
 }
