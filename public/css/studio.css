@@ -1,0 +1,287 @@
+/* ================================================================
+   STUDIO.CSS — Clip Studio page only
+   Loaded via @section('head_extra') in studio/index.blade.php
+   Do not add non-studio styles here.
+   ================================================================ */
+
+/* Wrapper */
+.studio-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding-bottom: 4rem;
+}
+
+/* Back link */
+.studio-back {
+    margin-bottom: 1.25rem;
+}
+
+/* Two-column layout on desktop */
+.studio-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    margin-bottom: 1rem;
+}
+
+/* Sticky left column on desktop */
+@media (min-width: 700px) {
+    .studio-left {
+        position: sticky;
+        top: 1.5rem;
+    }
+}
+
+/* Single column on mobile */
+@media (max-width: 699px) {
+    .studio-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── COVER ─────────────────────────────────────────────────────── */
+.studio-cover-block {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    background: #1a1a1a;
+    position: relative;
+}
+
+.studio-cover-block__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.studio-cover-block__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+}
+
+.studio-cover-block__placeholder-icon {
+    width: 72px;
+    height: 72px;
+    background: rgba(232, 115, 42, 0.12);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.studio-cover-block__placeholder-text {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+/* Cover tools card */
+.studio-cover-tools {
+    margin-bottom: 1rem;
+}
+
+.studio-cover-tools .sh-input {
+    margin-bottom: 0.6rem;
+}
+
+/* ── HERO CARD ──────────────────────────────────────────────────── */
+.studio-hero-card {
+    margin-bottom: 1rem;
+}
+
+.studio-clip-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--sh-text-primary);
+    margin: 0 0 0.75rem;
+    line-height: 1.3;
+}
+
+.studio-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Status badge variants */
+.sh-badge--ready    { background: rgba(34,197,94,0.15);  color: #22c55e; }
+.sh-badge--failed   { background: rgba(224,85,85,0.15);  color: #e05555; }
+.sh-badge--processing { background: rgba(232,115,42,0.15); color: #e8732a; }
+
+/* ── AUDIO PLAYER ───────────────────────────────────────────────── */
+.studio-player-block {
+    margin-bottom: 1.25rem;
+}
+
+.studio-player-block__label {
+    font-size: 0.78rem;
+    color: var(--sh-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+}
+
+.studio-player-block__audio {
+    width: 100%;
+    border-radius: 8px;
+    display: block;
+}
+
+/* ── QUICK ACTIONS ──────────────────────────────────────────────── */
+.studio-quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--sh-dark-4);
+}
+
+/* ── MANAGE ─────────────────────────────────────────────────────── */
+.studio-manage-card {
+    margin-bottom: 1rem;
+}
+
+.studio-manage-row {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--sh-dark-4);
+}
+
+.studio-manage-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.studio-manage-row .sh-label {
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.studio-inline-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.studio-inline-form .sh-input--sm {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── DETAILS ────────────────────────────────────────────────────── */
+.studio-details-card {
+    margin-bottom: 1rem;
+}
+
+.studio-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1rem;
+}
+
+.studio-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.studio-meta-label {
+    font-size: 0.7rem;
+    color: var(--sh-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.studio-meta-value {
+    font-size: 0.875rem;
+    color: var(--sh-text-primary);
+    font-weight: 500;
+}
+
+/* ── LYRICS ─────────────────────────────────────────────────────── */
+.studio-lyrics-card {
+    margin-bottom: 1rem;
+}
+
+.studio-lyrics {
+    font-size: 1rem;
+    line-height: 2;
+    color: var(--sh-text-primary);
+    max-width: 680px;
+}
+
+.studio-lyrics--rtl {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Noto Naskh Arabic', 'Vazirmatn', 'Amiri', 'Segoe UI', sans-serif;
+    font-size: 1.15rem;
+    line-height: 2.4;
+    max-width: 100%;
+}
+
+.studio-lyrics--ltr {
+    direction: ltr;
+    text-align: left;
+}
+
+/* ── DANGER ZONE ────────────────────────────────────────────────── */
+.studio-danger-card {
+    border-color: rgba(224, 85, 85, 0.25);
+    margin-bottom: 1rem;
+}
+
+.studio-danger-card .sh-card__header {
+    color: #e05555;
+    border-bottom-color: rgba(224, 85, 85, 0.2);
+}
+
+.studio-danger-warning {
+    font-size: 0.85rem;
+    color: var(--sh-text-muted);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+/* ── PROCESSING STATE ───────────────────────────────────────────── */
+.studio-processing {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.studio-processing .sh-heading {
+    margin-bottom: 0.5rem;
+}
+
+/* ── MOBILE TWEAKS ──────────────────────────────────────────────── */
+@media (max-width: 699px) {
+    .studio-cover-block {
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .studio-clip-title {
+        font-size: 1.15rem;
+    }
+    .studio-meta-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .studio-inline-form {
+        flex-wrap: wrap;
+    }
+    .studio-inline-form .sh-input--sm {
+        width: 100%;
+    }
+    .studio-quick-actions {
+        justify-content: flex-start;
+    }
+}
