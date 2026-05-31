@@ -22,6 +22,8 @@ class AIUsageTracker
                 "latency_ms"        => $data["latency_ms"] ?? null,
                 "status"            => $data["status"] ?? "success",
                 "error_code"        => $data["error_code"] ?? null,
+                "created_at"        => now(),
+                "created_at"        => now(),
             ]);
         } catch (\Exception $e) {
             Log::error("AIUsageTracker failed to write log", [
