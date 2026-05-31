@@ -12,14 +12,21 @@
 <div class="sh-page-wrap player-wrap">
 
     {{-- Cover --}}
+    @php
+        $langNames = ["ps"=>"Pashto","fa"=>"Dari","ur"=>"Urdu","ar"=>"Arabic","hi"=>"Hindi","en"=>"English"];
+        $langLabel = $langNames[$clip->language] ?? strtoupper($clip->language);
+    @endphp
     @if($coverUrl)
     <div class="player-cover">
         <img src="{{ $coverUrl }}" alt="{{ $clip->title }}" class="player-cover__img">
         <div class="player-cover__overlay">
             <h1 class="player-cover__title">{{ $clip->title }}</h1>
+            @php
+                $langNames = ["ps"=>"Pashto","fa"=>"Dari","ur"=>"Urdu","ar"=>"Arabic","hi"=>"Hindi","en"=>"English"];
+                $langLabel = $langNames[$clip->language] ?? strtoupper($clip->language);
+            @endphp
             <div class="player-cover__badges">
-                <span class="sh-badge sh-badge--lang">{{ strtoupper($clip->language) }}</span>
-                @if($clip->script_direction === 'rtl')<span class="sh-badge">RTL</span>@endif
+                <span class="sh-badge sh-badge--lang">{{ $langLabel }}</span>
             </div>
         </div>
     </div>
@@ -27,7 +34,7 @@
     <div class="player-cover player-cover--no-image">
         <h1 class="player-cover__title">{{ $clip->title }}</h1>
         <div class="player-cover__badges">
-            <span class="sh-badge sh-badge--lang">{{ strtoupper($clip->language) }}</span>
+            <span class="sh-badge sh-badge--lang">{{ $langLabel }}</span>
         </div>
     </div>
     @endif
