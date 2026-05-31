@@ -6,6 +6,7 @@ return [
     "lyria" => [
         "api_key"  => env("LYRIA_API_KEY", ""),
         "base_url" => env("LYRIA_BASE_URL", "https://aiplatform.googleapis.com"),
+        "model"    => env("LYRIA_MODEL", "lyria-3-pro-preview"),
         "song_duration_seconds" => 60,
         "bed_duration_seconds"  => 180,
     ],

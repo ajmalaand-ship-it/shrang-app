@@ -1,6 +1,7 @@
 <?php
 namespace App\Jobs;
 use App\Models\Clip;
+use App\Models\GenerationJob;
 use App\Models\MediaAsset;
 use App\Services\AI\GeminiProvider;
 use App\Services\PromptService;
@@ -14,8 +15,8 @@ use Illuminate\Support\Facades\Storage;
 class GenerateCoverImageJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    public int $timeout = 120;
-    public int $tries   = 3;
+    public int $timeout = 180;
+    public int $tries   = 2;
     public function __construct(
         private readonly string $clipId,
         private readonly array  $params
@@ -23,15 +24,21 @@ class GenerateCoverImageJob implements ShouldQueue
     public function handle(PromptService $promptService): void
     {
         $clip = Clip::findOrFail($this->clipId);
+        $genJob = isset($this->params["generation_job_id"])
+            ? GenerationJob::find($this->params["generation_job_id"])
+            : null;
+        if ($genJob) {
+            $genJob->update(["status" => "running", "started_at" => now()]);
+        }
         try {
             $gemini = new GeminiProvider();
             $prompt = $promptService->buildCoverPrompt($this->params);
             $result = $gemini->generateCover(array_merge($this->params, ["prompt" => $prompt]));
             if ($result["status"] === "done" && !empty($result["image_data"])) {
-                $ext        = str_contains($result["mime_type"] ?? "", "jpeg") ? "jpg" : "png";
-                $filename   = "covers/" . $this->clipId . "." . $ext;
+                $ext      = str_contains($result["mime_type"] ?? "", "jpeg") ? "jpg" : "png";
+                $filename = "covers/" . $this->clipId . "." . $ext;
                 Storage::disk("public")->put($filename, base64_decode($result["image_data"]));
-                $coverUrl   = Storage::disk("public")->url($filename);
+                $coverUrl = Storage::disk("public")->url($filename);
                 MediaAsset::where("clip_id", $clip->id)
                     ->where("type", "cover_image")
                     ->update(["is_primary" => false]);
@@ -48,11 +55,32 @@ class GenerateCoverImageJob implements ShouldQueue
                     "is_temp"         => false,
                 ]);
                 $clip->update(["cover_image_key" => $filename]);
+                if ($genJob) {
+                    $genJob->update([
+                        "status"       => "done",
+                        "completed_at" => now(),
+                        "progress_pct" => 100,
+                    ]);
+                }
                 Log::info("Cover image generated", ["clip_id" => $this->clipId, "url" => $coverUrl]);
             } else {
+                if ($genJob) {
+                    $genJob->update([
+                        "status"        => "failed",
+                        "completed_at"  => now(),
+                        "error_message" => $result["error"] ?? "No image data returned",
+                    ]);
+                }
                 Log::error("GenerateCoverImageJob: no image data returned", ["clip_id" => $this->clipId, "result" => $result]);
             }
         } catch (\Exception $e) {
+            if ($genJob) {
+                $genJob->update([
+                    "status"        => "failed",
+                    "completed_at"  => now(),
+                    "error_message" => $e->getMessage(),
+                ]);
+            }
             Log::error("GenerateCoverImageJob failed", ["clip_id" => $this->clipId, "error" => $e->getMessage()]);
             throw $e;
         }

@@ -30,6 +30,20 @@ class Clip extends Model
     {
         return $this->hasMany(MediaAsset::class);
     }
+    public function getDisplayTitleAttribute(): string
+    {
+        if (!empty($this->title)) {
+            return $this->title;
+        }
+        if (!empty($this->lyrics_input)) {
+            $firstLine = trim(strtok($this->lyrics_input, "\n"));
+            if ($firstLine !== "") {
+                return mb_substr($firstLine, 0, 50);
+            }
+        }
+        return "Untitled Clip";
+    }
+
     public function feature() { return $this->hasOne(ClipFeature::class); }
     public function likes() { return $this->hasMany(ClipLike::class); }
     public function stat() { return $this->hasOne(ClipStat::class); }

@@ -3,24 +3,24 @@
 @section('content')
 <div class="sh-page-wrap sh-page-wrap--wide">
 
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
-        <div>
+    <div class="dashboard-header">
+        <div class="dashboard-header__text">
             <h1 class="sh-heading">My Clips</h1>
-            <p class="sh-text-muted">{{ $clips->total() }} clip{{ $clips->total() !== 1 ? 's' : '' }} created</p>
+            <p class="sh-text-muted">{{ $clips->total() }} clip{{ $clips->total() !== 1 ? 's' : '' }}</p>
         </div>
         <a href="{{ route('create') }}" class="sh-btn sh-btn--primary">+ Create New</a>
     </div>
 
     @if(session('success'))
-        <div class="sh-notice sh-notice--success">{{ session('success') }}</div>
+        <div class="sh-notice sh-notice--success dashboard-notice">{{ session('success') }}</div>
     @endif
 
     @if($clips->isEmpty())
         <div class="sh-card">
-            <div class="sh-card__body" style="text-align:center;padding:4rem 2rem;">
-                <div style="font-size:3rem;margin-bottom:1rem;">🎵</div>
-                <p class="sh-heading--sm" style="margin-bottom:0.5rem;">No clips yet</p>
-                <p class="sh-text-muted" style="margin-bottom:1.5rem;">Create your first song from poetry or lyrics.</p>
+            <div class="sh-card__body dashboard-empty">
+                <svg class="dashboard-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                <p class="sh-heading--sm dashboard-empty__title">No clips yet</p>
+                <p class="sh-text-muted dashboard-empty__sub">Create your first song from poetry or lyrics.</p>
                 <a href="{{ route('create') }}" class="sh-btn sh-btn--primary">Create Your First Song</a>
             </div>
         </div>
@@ -28,65 +28,93 @@
         <div class="dashboard-grid">
             @foreach($clips as $clip)
             @php
-                $cover = $clip->mediaAssets()->where('type','cover_image')->where('is_primary',true)->first();
-                $audio = $clip->mediaAssets()->whereIn('type',['song_audio','bed_audio'])->where('is_primary',true)->first();
-                $type  = $audio?->type === 'bed_audio' ? 'Bed Music' : ($audio ? 'Song' : '');
+                $assets    = $clip->mediaAssets->keyBy('type');
+                $cover     = $assets->get('cover_image');
+                $audio     = $assets->get('song_audio') ?? $assets->get('bed_audio') ?? $assets->get('uploaded_audio');
+                $reel      = $assets->get('reel_video');
+                $langLabel = $langNames[$clip->language] ?? strtoupper($clip->language);
+                $typeLabel = 'Song';
+                if ($audio?->type === 'bed_audio')          $typeLabel = 'Bed Music';
+                elseif ($audio?->type === 'uploaded_audio') $typeLabel = 'Uploaded';
             @endphp
             <div class="sh-card dashboard-clip">
 
-                {{-- Cover --}}
+                {{-- Cover preview --}}
                 <a href="{{ route('studio.show', $clip) }}" class="dashboard-clip__cover-link">
-                    @if($cover)
-                        <img src="{{ $cover->cdn_url }}" alt="{{ $clip->title }}" class="dashboard-clip__cover-img">
+                    @if($cover && $cover->cdn_url)
+                        <img src="{{ $cover->cdn_url }}" alt="{{ $clip->display_title }}" class="dashboard-clip__cover-img">
                     @else
                         <div class="dashboard-clip__cover-placeholder">
-                            <span style="font-size:2.5rem;">🎵</span>
+                            <svg class="dashboard-clip__cover-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
                         </div>
                     @endif
-                    {{-- Status overlay for processing/failed --}}
                     @if($clip->status === 'processing')
-                        <div class="dashboard-clip__status-overlay">
+                        <div class="dashboard-clip__overlay">
                             <div class="sh-waveform">
                                 @for($i=0;$i<5;$i++)<div class="sh-waveform__bar" style="animation-delay:{{ $i*0.15 }}s;height:{{ rand(30,90) }}%"></div>@endfor
                             </div>
-                            <p style="font-size:0.75rem;color:#fff;margin-top:0.5rem;">Generating...</p>
+                            <span class="dashboard-clip__overlay-label">Generating...</span>
                         </div>
                     @elseif($clip->status === 'failed')
-                        <div class="dashboard-clip__status-overlay dashboard-clip__status-overlay--failed">
-                            <p style="font-size:0.85rem;color:var(--sh-danger);">Generation failed</p>
+                        <div class="dashboard-clip__overlay dashboard-clip__overlay--failed">
+                            <span class="dashboard-clip__overlay-label">Failed</span>
                         </div>
                     @endif
                 </a>
 
-                {{-- Info --}}
-                <div class="sh-card__body" style="padding:0.875rem;">
-                    <div style="font-size:0.9375rem;font-weight:600;margin-bottom:0.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                        {{ $clip->title ?: 'Untitled' }}
-                    </div>
-                    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;">
-                        <span class="sh-badge sh-badge--lang">{{ strtoupper($clip->language) }}</span>
-                        @if($type)<span class="sh-badge">{{ $type }}</span>@endif
-                        @if($clip->status === 'ready')<span class="sh-badge sh-badge--status-ready">Ready</span>@endif
-                        @if($clip->status === 'processing')<span class="sh-badge sh-badge--status-processing">Processing</span>@endif
-                        @if($clip->status === 'failed')<span class="sh-badge sh-badge--status-failed">Failed</span>@endif
-                        @if($clip->visibility === 'public')<span class="sh-badge">Public</span>@endif
-                    </div>
-                    <p class="sh-text-muted" style="font-size:0.78rem;margin-bottom:0.75rem;">{{ $clip->created_at->diffForHumans() }}</p>
-                    <div style="display:flex;gap:0.5rem;">
-                        <a href="{{ route('studio.show', $clip) }}" class="sh-btn sh-btn--ghost sh-btn--sm" style="flex:1;justify-content:center;">
-                            Open Studio
-                        </a>
-                        @if($clip->visibility === 'public' && $clip->status === 'ready')
-                            <a href="{{ route('player.show', $clip->slug) }}" class="sh-btn sh-btn--ghost sh-btn--sm" target="_blank">
-                                ▶
-                            </a>
+                <div class="dashboard-clip__body">
+
+                    {{-- Title --}}
+                    <p class="dashboard-clip__title">{{ $clip->display_title }}</p>
+
+                    {{-- Badges --}}
+                    <div class="dashboard-clip__badges">
+                        <span class="sh-badge sh-badge--lang">{{ $langLabel }}</span>
+                        <span class="sh-badge">{{ $typeLabel }}</span>
+                        @if($clip->status === 'ready')
+                            <span class="sh-badge sh-badge--ready">Ready</span>
+                        @elseif($clip->status === 'processing')
+                            <span class="sh-badge sh-badge--processing">Processing</span>
+                        @elseif($clip->status === 'failed')
+                            <span class="sh-badge sh-badge--failed">Failed</span>
                         @endif
+                        <span class="sh-badge dashboard-clip__vis-badge dashboard-clip__vis-badge--{{ $clip->visibility }}">{{ ucfirst($clip->visibility) }}</span>
                     </div>
+
+                    {{-- Asset chips --}}
+                    <div class="dashboard-clip__chips">
+                        <span class="dashboard-chip {{ $audio ? 'dashboard-chip--on' : '' }}">Audio</span>
+                        <span class="dashboard-chip {{ $cover ? 'dashboard-chip--on' : '' }}">Cover</span>
+                        <span class="dashboard-chip {{ $reel  ? 'dashboard-chip--on' : '' }}">Reel</span>
+                    </div>
+
+                    {{-- Actions --}}
+                    <div class="dashboard-clip__actions">
+                        <a href="{{ route('studio.show', $clip) }}" class="sh-btn sh-btn--ghost sh-btn--sm dashboard-clip__main-action">Open Studio</a>
+                        <div class="dashboard-clip__icon-actions">
+                            @if($clip->visibility === 'public' && $clip->status === 'ready' && $clip->slug)
+                                <a href="{{ route('player.show', $clip->slug) }}" class="sh-btn sh-btn--ghost sh-btn--sm dashboard-clip__icon-btn" target="_blank" title="Play">
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                </a>
+                            @endif
+                            @if($audio && $audio->cdn_url)
+                                <a href="{{ $audio->cdn_url }}" download class="sh-btn sh-btn--ghost sh-btn--sm dashboard-clip__icon-btn" title="Download Audio">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+                                </a>
+                            @endif
+                            @if($reel && $reel->cdn_url)
+                                <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--ghost sh-btn--sm dashboard-clip__icon-btn" title="Download Reel">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+
                 </div>
             </div>
             @endforeach
         </div>
-        <div style="margin-top:1.5rem;">{{ $clips->links() }}</div>
+        <div class="dashboard-pagination">{{ $clips->links() }}</div>
     @endif
 
 </div>

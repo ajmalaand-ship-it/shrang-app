@@ -36,33 +36,32 @@ class GeminiProvider implements AIProviderInterface
 
     public function generateCover(array $params): array
     {
-        $prompt = $params["prompt"] ?? "A beautiful artistic music album cover";
+        $prompt = $params["prompt"] ?? "A professional music album cover, artistic, square format.";
         $payload = [
-            "contents" => [["parts" => [["text" => $prompt]]]],
-            "generationConfig" => ["responseModalities" => ["IMAGE"]],
+            "instances"  => [["prompt" => $prompt]],
+            "parameters" => ["sampleCount" => 1],
         ];
         try {
-            $url = "{$this->baseUrl}/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key={$this->apiKey}";
-            $response = Http::withHeaders(["Content-Type" => "application/json"])->timeout(60)->post($url, $payload);
+            $url = "{$this->baseUrl}/v1beta/models/imagen-4.0-generate-001:predict";
+            $response = Http::withHeaders([
+                "Content-Type"   => "application/json",
+                "x-goog-api-key" => $this->apiKey,
+            ])->timeout(60)->post($url, $payload);
             if ($response->successful()) {
-                $data = $response->json();
-                $imageData = null;
-                $mimeType  = "image/png";
-                $parts = $data["candidates"][0]["content"]["parts"] ?? [];
-                foreach ($parts as $part) {
-                    if (isset($part["inlineData"]["data"]) && !($part["thought"] ?? false)) {
-                        $imageData = $part["inlineData"]["data"];
-                        $mimeType  = $part["inlineData"]["mimeType"] ?? "image/png";
-                        break;
-                    }
+                $data      = $response->json();
+                $imageData = $data["predictions"][0]["bytesBase64Encoded"] ?? null;
+                $mimeType  = $data["predictions"][0]["mimeType"] ?? "image/png";
+                if ($imageData) {
+                    return ["status" => "done", "image_data" => $imageData, "mime_type" => $mimeType, "provider" => "imagen4"];
                 }
-                return ["status" => "done", "image_data" => $imageData, "mime_type" => $mimeType, "provider" => $this->providerName()];
+                Log::error("Imagen4: no image data in response", ["clip_id" => $params["clip_id"] ?? "unknown"]);
+                return ["status" => "error", "error" => "No image data returned from Imagen 4", "provider" => "imagen4"];
             }
-            Log::error("GeminiProvider cover error", ["status" => $response->status(), "body" => $response->body()]);
-            return ["status" => "error", "error" => $response->body(), "provider" => $this->providerName()];
+            Log::error("Imagen4 cover error", ["http_status" => $response->status(), "body" => substr($response->body(), 0, 300)]);
+            return ["status" => "error", "error" => "Imagen 4 HTTP error: " . $response->status(), "provider" => "imagen4"];
         } catch (\Exception $e) {
-            Log::error("GeminiProvider cover exception", ["message" => $e->getMessage()]);
-            return ["status" => "error", "error" => $e->getMessage(), "provider" => $this->providerName()];
+            Log::error("Imagen4 cover exception", ["message" => $e->getMessage()]);
+            return ["status" => "error", "error" => $e->getMessage(), "provider" => "imagen4"];
         }
     }
 

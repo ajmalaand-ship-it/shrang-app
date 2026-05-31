@@ -22,4 +22,8 @@ class ClipPolicy
     {
         return $user->id === $clip->user_id && $clip->status === 'ready';
     }
+    public function delete(User $user, Clip $clip): bool
+    {
+        return $user->id === $clip->user_id;
+    }
 }

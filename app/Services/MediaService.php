@@ -23,8 +23,13 @@ class MediaService
         if ($asset->cdn_url) {
             return $asset->cdn_url;
         }
-        return \Illuminate\Support\Facades\Storage::disk($asset->storage_disk ?? "public")
-            ->temporaryUrl($asset->storage_key, now()->addMinutes($minutesTtl));
+        $disk = $asset->storage_disk ?? "public";
+        if (in_array($disk, ["s3", "r2", "gcs"])) {
+            return \Illuminate\Support\Facades\Storage::disk($disk)
+                ->temporaryUrl($asset->storage_key, now()->addMinutes($minutesTtl));
+        }
+        return \Illuminate\Support\Facades\Storage::disk($disk)
+            ->url($asset->storage_key);
     }
     public function publicUrl(MediaAsset $asset): string
     {

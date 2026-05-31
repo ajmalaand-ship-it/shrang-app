@@ -13,7 +13,8 @@ class PlayerController extends Controller
             ->where("status", "ready")
             ->firstOrFail();
         $audioAsset = $this->mediaService->primaryAssetForClip($clip->id, "song_audio")
-            ?? $this->mediaService->primaryAssetForClip($clip->id, "bed_audio");
+            ?? $this->mediaService->primaryAssetForClip($clip->id, "bed_audio")
+            ?? $this->mediaService->primaryAssetForClip($clip->id, "uploaded_audio");
         $coverAsset  = $this->mediaService->primaryAssetForClip($clip->id, "cover_image");
         $audioUrl    = $audioAsset ? $this->mediaService->publicUrl($audioAsset) : null;
         $coverUrl    = $coverAsset ? $this->mediaService->publicUrl($coverAsset) : null;

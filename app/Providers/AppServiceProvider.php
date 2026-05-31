@@ -32,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
     }
     public function boot(): void
     {
+        \Illuminate\Pagination\Paginator::useBootstrap();
         $this->app->useLangPath(resource_path("lang"));
         Gate::policy(Clip::class, ClipPolicy::class);
     }

@@ -71,6 +71,7 @@ Route::middleware(["auth"])->group(function () {
     Route::patch("/studio/{clip}/rename", [ClipController::class, "rename"])->name("studio.rename");
     Route::delete("/studio/{clip}", [ClipController::class, "destroy"])->name("studio.delete");
     Route::post("/studio/{clip}/cover", [CoverController::class, "store"])->name("studio.cover");
+    Route::post("/studio/{clip}/cover/upload", [CoverController::class, "upload"])->name("studio.cover.upload");
     Route::post("/studio/{clip}/reel", [ReelController::class, "store"])->name("studio.reel");
 
     Route::get("/credits", [CheckoutController::class, "index"])->name("credits");

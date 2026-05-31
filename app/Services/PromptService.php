@@ -73,6 +73,9 @@ class PromptService
     public function buildSongPrompt(array $params): string
     {
         $lyrics    = $params['lyrics'] ?? '';
+        // Strip invisible Unicode control/format characters from prompt only
+        // Original lyrics in DB and display are never modified
+        $lyrics    = preg_replace('/[\x{200B}-\x{200D}\x{FEFF}\x{00AD}]/u', '', $lyrics);
         $language  = $params['language'] ?? 'en';
         $title     = $params['title'] ?? '';
         $style     = $params['style'] ?? '';
@@ -114,14 +117,55 @@ class PromptService
     }
     public function buildCoverPrompt(array $params): string
     {
-        $lyrics      = $params['lyrics'] ?? '';
-        $title       = $params['title'] ?? '';
-        $description = $params['description'] ?? '';
-        $prompt  = "Generate a music album cover image.\n";
-        if ($title)       $prompt .= "Song title: {$title}\n";
-        if ($description) $prompt .= "Description: {$description}\n";
-        else              $prompt .= "Inspired by these lyrics: {$lyrics}\n";
-        $prompt .= "Style: artistic, modern, suitable for a music streaming platform.\n";
+        $title       = trim($params['title'] ?? '');
+        $lyrics      = trim($params['lyrics'] ?? '');
+        $language    = $params['language'] ?? 'en';
+        $style       = $params['style'] ?? 'artistic';
+        $mood        = $params['mood'] ?? '';
+        $visualDir   = trim($params['visual_direction'] ?? '');
+        $textOnCover = $params['text_on_cover'] ?? 'none';
+
+        $langNames = [
+            'ps' => 'Pashto', 'fa' => 'Dari/Farsi', 'ur' => 'Urdu',
+            'ar' => 'Arabic', 'hi' => 'Hindi', 'en' => 'English',
+        ];
+        $langLabel = $langNames[$language] ?? 'English';
+
+        $styleMap = [
+            'artistic'  => 'artistic music album cover, painterly, expressive',
+            'photo'     => 'photo-realistic scene, cinematic photography',
+            'poetic'    => 'poetic and symbolic, metaphorical imagery',
+            'cultural'  => 'traditional cultural style, respectful and authentic',
+            'cinematic' => 'modern cinematic, dramatic lighting, film poster style',
+            'minimal'   => 'minimal and clean, simple composition, elegant',
+            'dramatic'  => 'dramatic emotional, intense, powerful imagery',
+        ];
+        $styleDesc = $styleMap[$style] ?? $styleMap['artistic'];
+
+        $lyricsExcerpt = '';
+        if ($lyrics) {
+            $lines = array_filter(array_map('trim', explode("\n", $lyrics)));
+            $lyricsExcerpt = implode(' / ', array_slice($lines, 0, 3));
+        }
+
+        $prompt  = "Create a professional music album cover image.\n";
+        $prompt .= "Style: {$styleDesc}.\n";
+        if ($mood)        $prompt .= "Mood: {$mood}.\n";
+        if ($title)       $prompt .= "This is for a {$langLabel} song titled: {$title}.\n";
+        if ($lyricsExcerpt) $prompt .= "Lyric themes: {$lyricsExcerpt}.\n";
+        if ($visualDir)   $prompt .= "Visual direction: {$visualDir}.\n";
+
+        if (in_array($language, ['ps', 'fa', 'ur', 'ar'])) {
+            $prompt .= "Cultural context: This is for a {$langLabel} music artist. ";
+            $prompt .= "The imagery must be respectful, modern, and culturally appropriate. ";
+            $prompt .= "Avoid stereotypes. Use poetic and artistic visual metaphors.\n";
+        }
+        if ($textOnCover === 'none') {
+            $prompt .= "Do not include any text, words, or lettering in the image.\n";
+        } elseif ($textOnCover === 'title' && $title) {
+            $prompt .= "Include the song title as elegant typography: {$title}.\n";
+        }
+        $prompt .= "Square format. High quality, professional music album artwork.\n";
         return trim($prompt);
     }
 }

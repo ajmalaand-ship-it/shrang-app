@@ -862,3 +862,77 @@ img { max-width: 100%; display: block; }
     .studio-inline-form { flex-wrap:wrap; }
     .studio-inline-form .sh-input--sm { width:100%; }
 }
+
+/* ── Dashboard improvements ─────────────────────────────────────── */
+.dashboard-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;}
+.dashboard-empty{text-align:center;padding:4rem 2rem;display:flex;flex-direction:column;align-items:center;}
+.dashboard-clip__title{font-size:0.9rem;font-weight:600;margin-bottom:0.4rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dashboard-clip__badges{display:flex;gap:0.35rem;flex-wrap:wrap;margin-bottom:0.45rem;}
+.dashboard-clip__indicators{display:flex;gap:0.4rem;margin-bottom:0.6rem;}
+.dashboard-clip__dot{font-size:0.65rem;padding:0.15rem 0.45rem;border-radius:20px;background:var(--sh-dark-4);color:var(--sh-text-muted);opacity:0.5;}
+.dashboard-clip__dot--on{background:rgba(34,197,94,0.15);color:#22c55e;opacity:1;}
+.dashboard-clip__actions{display:flex;gap:0.4rem;align-items:center;}
+.dashboard-clip__studio-btn{flex:1;justify-content:center;}
+.dashboard-clip__secondary{display:flex;gap:0.3rem;}
+
+/* ── Dashboard v2 ───────────────────────────────────────────────── */
+.dashboard-notice { margin-bottom: 1rem; }
+.dashboard-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+.dashboard-header__text {}
+.dashboard-pagination { margin-top:1.5rem; }
+.dashboard-empty { text-align:center; padding:4rem 2rem; display:flex; flex-direction:column; align-items:center; }
+.dashboard-empty__icon { width:48px; height:48px; opacity:0.2; margin-bottom:1rem; }
+.dashboard-empty__title { margin-bottom:0.5rem; }
+.dashboard-empty__sub { margin-bottom:1.5rem; }
+
+.dashboard-clip__body { padding:0.75rem; }
+.dashboard-clip__title { font-size:0.9rem; font-weight:600; margin-bottom:0.4rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--sh-text-primary); }
+.dashboard-clip__badges { display:flex; gap:0.3rem; flex-wrap:wrap; margin-bottom:0.45rem; }
+.dashboard-clip__vis-badge--public { background:rgba(34,197,94,0.12); color:#22c55e; }
+.dashboard-clip__vis-badge--private { background:var(--sh-dark-4); color:var(--sh-text-muted); }
+
+.dashboard-clip__chips { display:flex; gap:0.3rem; margin-bottom:0.6rem; }
+.dashboard-chip { font-size:0.62rem; padding:0.12rem 0.5rem; border-radius:20px; background:var(--sh-dark-4); color:var(--sh-text-muted); opacity:0.45; font-weight:500; }
+.dashboard-chip--on { background:rgba(34,197,94,0.12); color:#22c55e; opacity:1; }
+
+.dashboard-clip__actions { display:flex; gap:0.4rem; align-items:center; }
+.dashboard-clip__main-action { flex:1; justify-content:center; text-align:center; }
+.dashboard-clip__icon-actions { display:flex; gap:0.25rem; }
+.dashboard-clip__icon-btn { width:30px; height:30px; padding:0; display:flex; align-items:center; justify-content:center; }
+.dashboard-clip__icon-btn svg { width:13px; height:13px; }
+
+.dashboard-clip__overlay { position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem; }
+.dashboard-clip__overlay--failed { background:rgba(224,92,92,0.15); }
+.dashboard-clip__overlay-label { font-size:0.72rem; color:#fff; }
+.dashboard-clip__cover-placeholder { width:100%; height:100%; background:linear-gradient(145deg,#141414 0%,#1e1a24 100%); display:flex; align-items:center; justify-content:center; }
+.dashboard-clip__cover-icon { width:36px; height:36px; opacity:0.15; }
+
+/* ── Pagination ─────────────────────────────────────────────────── */
+.pagination {
+    display: flex;
+    list-style: none;
+    gap: 0.25rem;
+    padding: 0;
+    margin: 1.5rem 0 0;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.pagination li a,
+.pagination li span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 0.5rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--sh-text-muted);
+    background: var(--sh-dark-2, #161616);
+    border: 1px solid var(--sh-dark-4);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+.pagination li a:hover { background: var(--sh-dark-4); color: var(--sh-text-primary); }
+.pagination li.active span { background: var(--sh-orange); color: #fff; border-color: var(--sh-orange); }
+.pagination li.disabled span { opacity: 0.35; cursor: not-allowed; }

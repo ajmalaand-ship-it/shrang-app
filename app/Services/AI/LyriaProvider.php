@@ -18,7 +18,7 @@ class LyriaProvider implements AIProviderInterface
             "contents" => [["parts" => [["text" => $prompt]]]],
             "generationConfig" => ["responseModalities" => ["AUDIO"]],
         ];
-        return $this->callApi("lyria-3-pro-preview", $payload);
+        return $this->callApi(config("ai.lyria.model", "lyria-3-pro-preview"), $payload);
     }
     public function generateBed(array $params): array
     {
@@ -27,7 +27,7 @@ class LyriaProvider implements AIProviderInterface
             "contents" => [["parts" => [["text" => $prompt]]]],
             "generationConfig" => ["responseModalities" => ["AUDIO"]],
         ];
-        return $this->callApi("lyria-3-pro-preview", $payload);
+        return $this->callApi(config("ai.lyria.model", "lyria-3-pro-preview"), $payload);
     }
     public function processLyrics(array $params): array
     {

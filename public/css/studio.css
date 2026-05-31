@@ -1,95 +1,413 @@
 /* ================================================================
-   STUDIO.CSS - Clip Studio page only
-   Loaded via @section('head_extra') in studio/index.blade.php
-   Do not add non-studio styles here.
+   STUDIO.CSS — Clip Studio page only
+   Single clean file — no appended patches
    ================================================================ */
 
-.studio-wrap { max-width:960px; margin:0 auto; padding-bottom:4rem; }
-.studio-back { margin-bottom:1rem; }
+/* ── Base ───────────────────────────────────────────────────────── */
+.studio-wrap {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+    font-family: 'Vazirmatn', 'Noto Naskh Arabic', 'Segoe UI', sans-serif;
+}
+.studio-notice { margin-bottom: 1rem; }
 
-/* Studio Identity Header */
-.studio-identity { margin-bottom:1.5rem; padding-bottom:1.25rem; border-bottom:1px solid var(--sh-dark-4); }
-.studio-identity__label { font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--sh-orange); font-weight:600; margin-bottom:0.25rem; }
-.studio-identity__sub { font-size:0.85rem; color:var(--sh-text-muted); margin-bottom:0.75rem; }
-.studio-identity__title { font-size:1.5rem; font-weight:700; color:var(--sh-text-primary); margin:0 0 0.75rem; line-height:1.3; }
-
-/* Badge row */
-.studio-badge-row { display:flex; flex-wrap:wrap; gap:0.4rem; }
-.sh-badge--ready    { background:rgba(34,197,94,0.15);  color:#22c55e; }
-.sh-badge--failed   { background:rgba(224,85,85,0.15);  color:#e05555; }
-.sh-badge--processing { background:rgba(232,115,42,0.15); color:#e8732a; }
-
-/* Two-column layout */
-.studio-layout { display:grid; grid-template-columns:280px 1fr; gap:1.5rem; align-items:start; margin-bottom:1rem; }
-
-@media (min-width:700px) {
-    .studio-left { position:sticky; top:1.5rem; }
+/* ── Studio context header ──────────────────────────────────────── */
+.studio-context {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--sh-dark-4);
+}
+.studio-context__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.studio-context__label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--sh-orange);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+.studio-context__sub {
+    font-size: 0.75rem;
+    color: var(--sh-text-muted);
+    opacity: 0.65;
 }
 
-@media (max-width:699px) {
-    .studio-layout { grid-template-columns:1fr; }
-    .studio-identity__title { font-size:1.2rem; }
+/* ── Clip Hero ──────────────────────────────────────────────────── */
+.studio-hero {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    align-items: stretch;
+    background: linear-gradient(135deg, #111 0%, #1c1c1c 100%);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    min-height: 420px;
 }
 
-/* Cover block */
-.studio-cover-block { width:100%; aspect-ratio:1/1; border-radius:12px; overflow:hidden; margin-bottom:1rem; background:#1a1a1a; }
-.studio-cover-block__img { width:100%; height:100%; object-fit:cover; display:block; }
-.studio-cover-block__placeholder { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:linear-gradient(135deg,#1e1e1e 0%,#2a2a2a 100%); }
-.studio-cover-block__placeholder-icon { font-size:2.5rem; opacity:0.4; margin-bottom:0.5rem; }
-.studio-cover-block__placeholder-text { color:#555; font-size:0.8rem; }
+/* Cover */
+.studio-hero__cover {
+    background: #0e0e0e;
+    overflow: hidden;
+    border-right: 1px solid rgba(255,255,255,0.05);
+}
+.studio-hero__cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center top;
+    display: block;
+    background: #0e0e0e;
+}
+.studio-hero__cover-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #111 0%, #1a1a1a 100%);
+    gap: 0.5rem;
+}
+.studio-hero__cover-icon { font-size: 3.5rem; opacity: 0.15; }
+.studio-hero__cover-text { font-size: 0.78rem; color: var(--sh-text-muted); opacity: 0.45; }
 
-/* Cover tools */
-.studio-cover-tools { margin-bottom:1rem; }
+/* Panel */
+.studio-hero__panel {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 2.25rem;
+    gap: 1.15rem;
+}
 
-/* Player */
-.studio-player-card { margin-bottom:1rem; }
-.studio-player-card__label { font-size:0.75rem; color:var(--sh-text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; }
-.studio-player-block__audio { width:100%; border-radius:8px; display:block; }
+/* Identity */
+.studio-hero__identity { display: flex; flex-direction: column; gap: 0.55rem; }
+.studio-hero__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--sh-text-primary);
+    line-height: 1.15;
+    margin: 0;
+    font-family: 'Vazirmatn', 'Noto Naskh Arabic', 'Segoe UI', sans-serif;
+}
+.studio-badge-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.sh-badge--ready      { background: rgba(34,197,94,0.15);  color: #22c55e; }
+.sh-badge--failed     { background: rgba(224,85,85,0.15);  color: #e05555; }
+.sh-badge--processing { background: rgba(232,115,42,0.15); color: #e8732a; }
 
-/* Actions */
-.studio-actions-card { margin-bottom:1rem; }
-.studio-action-primary { margin-bottom:0.75rem; }
-.studio-action-secondary { display:flex; flex-direction:column; gap:0.4rem; }
+/* ── Custom audio player ────────────────────────────────────────── */
+.studio-player {
+    background: #0e0e0e;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+}
+.studio-player__label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--sh-text-muted);
+    margin: 0 0 0.65rem;
+}
+.studio-player__ui {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.studio-player__playbtn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background: var(--sh-orange);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition: background 0.15s, transform 0.1s;
+    padding: 0;
+}
+.studio-player__playbtn:hover { background: #d4621e; transform: scale(1.06); }
+.studio-player__playbtn svg { width: 16px; height: 16px; display: block; }
+.studio-player__progress-wrap { flex: 1; }
+.studio-player__bar {
+    position: relative;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 10px 0;
+}
+.studio-player__bar-fill {
+    position: absolute;
+    left: 0; top: 0;
+    height: 100%;
+    background: var(--sh-orange);
+    border-radius: 4px;
+    width: 0%;
+    pointer-events: none;
+}
+.studio-player__bar-thumb {
+    position: absolute;
+    top: 50%; left: 0%;
+    width: 13px; height: 13px;
+    background: #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px rgba(0,0,0,0.6);
+    pointer-events: none;
+}
+.studio-player__time {
+    font-size: 0.72rem;
+    color: var(--sh-text-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    min-width: 76px;
+    text-align: right;
+}
+.studio-player__native { display: none; }
+.studio-hero__no-audio { margin: 0; }
 
-/* Manage */
-.studio-manage-card { margin-bottom:1rem; }
-.studio-manage-row { padding:0.8rem 0; border-bottom:1px solid var(--sh-dark-4); }
-.studio-manage-row:last-child { border-bottom:none; padding-bottom:0; }
-.studio-manage-row .sh-label { display:block; margin-bottom:0.4rem; }
-.studio-inline-form { display:flex; gap:0.5rem; align-items:center; }
-.studio-inline-form .sh-input--sm { flex:1; min-width:0; }
+/* ── Actions ────────────────────────────────────────────────────── */
+.studio-hero__actions { display: flex; flex-direction: column; gap: 0.5rem; }
+.studio-hero__reel-form { display: contents; }
+.studio-hero__action-primary { width: 100%; justify-content: center; text-align: center; }
+.studio-hero__action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.studio-hero__action-secondary { justify-content: center; text-align: center; }
+.studio-hero__action--muted { opacity: 0.38; cursor: not-allowed; }
+.studio-hero__action-hint {
+    font-size: 0.68rem;
+    color: var(--sh-text-muted);
+    text-align: center;
+    margin: 0;
+    opacity: 0.65;
+}
 
-/* Details */
-.studio-details-card { margin-bottom:1rem; }
-.studio-meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem 1rem; }
-.studio-meta-item { display:flex; flex-direction:column; gap:0.15rem; }
-.studio-meta-label { font-size:0.7rem; color:var(--sh-text-muted); text-transform:uppercase; letter-spacing:0.06em; }
-.studio-meta-value { font-size:0.875rem; color:var(--sh-text-primary); font-weight:500; }
+/* ── Visibility ─────────────────────────────────────────────────── */
+.studio-hero__visibility {
+    margin-top: auto;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.studio-hero__vis-form { display: flex; align-items: center; gap: 0.6rem; }
+.studio-hero__vis-label { font-size: 0.8rem; color: var(--sh-text-muted); white-space: nowrap; }
+.studio-hero__vis-hint { font-size: 0.7rem; color: var(--sh-text-muted); opacity: 0.55; margin: 0; line-height: 1.5; }
 
-/* Lyrics */
-.studio-lyrics-card { margin-bottom:1rem; }
-.studio-lyrics { font-size:1rem; line-height:2; color:var(--sh-text-primary); }
-.studio-lyrics--rtl { direction:rtl; text-align:right; font-family:'Vazirmatn','Amiri','Segoe UI',sans-serif; font-size:1.1rem; line-height:2.4; max-width:100%; display:inline-block; width:100%; }
-.studio-lyrics--ltr { direction:ltr; text-align:left; max-width:680px; }
+/* ── Compact tool rows ──────────────────────────────────────────── */
+.studio-tool-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--sh-dark-2, #161616);
+    border: 1px solid var(--sh-dark-4, #2a2a2a);
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    margin-bottom: 0.75rem;
+}
+.studio-tool-row__label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--sh-text-muted);
+    white-space: nowrap;
+    min-width: 72px;
+}
+.studio-tool-row .studio-inline-form { flex: 1; }
+.studio-tool-row .studio-cover-form  { flex: 1; }
+.studio-tool-row .studio-inline-form .sh-input--sm { flex: 1; }
+.studio-tool-row .studio-cover-input { flex: 1; min-width: 0; }
 
-/* Danger Zone */
-.studio-danger-card { border-color:rgba(224,85,85,0.25); margin-bottom:1rem; }
-.studio-danger-card .sh-card__header { color:#e05555; }
-.studio-danger-warning { font-size:0.85rem; color:var(--sh-text-muted); margin-bottom:1rem; line-height:1.6; }
+/* ── Lyrics ─────────────────────────────────────────────────────── */
+.studio-lyrics-card { margin-bottom: 1rem; }
+.studio-lyrics { color: var(--sh-text-primary); }
+.studio-lyrics--rtl {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Vazirmatn', 'Noto Naskh Arabic', 'Amiri', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.55;
+    white-space: pre-line;
+    max-width: 65%;
+    margin-left: auto;
+    display: block;
+}
+.studio-lyrics--ltr {
+    direction: ltr;
+    text-align: left;
+    font-size: 1rem;
+    line-height: 1.6;
+    white-space: pre-line;
+    max-width: 640px;
+}
+.studio-lyrics-card .sh-card__body { padding-top: 0.75rem; padding-bottom: 0.85rem; }
 
-/* Processing */
-.studio-processing { text-align:center; padding:2rem 1rem; }
-.studio-processing .sh-heading { margin-bottom:0.5rem; }
+/* ── Details ────────────────────────────────────────────────────── */
+.studio-details-card { margin-bottom: 1rem; opacity: 0.88; }
+.studio-meta-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem 1.25rem; }
+.studio-meta-item { display: flex; flex-direction: column; gap: 0.12rem; }
+.studio-meta-label { font-size: 0.72rem; color: var(--sh-text-muted); text-transform: uppercase; letter-spacing: 0.07em; }
+.studio-meta-value { font-size: 0.9rem; color: var(--sh-text-primary); font-weight: 500; }
 
-/* Shared small utilities */
-.sh-input--sm { padding:0.4rem 0.75rem; font-size:0.875rem; }
-.sh-select--sm { padding:0.4rem 0.75rem; font-size:0.875rem; }
-.sh-btn--danger { background:transparent; border:1px solid #e05555; color:#e05555; }
-.sh-btn--danger:hover { background:#e05555; color:#fff; }
+/* ── Danger zone ────────────────────────────────────────────────── */
+.studio-danger-card { border-color: rgba(224,85,85,0.25); margin-bottom: 1rem; }
+.studio-danger-card .sh-card__header { color: #e05555; }
+.studio-danger-warning { font-size: 0.85rem; color: var(--sh-text-muted); margin-bottom: 1rem; line-height: 1.6; }
 
-@media (max-width:699px) {
-    .studio-cover-block { max-width:300px; margin-left:auto; margin-right:auto; }
-    .studio-meta-grid { grid-template-columns:1fr 1fr; }
-    .studio-inline-form { flex-wrap:wrap; }
-    .studio-inline-form .sh-input--sm { width:100%; }
+/* ── Processing ─────────────────────────────────────────────────── */
+.studio-processing { text-align: center; padding: 2rem 1rem; }
+.studio-progress { background: var(--sh-dark-4,#2a2a2a); border-radius: 4px; height: 4px; overflow: hidden; max-width: 400px; margin: 0 auto; }
+.studio-progress__bar { height: 100%; background: var(--sh-orange); border-radius: 4px; width: 40%; }
+.studio-progress__bar--pulse { animation: studioPulse 1.6s ease-in-out infinite; }
+@keyframes studioPulse {
+    0%   { opacity: 1;   width: 30%; }
+    50%  { opacity: 0.7; width: 70%; }
+    100% { opacity: 1;   width: 30%; }
+}
+
+/* ── Shared utilities ───────────────────────────────────────────── */
+.sh-input--sm  { padding: 0.4rem 0.75rem; font-size: 0.875rem; }
+.sh-select--sm { padding: 0.4rem 0.75rem; font-size: 0.875rem; }
+.sh-btn--danger { background: transparent; border: 1px solid #e05555; color: #e05555; }
+.sh-btn--danger:hover { background: #e05555; color: #fff; }
+.studio-inline-form { display: flex; gap: 0.5rem; align-items: center; }
+.studio-inline-form .sh-input--sm { flex: 1; min-width: 0; }
+.studio-cover-form { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.studio-cover-input { flex: 1; min-width: 180px; }
+
+/* ── Mobile ─────────────────────────────────────────────────────── */
+@media (max-width: 699px) {
+    .studio-wrap { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .studio-hero { grid-template-columns: 1fr; min-height: unset; border-radius: 12px; }
+    .studio-hero__cover { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .studio-hero__cover-img { height: 260px; object-fit: cover; }
+    .studio-hero__cover-placeholder { min-height: 200px; }
+    .studio-hero__panel { padding: 1.1rem; gap: 0.9rem; }
+    .studio-hero__title { font-size: 1.3rem; }
+    .studio-hero__action-row { grid-template-columns: 1fr 1fr; }
+    .studio-meta-grid { grid-template-columns: 1fr 1fr; }
+    .studio-lyrics--rtl { max-width: 100%; margin-left: 0; }
+    .studio-tool-row { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+    .studio-tool-row__label { min-width: unset; }
+    .studio-context { flex-wrap: wrap; gap: 0.75rem; }
+}
+
+/* ── Fix: push content below fixed 60px nav ────────────────────── */
+.studio-wrap {
+    padding-top: 80px;
+}
+
+/* ── Deferred polish: hero width, player, tool rows, cover crop ─── */
+
+/* Hero: wider cover column, taller min-height */
+.studio-hero {
+    grid-template-columns: 420px 1fr;
+    min-height: 480px;
+}
+.studio-hero__cover {
+    min-height: 480px;
+}
+
+/* Cover: contain with dark bg so no art is cropped */
+.studio-hero__cover-img {
+    object-fit: contain;
+    object-position: center center;
+    background: #0a0a0a;
+    width: 100%;
+    height: 100%;
+}
+
+/* Audio player: slightly taller, more padding, label more visible */
+.studio-player {
+    padding: 1.1rem 1.25rem;
+}
+.studio-player__label {
+    font-size: 0.72rem;
+    margin-bottom: 0.8rem;
+    opacity: 0.85;
+}
+.studio-player__playbtn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+}
+.studio-player__bar {
+    height: 5px;
+    margin: 12px 0;
+}
+.studio-player__bar-thumb {
+    width: 14px;
+    height: 14px;
+}
+
+/* Tool rows: slightly more padding and breathing room */
+.studio-tool-row {
+    padding: 0.85rem 1.1rem;
+    gap: 1.1rem;
+    margin-bottom: 0.85rem;
+}
+.studio-tool-row__label {
+    font-size: 0.72rem;
+    min-width: 80px;
+}
+
+/* Mobile: cover back to object-fit cover at small sizes */
+@media (max-width: 699px) {
+    .studio-hero { grid-template-columns: 1fr; min-height: unset; }
+    .studio-hero__cover { min-height: unset; }
+    .studio-hero__cover-img { object-fit: cover; object-position: center top; height: 260px; background: #0a0a0a; }
+}
+
+/* ── Cover card grid ────────────────────────────────────────────── */
+.studio-cover-card { margin-bottom: 1.25rem; }
+.studio-cover-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.75rem;
+}
+.studio-optional {
+    font-size: 0.7rem;
+    color: var(--sh-text-muted);
+    font-weight: 400;
+    opacity: 0.7;
+}
+@media (max-width: 699px) {
+    .studio-cover-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Upload own cover ───────────────────────────────────────────── */
+.studio-cover-upload-form { width: 100%; }
+.studio-cover-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.studio-cover-upload-input { display: none; }
+.studio-cover-upload-label { cursor: pointer; white-space: nowrap; }
+.studio-cover-upload-name {
+    font-size: 0.78rem;
+    color: var(--sh-text-muted);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+@media (max-width: 699px) {
+    .studio-cover-upload-row { flex-direction: column; align-items: stretch; }
+    .studio-cover-upload-name { text-align: center; }
 }
