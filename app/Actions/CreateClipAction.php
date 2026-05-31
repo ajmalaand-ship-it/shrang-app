@@ -25,7 +25,7 @@ class CreateClipAction
             "script_direction" => $direction,
             "slug"             => $slug,
             "status"           => "processing",
-            "visibility"       => "private",
+            "visibility"       => $data["visibility"] ?? "private",
         ]);
         $job = GenerationJob::create([
             "user_id"          => $data["user_id"],
