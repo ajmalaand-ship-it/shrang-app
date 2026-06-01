@@ -1,20 +1,21 @@
 <?php
+
 namespace App\Http\Controllers\Creation;
+
 use App\Actions\CreateClipAction;
 use App\Http\Controllers\Controller;
 use App\Jobs\GenerateBedMusicJob;
-use App\Services\AdminSettingsService;
-use App\Services\CreditService;
+use App\Services\GenerationBillingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+
 class BedMusicController extends Controller
 {
     public function __construct(
-        private readonly CreditService $creditService,
+        private readonly GenerationBillingService $billing,
         private readonly CreateClipAction $createClip,
-        private readonly AdminSettingsService $settings
     ) {}
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -25,23 +26,9 @@ class BedMusicController extends Controller
             "purpose"     => ["nullable", "string", "max:100"],
             "visibility"  => ["nullable", "in:public,private"],
         ]);
-        $user       = $request->user();
-        $creditCost = $this->settings->creditCost("bed");
-        $spendable  = $this->creditService->spendableBalance($user);
-        if ($spendable < $creditCost) {
-            return redirect()->route("create")
-                ->withErrors(["credits" => "Insufficient credits. You need {$creditCost} credits but have {$spendable}."]);
-        }
-        $dailyLimit = $this->settings->freeTierDailyLimit("bed");
-        $todayCount = DB::table("generation_jobs")
-            ->where("user_id", $user->id)
-            ->where("job_class", GenerateBedMusicJob::class)
-            ->whereDate("created_at", today())
-            ->count();
-        if ($todayCount >= $dailyLimit) {
-            return redirect()->route("create")
-                ->withErrors(["credits" => "You have reached your daily limit of {$dailyLimit} bed music tracks. Come back tomorrow or purchase more credits."]);
-        }
+
+        $user = $request->user();
+
         $result = $this->createClip->execute([
             "user_id"          => $user->id,
             "title"            => $validated["title"] ?? "Background Music",
@@ -49,15 +36,16 @@ class BedMusicController extends Controller
             "language"         => $validated["language"],
             "job_class"        => GenerateBedMusicJob::class,
             "ai_provider"      => "lyria",
-            "credits_reserved" => $creditCost,
+            "credits_reserved" => 0,
         ]);
-        $reserved = $this->creditService->checkAndReserve(
-            $user, "bed", $result["job"]->id
-        );
-        if (!$reserved) {
+
+        $billing = $this->billing->checkAndReserve($user, "bed", $result["job"]->id);
+
+        if (!$billing["ok"]) {
             return redirect()->route("create")
-                ->withErrors(["credits" => "Could not reserve credits. Please try again."]);
+                ->withErrors(["credits" => $billing["message"]]);
         }
+
         GenerateBedMusicJob::dispatch($result["job"]->id, [
             "user_id"           => $user->id,
             "generation_job_id" => $result["job"]->id,
@@ -67,6 +55,7 @@ class BedMusicController extends Controller
             "purpose"           => $validated["purpose"] ?? "",
             "title"             => $validated["title"] ?? "Background Music",
         ])->onQueue("ai-generation");
+
         return redirect()->route("studio.show", $result["clip"]->id);
     }
 }
