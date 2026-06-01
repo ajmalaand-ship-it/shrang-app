@@ -7,6 +7,7 @@ use App\Services\AdminSettingsService;
 use App\Services\CreditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 class BedMusicController extends Controller
 {
     public function __construct(
@@ -30,6 +31,16 @@ class BedMusicController extends Controller
         if ($spendable < $creditCost) {
             return redirect()->route("create")
                 ->withErrors(["credits" => "Insufficient credits. You need {$creditCost} credits but have {$spendable}."]);
+        }
+        $dailyLimit = $this->settings->freeTierDailyLimit("bed");
+        $todayCount = DB::table("generation_jobs")
+            ->where("user_id", $user->id)
+            ->where("job_class", GenerateBedMusicJob::class)
+            ->whereDate("created_at", today())
+            ->count();
+        if ($todayCount >= $dailyLimit) {
+            return redirect()->route("create")
+                ->withErrors(["credits" => "You have reached your daily limit of {$dailyLimit} bed music tracks. Come back tomorrow or purchase more credits."]);
         }
         $result = $this->createClip->execute([
             "user_id"          => $user->id,
