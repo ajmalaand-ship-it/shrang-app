@@ -16,13 +16,20 @@ class PlayerController extends Controller
             ?? $this->mediaService->primaryAssetForClip($clip->id, "bed_audio")
             ?? $this->mediaService->primaryAssetForClip($clip->id, "uploaded_audio");
         $coverAsset  = $this->mediaService->primaryAssetForClip($clip->id, "cover_image");
+        $reelAsset   = $this->mediaService->primaryAssetForClip($clip->id, "reel_video");
         $audioUrl    = $audioAsset ? $this->mediaService->publicUrl($audioAsset) : null;
         $coverUrl    = $coverAsset ? $this->mediaService->publicUrl($coverAsset) : null;
+        $reelUrl     = $reelAsset ? $this->mediaService->publicUrl($reelAsset) : null;
         $downloadUrl = $audioAsset ? $this->mediaService->signedDownloadUrl($audioAsset) : null;
         $shareUrl    = route("player.show", $clip->slug);
         $embedCode   = '<iframe src="' . route("player.show", $clip->slug) . '" width="100%" height="180" frameborder="0" allow="autoplay"></iframe>';
+        // OG image smart selection: reel thumbnail > cover > null
+        $ogImageUrl  = $coverUrl;
+        if ($reelUrl) {
+            $ogImageUrl = $reelUrl;
+        }
         return view("pages.player.show", compact(
-            "clip", "audioUrl", "coverUrl", "downloadUrl", "shareUrl", "embedCode"
+            "clip", "audioUrl", "coverUrl", "reelUrl", "downloadUrl", "shareUrl", "embedCode", "ogImageUrl"
         ));
     }
 }
