@@ -5,8 +5,10 @@ use App\Models\User;
 use App\Services\AdminSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use App\Mail\WelcomeMail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 class RegisterController extends Controller
 {
@@ -36,6 +38,15 @@ class RegisterController extends Controller
             "is_active"          => true,
         ]);
         Auth::login($user);
+
+        // Send welcome email queued — does not block registration
+        try {
+            Mail::to($user->email)->queue(new WelcomeMail($user, $bonus));
+        } catch (\Exception $e) {
+            // Email failure must never break registration
+            \Illuminate\Support\Facades\Log::warning('Welcome email failed: ' . $e->getMessage());
+        }
+
         return redirect()->route("create")->with("success", "Welcome to Shrang! You have " . $bonus . " free credits.");
     }
 }
