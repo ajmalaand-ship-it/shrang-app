@@ -4,7 +4,7 @@
 <x-og-meta
     :title="$clip->display_title . ' — Shrang'"
     :description="Str::limit($clip->lyrics_input, 160)"
-    :imageUrl="$ogImageUrl ?? ''"
+    :imageUrl="$coverUrl ?? ''"
     :pageUrl="$shareUrl"
 />
 @endsection
