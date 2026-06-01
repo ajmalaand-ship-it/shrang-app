@@ -1282,3 +1282,55 @@ img { max-width: 100%; display: block; }
 .studio-nba__label--warn {
     color: var(--sh-danger, #e05555);
 }
+
+/* ── Studio creation state timeline ─────────────────────────── */
+.studio-timeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 0 0 1.5rem 0;
+    padding: 1rem 1.5rem;
+    background: var(--sh-surface, rgba(255,255,255,0.03));
+    border-radius: 0.75rem;
+    border: 1px solid var(--sh-border);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+.studio-timeline__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+.studio-timeline__dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    border: 2px solid var(--sh-border);
+    background: transparent;
+}
+.studio-timeline__step--done .studio-timeline__dot {
+    background: var(--sh-primary);
+    border-color: var(--sh-primary);
+}
+.studio-timeline__label {
+    font-size: 0.7rem;
+    color: var(--sh-text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+}
+.studio-timeline__step--done .studio-timeline__label {
+    color: var(--sh-text);
+}
+.studio-timeline__line {
+    flex: 1;
+    height: 2px;
+    background: var(--sh-border);
+    min-width: 1.5rem;
+    margin-bottom: 1rem;
+}
+.studio-timeline__line--done {
+    background: var(--sh-primary);
+}

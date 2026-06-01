@@ -98,6 +98,35 @@ $displayTitle = $clip->display_title;
 {{-- ═══════════════════ READY ═══════════════════ --}}
 @else
 
+
+{{-- CREATION STATE TIMELINE --}}
+<div class="studio-timeline">
+    <div class="studio-timeline__step studio-timeline__step--done">
+        <div class="studio-timeline__dot"></div>
+        <span class="studio-timeline__label">Lyrics</span>
+    </div>
+    <div class="studio-timeline__line studio-timeline__line--done"></div>
+    <div class="studio-timeline__step {{ $audioAsset ? 'studio-timeline__step--done' : 'studio-timeline__step--missing' }}">
+        <div class="studio-timeline__dot"></div>
+        <span class="studio-timeline__label">Audio</span>
+    </div>
+    <div class="studio-timeline__line {{ $coverAsset ? 'studio-timeline__line--done' : '' }}"></div>
+    <div class="studio-timeline__step {{ $coverAsset ? 'studio-timeline__step--done' : 'studio-timeline__step--missing' }}">
+        <div class="studio-timeline__dot"></div>
+        <span class="studio-timeline__label">Cover</span>
+    </div>
+    <div class="studio-timeline__line {{ $reel ? 'studio-timeline__line--done' : '' }}"></div>
+    <div class="studio-timeline__step {{ $reel ? 'studio-timeline__step--done' : 'studio-timeline__step--missing' }}">
+        <div class="studio-timeline__dot"></div>
+        <span class="studio-timeline__label">Reel</span>
+    </div>
+    <div class="studio-timeline__line {{ $clip->visibility === 'public' ? 'studio-timeline__line--done' : '' }}"></div>
+    <div class="studio-timeline__step {{ $clip->visibility === 'public' ? 'studio-timeline__step--done' : 'studio-timeline__step--missing' }}">
+        <div class="studio-timeline__dot"></div>
+        <span class="studio-timeline__label">Shared</span>
+    </div>
+</div>
+
 {{-- CLIP HERO --}}
 <div class="studio-hero">
 
