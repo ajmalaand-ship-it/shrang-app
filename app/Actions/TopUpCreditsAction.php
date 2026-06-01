@@ -54,8 +54,9 @@ class TopUpCreditsAction
             ]);
 
             $order->update([
-                "status"  => "paid",
-                "paid_at" => now(),
+                "status"                   => "paid",
+                "paid_at"                  => now(),
+                "stripe_payment_intent_id" => $paymentIntentId,
             ]);
 
             Log::info("TopUpCreditsAction: credits added", [

@@ -54,10 +54,6 @@
                     <input type="number" name="refund_amount_cents" class="sh-input" min="0" placeholder="Leave blank if not applicable">
                 </div>
                 <div class="sh-field">
-                    <label class="sh-label">Stripe Refund ID — optional</label>
-                    <input type="text" name="stripe_refund_id" class="sh-input" placeholder="re_...">
-                </div>
-                <div class="sh-field">
                     <label class="sh-label">Credits Adjustment — optional (negative to remove, positive to add)</label>
                     <input type="number" name="credits_adjustment" class="sh-input" placeholder="e.g. -50 to remove 50 credits">
                 </div>

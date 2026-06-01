@@ -7,6 +7,8 @@ use App\Models\AuditLog;
 use App\Models\PaymentOrder;
 use App\Services\CreditService;
 use Illuminate\Http\Request;
+use Stripe\Stripe;
+use Stripe\Refund;
 
 class PaymentController extends Controller
 {
@@ -30,8 +32,7 @@ class PaymentController extends Controller
     {
         $validated = $request->validate([
             'refund_status'       => ['required', 'in:refunded,partially_refunded,disputed,manually_corrected'],
-            'refund_amount_cents' => ['nullable', 'integer', 'min:0'],
-            'stripe_refund_id'    => ['nullable', 'string', 'max:100'],
+            'refund_amount_cents' => ['nullable', 'integer', 'min:1'],
             'refund_reason'       => ['required', 'string', 'min:5', 'max:1000'],
             'credits_adjustment'  => ['nullable', 'integer'],
         ]);
@@ -42,10 +43,38 @@ class PaymentController extends Controller
             'status'              => $payment->status,
         ];
 
+        $stripeRefundId = null;
+
+        // Call Stripe Refund API for monetary refunds
+        if (in_array($validated['refund_status'], ['refunded', 'partially_refunded'])) {
+            $intentId = $payment->stripe_payment_intent_id;
+
+            if (!$intentId || !str_starts_with($intentId, 'pi_')) {
+                return redirect()->route('admin.payments.show', $payment)
+                    ->withErrors(['refund' => 'Cannot refund: no valid Stripe Payment Intent ID on record. The webhook may not have processed correctly for this payment.']);
+            }
+
+            try {
+                Stripe::setApiKey(config('services.stripe.secret'));
+
+                $params = ['payment_intent' => $intentId];
+                if (!empty($validated['refund_amount_cents'])) {
+                    $params['amount'] = $validated['refund_amount_cents'];
+                }
+
+                $stripeRefund  = Refund::create($params);
+                $stripeRefundId = $stripeRefund->id;
+
+            } catch (\Exception $e) {
+                return redirect()->route('admin.payments.show', $payment)
+                    ->withErrors(['refund' => 'Stripe refund failed: ' . $e->getMessage()]);
+            }
+        }
+
         $payment->update([
             'refund_status'       => $validated['refund_status'],
-            'refund_amount_cents' => $validated['refund_amount_cents'] ?? null,
-            'stripe_refund_id'    => $validated['stripe_refund_id'] ?? null,
+            'refund_amount_cents' => $validated['refund_amount_cents'] ?? $payment->amount_cents,
+            'stripe_refund_id'    => $stripeRefundId,
             'refund_reason'       => $validated['refund_reason'],
             'refunded_at'         => now(),
             'status'              => in_array($validated['refund_status'], ['refunded', 'partially_refunded'])
@@ -72,6 +101,7 @@ class PaymentController extends Controller
             'after'       => [
                 'refund_status'       => $validated['refund_status'],
                 'refund_amount_cents' => $validated['refund_amount_cents'] ?? null,
+                'stripe_refund_id'    => $stripeRefundId,
                 'credits_adjustment'  => $validated['credits_adjustment'] ?? 0,
                 'reason'              => $validated['refund_reason'],
             ],
