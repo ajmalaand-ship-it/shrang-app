@@ -34,6 +34,7 @@ Route::prefix("admin")->name("admin.")->middleware(["auth", "admin", "audit"])->
     Route::post("/packages", [\App\Http\Controllers\Admin\CreditPackageController::class, "store"])->name("packages.store");
     Route::patch("/packages/{package}", [\App\Http\Controllers\Admin\CreditPackageController::class, "update"])->name("packages.update");
     Route::patch("/packages/{package}/toggle", [\App\Http\Controllers\Admin\CreditPackageController::class, "toggle"])->name("packages.toggle");
+    Route::delete("/packages/{package}", [\App\Http\Controllers\Admin\CreditPackageController::class, "destroy"])->name("packages.destroy");
     Route::get("/discover", [App\Http\Controllers\Admin\DiscoverController::class, "index"])->name("discover.index");
     Route::post("/discover/{clip}/feature", [App\Http\Controllers\Admin\DiscoverController::class, "feature"])->name("discover.feature");
     Route::delete("/discover/{clip}/unfeature", [App\Http\Controllers\Admin\DiscoverController::class, "unfeature"])->name("discover.unfeature");
