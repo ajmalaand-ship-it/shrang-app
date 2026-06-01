@@ -25,9 +25,10 @@ class ProcessWebhookJob implements ShouldQueue
             $payload = $event->payload;
             $type    = $payload["type"] ?? "";
             if ($type === "payment_intent.succeeded") {
-                $intentId = $payload["data"]["object"]["id"] ?? null;
+                $intentId       = $payload["data"]["object"]["id"] ?? null;
+                $sessionId      = $payload["data"]["object"]["payment_details"]["order_reference"] ?? null;
                 if ($intentId) {
-                    $topUp->execute($intentId);
+                    $topUp->execute($intentId, $sessionId);
                 }
             }
             $event->update([
