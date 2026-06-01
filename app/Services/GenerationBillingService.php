@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AiUsageLog;
 use App\Models\User;
 
 class GenerationBillingService
@@ -19,6 +20,15 @@ class GenerationBillingService
      */
     public function checkAndReserve(User $user, string $jobType, string $generationJobId): array
     {
+        $cap        = $this->settings->dailySpendCap();
+        $todaySpend = AiUsageLog::whereDate("created_at", today())->sum("provider_cost_usd");
+        if ($cap > 0 && $todaySpend >= $cap) {
+            return [
+                'ok'      => false,
+                'message' => "Daily AI spend cap of ${$cap} reached. Generations are paused until tomorrow.",
+            ];
+        }
+
         $cost      = $this->settings->creditCost($jobType);
         $spendable = $this->credits->spendableBalance($user);
 

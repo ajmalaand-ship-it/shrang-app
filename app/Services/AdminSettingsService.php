@@ -36,6 +36,11 @@ class AdminSettingsService
     {
         return (int) $this->get("free_tier_daily_{$type}", config("credits.free_tier.daily_{$type}_limit", 2));
     }
+    public function dailySpendCap(): float
+    {
+        return (float) $this->get("daily_spend_cap_usd", 50);
+    }
+
     public function flush(string $key): void
     {
         Cache::forget("admin_setting:{$key}");
