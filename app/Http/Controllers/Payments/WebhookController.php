@@ -40,6 +40,7 @@ class WebhookController extends Controller
             "payload"            => $eventData,
             "signature_verified" => $verified,
             "status"             => "received",
+            "created_at"         => now(),
         ]);
         ProcessWebhookJob::dispatch($webhookEvent->id)
             ->onQueue("notifications");
