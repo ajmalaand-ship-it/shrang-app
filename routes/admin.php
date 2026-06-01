@@ -18,6 +18,7 @@ Route::prefix("admin")->name("admin.")->middleware(["auth", "admin", "audit"])->
     Route::post("/users/{user}/credits", [UserController::class, "adjustCredits"])->name("users.credits");
 
     Route::get("/jobs", [JobMonitorController::class, "index"])->name("jobs.index");
+    Route::post("/jobs/{job}/retry", [JobMonitorController::class, "retry"])->name("jobs.retry");
 
     Route::get("/ai-usage", [AiUsageController::class, "index"])->name("ai-usage.index");
 
