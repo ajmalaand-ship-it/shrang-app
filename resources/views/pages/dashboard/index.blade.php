@@ -15,13 +15,32 @@
         <div class="sh-notice sh-notice--success dashboard-notice">{{ session('success') }}</div>
     @endif
 
+    {{-- Filter tabs --}}
+    <div class="dashboard-filters">
+        <a href="{{ route('dashboard') }}" class="dashboard-filters__tab {{ $filter === 'all' ? 'dashboard-filters__tab--active' : '' }}">All</a>
+        <a href="{{ route('dashboard', ['filter' => 'ready']) }}" class="dashboard-filters__tab {{ $filter === 'ready' ? 'dashboard-filters__tab--active' : '' }}">Ready</a>
+        <a href="{{ route('dashboard', ['filter' => 'failed']) }}" class="dashboard-filters__tab {{ $filter === 'failed' ? 'dashboard-filters__tab--active' : '' }}">Failed</a>
+    </div>
+
     @if($clips->isEmpty())
         <div class="sh-card">
             <div class="sh-card__body dashboard-empty">
                 <svg class="dashboard-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                <p class="sh-heading--sm dashboard-empty__title">No clips yet</p>
-                <p class="sh-text-muted dashboard-empty__sub">Create your first song from poetry or lyrics.</p>
-                <a href="{{ route('create') }}" class="sh-btn sh-btn--primary">Create Your First Song</a>
+                <p class="sh-heading--sm dashboard-empty__title">
+                    @if($filter === 'ready') No ready clips yet
+                    @elseif($filter === 'failed') No failed clips
+                    @else No clips yet
+                    @endif
+                </p>
+                <p class="sh-text-muted dashboard-empty__sub">
+                    @if($filter === 'ready') Your finished songs will appear here.
+                    @elseif($filter === 'failed') Great — nothing has gone wrong.
+                    @else Create your first song from poetry or lyrics.
+                    @endif
+                </p>
+                @if($filter === 'all')
+                    <a href="{{ route('create') }}" class="sh-btn sh-btn--primary">Create Your First Song</a>
+                @endif
             </div>
         </div>
     @else
