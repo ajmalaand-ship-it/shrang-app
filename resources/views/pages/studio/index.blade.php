@@ -93,9 +93,12 @@ $displayTitle = $clip->display_title;
 {{-- CLIP HERO --}}
 <div class="studio-hero">
 
-    {{-- Cover --}}
+    {{-- Cover / Reel (smart asset hierarchy: reel > cover > placeholder) --}}
     <div class="studio-hero__cover">
-        @if($coverAsset && $coverAsset->cdn_url)
+        @if($reel && $reel->cdn_url)
+            <video class="studio-hero__reel-preview" src="{{ $reel->cdn_url }}" controls playsinline loop></video>
+            <p class="studio-hero__reel-label">Reel Preview</p>
+        @elseif($coverAsset && $coverAsset->cdn_url)
             <img src="{{ $coverAsset->cdn_url }}" alt="{{ $displayTitle }}" class="studio-hero__cover-img">
         @else
             <div class="studio-hero__cover-placeholder">

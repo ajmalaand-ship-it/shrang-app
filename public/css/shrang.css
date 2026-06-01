@@ -1209,3 +1209,19 @@ img { max-width: 100%; display: block; }
     color: #fff;
     border-color: var(--sh-primary);
 }
+
+/* ── Studio reel preview (primary asset when reel exists) ────── */
+.studio-hero__reel-preview {
+    width: 100%;
+    border-radius: 0.75rem;
+    display: block;
+    background: #000;
+    max-height: 480px;
+    object-fit: contain;
+}
+.studio-hero__reel-label {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--sh-text-muted);
+    margin-top: 0.5rem;
+}
