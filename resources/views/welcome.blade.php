@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Shrang — Turn Your Poetry Into Original Music')
+@section('title', 'Shrang — Turn Any Words Into Original Music')
 
 @section('content')
 
@@ -8,14 +8,14 @@
 <section class="home-hero">
     <div class="home-hero__inner">
         <div class="home-hero__badge">● Powered by Google Lyria 3 AI</div>
-        <h1 class="home-hero__headline-en">Turn Your Poetry Into <em>Original Music</em></h1>
-        <p class="home-hero__sub">Create AI-generated songs from your Pashto, Dari, Urdu, Arabic, Hindi, and English lyrics — in seconds.</p>
+        <h1 class="home-hero__headline-en">Turn Any Words Into <em>Original Music</em></h1>
+        <p class="home-hero__sub">Paste a poem, write lyrics, share a script, or type a few lines — Shrang turns your words into an original song, background music, or shareable reel. In Pashto, Dari, Urdu, Arabic, Hindi, or English.</p>
         <div class="home-hero__actions">
             @auth
-                <a href="{{ route('create') }}" class="pub-nav__cta home-hero__cta">Create New Song</a>
+                <a href="{{ route('create') }}" class="sh-btn sh-btn--primary home-hero__cta">Create New</a>
                 <a href="{{ route('dashboard') }}" class="home-hero__ghost">My Clips</a>
             @else
-                <a href="{{ route('register') }}" class="pub-nav__cta home-hero__cta">Create Your Song Free</a>
+                <a href="{{ route('register') }}" class="sh-btn sh-btn--primary home-hero__cta">Start Free — No Sign Up Needed</a>
                 <a href="#how-it-works" class="home-hero__ghost">See how it works</a>
             @endauth
         </div>
@@ -84,7 +84,7 @@
     <div class="home-section__inner">
         <p class="home-section__label">Simple Process</p>
         <h3 class="home-section__title">How Shrang Works</h3>
-        <p class="home-section__sub">From poetry to music in three simple steps</p>
+        <p class="home-section__sub">From any words to music, background sound, or a shareable reel</p>
         <div class="home-steps">
             <div class="home-step">
                 <div class="home-step__number">١</div>
@@ -133,7 +133,7 @@
                 <div class="home-pricing__free-credits">20 Credits</div>
                 <p class="home-pricing__free-desc">Every new account gets 20 free credits — enough to create 2 songs or 4 background music tracks.</p>
                 @guest
-                <a href="{{ route('register') }}" class="pub-nav__cta" style="display:inline-block;margin-top:1rem;">Get Started Free</a>
+                <a href="{{ route('register') }}" class="sh-btn sh-btn--primary" style="margin-top:1rem;">Get Started Free</a>
                 @endguest
             </div>
             <div class="home-pricing__packages">
