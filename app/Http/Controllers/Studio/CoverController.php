@@ -1,16 +1,24 @@
 <?php
+
 namespace App\Http\Controllers\Studio;
+
 use App\Http\Controllers\Controller;
 use App\Jobs\GenerateCoverImageJob;
 use App\Models\Clip;
 use App\Models\GenerationJob;
 use App\Models\MediaAsset;
+use App\Services\GenerationBillingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+
 class CoverController extends Controller
 {
+    public function __construct(
+        private readonly GenerationBillingService $billing,
+    ) {}
+
     public function upload(Request $request, Clip $clip): RedirectResponse
     {
         $this->authorize("update", $clip);
@@ -37,11 +45,9 @@ class CoverController extends Controller
         }
         $fileSize = filesize($fullPath);
         $coverUrl = Storage::disk("public")->url($filename);
-        // Mark all previous covers as not primary
         MediaAsset::where("clip_id", $clip->id)
             ->where("type", "cover_image")
             ->update(["is_primary" => false]);
-        // Create new media asset
         MediaAsset::create([
             "clip_id"         => $clip->id,
             "user_id"         => $request->user()->id,
@@ -54,11 +60,11 @@ class CoverController extends Controller
             "is_primary"      => true,
             "is_temp"         => false,
         ]);
-        // Update clip cover key
         $clip->update(["cover_image_key" => $filename]);
         return redirect()->route("studio.show", $clip)
             ->with("success", "Cover image uploaded successfully.");
     }
+
     public function store(Request $request, Clip $clip): RedirectResponse
     {
         $this->authorize("update", $clip);
@@ -78,16 +84,24 @@ class CoverController extends Controller
             "credits_reserved" => 0,
         ]);
 
+        $billing = $this->billing->checkAndReserve($request->user(), "cover", $generationJob->id);
+
+        if (!$billing["ok"]) {
+            $generationJob->delete();
+            return redirect()->route("studio.show", $clip)
+                ->withErrors(["credits" => $billing["message"]]);
+        }
+
         GenerateCoverImageJob::dispatch($clip->id, [
-            "user_id"          => $request->user()->id,
-            "generation_job_id"=> $generationJob->id,
-            "title"            => $clip->title,
-            "lyrics"           => $clip->lyrics_input,
-            "language"         => $clip->language,
-            "style"            => $validated["style"] ?? "artistic",
-            "mood"             => $validated["mood"] ?? "",
-            "visual_direction" => $validated["visual_direction"] ?? "",
-            "text_on_cover"    => $validated["text_on_cover"] ?? "none",
+            "user_id"           => $request->user()->id,
+            "generation_job_id" => $generationJob->id,
+            "title"             => $clip->title,
+            "lyrics"            => $clip->lyrics_input,
+            "language"          => $clip->language,
+            "style"             => $validated["style"] ?? "artistic",
+            "mood"              => $validated["mood"] ?? "",
+            "visual_direction"  => $validated["visual_direction"] ?? "",
+            "text_on_cover"     => $validated["text_on_cover"] ?? "none",
         ])->onQueue("ai-generation");
 
         return redirect()->route("studio.show", $clip)
