@@ -1,49 +1,36 @@
 <?php
+
 namespace App\Http\Controllers\Creation;
+
 use App\Actions\CreateClipAction;
 use App\Http\Controllers\Controller;
 use App\Jobs\GenerateSongJob;
-use App\Services\AdminSettingsService;
-use App\Services\CreditService;
+use App\Services\GenerationBillingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+
 class SongController extends Controller
 {
     public function __construct(
-        private readonly CreditService $creditService,
+        private readonly GenerationBillingService $billing,
         private readonly CreateClipAction $createClip,
-        private readonly AdminSettingsService $settings
     ) {}
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            "title"             => ["nullable", "string", "max:200"],
-            "lyrics"            => ["required", "string", "max:5000"],
-            "language"          => ["required", "in:ps,fa,ur,ar,hi,en"],
-            "style"             => ["nullable", "string", "max:100"],
-            "voice"             => ["nullable", "in:male,female,no_preference"],
-            "creative_direction"=> ["nullable", "string", "max:500"],
-            "visibility"        => ["nullable", "in:public,private"],
-            "legal"             => ["required", "accepted"],
+            "title"              => ["nullable", "string", "max:200"],
+            "lyrics"             => ["required", "string", "max:5000"],
+            "language"           => ["required", "in:ps,fa,ur,ar,hi,en"],
+            "style"              => ["nullable", "string", "max:100"],
+            "voice"              => ["nullable", "in:male,female,no_preference"],
+            "creative_direction" => ["nullable", "string", "max:500"],
+            "visibility"         => ["nullable", "in:public,private"],
+            "legal"              => ["required", "accepted"],
         ]);
+
         $user = $request->user();
-        $creditCost = $this->settings->creditCost("song");
-        $spendable  = $this->creditService->spendableBalance($user);
-        if ($spendable < $creditCost) {
-            return redirect()->route("create")
-                ->withErrors(["credits" => "Insufficient credits. You need {$creditCost} credits but have {$spendable}."]);
-        }
-        $dailyLimit = $this->settings->freeTierDailyLimit("song");
-        $todayCount = DB::table("generation_jobs")
-            ->where("user_id", $user->id)
-            ->where("job_class", GenerateSongJob::class)
-            ->whereDate("created_at", today())
-            ->count();
-        if ($todayCount >= $dailyLimit) {
-            return redirect()->route("create")
-                ->withErrors(["credits" => "You have reached your daily limit of {$dailyLimit} songs. Come back tomorrow or purchase more credits."]);
-        }
+
         $result = $this->createClip->execute([
             "user_id"          => $user->id,
             "title"            => $validated["title"] ?? "",
@@ -52,15 +39,16 @@ class SongController extends Controller
             "visibility"       => $validated["visibility"] ?? "private",
             "job_class"        => GenerateSongJob::class,
             "ai_provider"      => "lyria",
-            "credits_reserved" => $creditCost,
+            "credits_reserved" => 0,
         ]);
-        $reserved = $this->creditService->checkAndReserve(
-            $user, "song", $result["job"]->id
-        );
-        if (!$reserved) {
+
+        $billing = $this->billing->checkAndReserve($user, "song", $result["job"]->id);
+
+        if (!$billing["ok"]) {
             return redirect()->route("create")
-                ->withErrors(["credits" => "Could not reserve credits. Please try again."]);
+                ->withErrors(["credits" => $billing["message"]]);
         }
+
         GenerateSongJob::dispatch($result["job"]->id, [
             "user_id"            => $user->id,
             "generation_job_id"  => $result["job"]->id,
@@ -71,6 +59,7 @@ class SongController extends Controller
             "voice"              => $validated["voice"] ?? "no_preference",
             "creative_direction" => $validated["creative_direction"] ?? "",
         ])->onQueue("ai-generation");
+
         return redirect()->route("studio.show", $result["clip"]->id);
     }
 }
