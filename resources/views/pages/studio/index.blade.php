@@ -120,11 +120,7 @@ $displayTitle = $clip->display_title;
         <div class="studio-timeline__dot"></div>
         <span class="studio-timeline__label">Reel</span>
     </div>
-    <div class="studio-timeline__line {{ $clip->visibility === 'public' ? 'studio-timeline__line--done' : '' }}"></div>
-    <div class="studio-timeline__step {{ $clip->visibility === 'public' ? 'studio-timeline__step--done' : 'studio-timeline__step--missing' }}">
-        <div class="studio-timeline__dot"></div>
-        <span class="studio-timeline__label">Shared</span>
-    </div>
+
 </div>
 
 {{-- CLIP HERO --}}
