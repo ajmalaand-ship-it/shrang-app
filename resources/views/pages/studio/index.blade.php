@@ -157,54 +157,63 @@ $displayTitle = $clip->display_title;
         @endif
 
         {{-- Actions --}}
+        {{-- Next Best Action system --}}
         <div class="studio-hero__actions">
-            {{-- Primary: Create Reel or Download Reel --}}
-            @if($reel && $reel->cdn_url)
-            <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary">&#8595; Download Reel</a>
-            @elseif(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
-            <button type="button" class="sh-btn sh-btn--primary studio-hero__action-primary studio-hero__action--muted" disabled>
-                Creating Reel...
-            </button>
-            <p class="studio-hero__action-hint">Your reel is being created. This page will update automatically.</p>
-            @elseif(isset($reelJob) && $reelJob && $reelJob->status === 'failed')
-            <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
-                @csrf
-                <button type="submit" class="sh-btn sh-btn--primary studio-hero__action-primary">
-                    Try Again
-                </button>
-            </form>
-            <p class="studio-hero__action-hint" style="color:#e05555;">Reel generation failed. Please try again.</p>
-            @else
-            <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
-                @csrf
-                <button type="submit"
-                        class="sh-btn sh-btn--primary studio-hero__action-primary {{ !$audioAsset ? 'studio-hero__action--muted' : '' }}"
-                        {{ !$audioAsset ? 'disabled' : '' }}>
-                    Create Reel
-                </button>
-            </form>
-            @if(!$audioAsset)
-            <p class="studio-hero__action-hint">Audio must finish processing before creating a reel</p>
-            @endif
-            @endif
 
-            {{-- Secondary: Download + Copy Link --}}
-            <div class="studio-hero__action-row">
-                @if($audioAsset && $audioAsset->cdn_url)
-                <a href="{{ $audioAsset->cdn_url }}" download class="sh-btn sh-btn--ghost studio-hero__action-secondary">&#8595; Download</a>
-                @else
-                <button type="button" class="sh-btn sh-btn--ghost studio-hero__action-secondary studio-hero__action--muted" disabled>&#8595; Download</button>
+            @if($reel && $reel->cdn_url)
+                {{-- STATE: Reel ready --}}
+                <p class="studio-nba__label">&#10003; Your reel is ready</p>
+                <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary">&#8595; Download Reel</a>
+                @if($clip->visibility === 'public' && $clip->slug)
+                <a href="https://wa.me/?text={{ urlencode(route('player.show', $clip->slug)) }}" target="_blank" class="sh-btn sh-btn--whatsapp studio-hero__action-primary">Share on WhatsApp</a>
                 @endif
 
-                @if($clip->visibility === 'public')
+            @elseif(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
+                {{-- STATE: Reel generating --}}
+                <p class="studio-nba__label">Creating your reel...</p>
+                <button type="button" class="sh-btn sh-btn--primary studio-hero__action-primary studio-hero__action--muted" disabled>Creating Reel...</button>
+                <p class="studio-hero__action-hint">This page will update automatically when your reel is ready.</p>
+
+            @elseif(isset($reelJob) && $reelJob && $reelJob->status === 'failed')
+                {{-- STATE: Reel failed --}}
+                <p class="studio-nba__label studio-nba__label--warn">Reel could not be created</p>
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
+                    @csrf
+                    <button type="submit" class="sh-btn sh-btn--primary studio-hero__action-primary">Try Again</button>
+                </form>
+                <p class="studio-hero__action-hint">If it keeps failing, try regenerating your cover first.</p>
+
+            @elseif(!$coverAsset)
+                {{-- STATE: No cover — suggest generate cover first --}}
+                <p class="studio-nba__label">&#8594; Next: Generate a cover image</p>
+                <a href="#studio-cover" class="sh-btn sh-btn--primary studio-hero__action-primary" onclick="document.querySelector('.studio-cover-card').scrollIntoView({behavior:'smooth'});return false;">Generate Cover</a>
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form" style="margin-top:0.5rem;">
+                    @csrf
+                    <button type="submit" class="sh-btn sh-btn--ghost studio-hero__action-secondary">Skip — Create Reel Without Cover</button>
+                </form>
+
+            @else
+                {{-- STATE: Has cover, no reel — suggest create reel --}}
+                <p class="studio-nba__label">&#8594; Next: Create a shareable reel</p>
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
+                    @csrf
+                    <button type="submit" class="sh-btn sh-btn--primary studio-hero__action-primary">Create Reel</button>
+                </form>
+            @endif
+
+            {{-- Secondary row: always available when assets exist --}}
+            <div class="studio-hero__action-row" style="margin-top:0.75rem;">
+                @if($audioAsset && $audioAsset->cdn_url)
+                <a href="{{ $audioAsset->cdn_url }}" download class="sh-btn sh-btn--ghost studio-hero__action-secondary">&#8595; MP3</a>
+                @endif
+                @if($clip->visibility === 'public' && $clip->slug)
                 <button type="button" class="sh-btn sh-btn--ghost studio-hero__action-secondary" onclick="studioShare(this)" data-url="{{ route('player.show', $clip->slug) }}">&#128279; Copy Link</button>
-                @else
-                <button type="button" class="sh-btn sh-btn--ghost studio-hero__action-secondary studio-hero__action--muted" disabled title="Set clip to public to share">&#128279; Copy Link</button>
                 @endif
             </div>
             @if($clip->visibility !== 'public')
             <p class="studio-hero__action-hint">Set visibility to Public to share this clip</p>
             @endif
+
         </div>
 
         {{-- Visibility --}}

@@ -1269,3 +1269,16 @@ img { max-width: 100%; display: block; }
     justify-content: center;
     flex-wrap: wrap;
 }
+
+/* ── Studio Next Best Action labels ─────────────────────────── */
+.studio-nba__label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--sh-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.6rem;
+}
+.studio-nba__label--warn {
+    color: var(--sh-danger, #e05555);
+}
