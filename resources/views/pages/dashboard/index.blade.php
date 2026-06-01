@@ -117,13 +117,15 @@
                                 </a>
                             @endif
                             @if($audio && $audio->cdn_url)
-                                <a href="{{ $audio->cdn_url }}" download class="sh-btn sh-btn--ghost sh-btn--sm dashboard-clip__icon-btn" title="Download Audio">
+                                <a href="{{ $audio->cdn_url }}" download class="sh-btn sh-btn--ghost sh-btn--sm dashboard-clip__icon-btn" title="Download MP3">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+                                    <span class="dashboard-clip__icon-label">MP3</span>
                                 </a>
                             @endif
                             @if($reel && $reel->cdn_url)
-                                <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--ghost sh-btn--sm dashboard-clip__icon-btn" title="Download Reel">
+                                <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--ghost sh-btn--sm dashboard-clip__icon-btn dashboard-clip__icon-btn--reel" title="Download Reel">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
+                                    <span class="dashboard-clip__icon-label">Reel</span>
                                 </a>
                             @endif
                         </div>

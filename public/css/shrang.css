@@ -1357,3 +1357,20 @@ img { max-width: 100%; display: block; }
     border-color: #1465d4;
     color: #fff;
 }
+
+/* ── My Clips icon button labels (MP3 vs Reel distinction) ───── */
+.dashboard-clip__icon-label {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    display: block;
+}
+.dashboard-clip__icon-btn--reel {
+    color: var(--sh-orange);
+    border-color: var(--sh-orange);
+}
+.dashboard-clip__icon-btn--reel:hover {
+    background: var(--sh-orange);
+    color: #fff;
+}
