@@ -76,14 +76,22 @@ $displayTitle = $clip->display_title;
 {{-- ═══════════════════ FAILED ═══════════════════ --}}
 @elseif($clip->status === 'failed')
 <div class="sh-card">
-    <div class="sh-card__body">
-        <div class="sh-notice sh-notice--danger">
-            Generation failed. Your credits have been released.
-            @if($latestJob && $latestJob->error_message)
-                <br><small>{{ $latestJob->error_message }}</small>
-            @endif
+    <div class="sh-card__body studio-failed">
+        <div class="studio-failed__icon">&#9888;</div>
+        <h2 class="studio-failed__heading">Your song could not be generated</h2>
+        <p class="studio-failed__body">This sometimes happens with very short lyrics, unusual characters, or a temporary issue with the AI service. Your credits have been returned to your account.</p>
+        <p class="studio-failed__suggestion">Try adding more lines to your lyrics, then create a new song. If the problem continues, please contact support.</p>
+        @if($latestJob && $latestJob->error_message)
+            <p class="studio-failed__technical">Technical detail: {{ $latestJob->error_message }}</p>
+        @endif
+        <div class="studio-failed__actions">
+            <a href="{{ route('create') }}" class="sh-btn sh-btn--primary">Create New Song</a>
+            <form method="POST" action="{{ route('studio.delete', $clip) }}" onsubmit="return confirm('Delete this clip permanently? This cannot be undone.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="sh-btn sh-btn--ghost">Delete This Clip</button>
+            </form>
         </div>
-        <a href="{{ route('create') }}" class="sh-btn sh-btn--primary" style="margin-top:1rem;display:inline-block;">Try Again</a>
     </div>
 </div>
 
