@@ -11,7 +11,7 @@
         <div class="sh-notice sh-notice--danger" style="margin-bottom:1.5rem;">{{ $errors->first('delete') }}</div>
     @endif
 
-    <div class="sh-grid" style="grid-template-columns:1fr 400px;gap:1.5rem;align-items:start;">
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
 
         {{-- Package list --}}
         <div class="sh-card">
