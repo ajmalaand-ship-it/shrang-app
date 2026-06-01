@@ -1335,3 +1335,25 @@ img { max-width: 100%; display: block; }
 .studio-timeline__line--done {
     background: var(--sh-orange);
 }
+
+/* ── Share buttons ───────────────────────────────────────────── */
+.sh-btn--whatsapp {
+    background: #25D366;
+    color: #fff;
+    border-color: #25D366;
+}
+.sh-btn--whatsapp:hover {
+    background: #1ebe5d;
+    border-color: #1ebe5d;
+    color: #fff;
+}
+.sh-btn--facebook {
+    background: #1877F2;
+    color: #fff;
+    border-color: #1877F2;
+}
+.sh-btn--facebook:hover {
+    background: #1465d4;
+    border-color: #1465d4;
+    color: #fff;
+}

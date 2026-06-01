@@ -191,6 +191,7 @@ $displayTitle = $clip->display_title;
                 <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary">&#8595; Download Reel</a>
                 @if($clip->visibility === 'public' && $clip->slug)
                 <a href="https://wa.me/?text={{ urlencode(route('player.show', $clip->slug)) }}" target="_blank" class="sh-btn sh-btn--whatsapp studio-hero__action-primary">Share on WhatsApp</a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('player.show', $clip->slug)) }}" target="_blank" class="sh-btn sh-btn--facebook studio-hero__action-primary">Share on Facebook</a>
                 @endif
 
             @elseif(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
