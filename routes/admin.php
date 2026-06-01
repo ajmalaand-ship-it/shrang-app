@@ -41,4 +41,6 @@ Route::prefix("admin")->name("admin.")->middleware(["auth", "admin", "audit"])->
     Route::patch("/discover/{clip}/pin", [App\Http\Controllers\Admin\DiscoverController::class, "pin"])->name("discover.pin");
     Route::patch("/discover/{clip}/block", [App\Http\Controllers\Admin\DiscoverController::class, "block"])->name("discover.block");
     Route::get("/payments", [\App\Http\Controllers\Admin\PaymentController::class, "index"])->name("payments.index");
+    Route::get("/payments/{payment}", [\App\Http\Controllers\Admin\PaymentController::class, "show"])->name("payments.show");
+    Route::post("/payments/{payment}/refund", [\App\Http\Controllers\Admin\PaymentController::class, "refund"])->name("payments.refund");
 });

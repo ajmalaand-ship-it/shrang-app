@@ -17,6 +17,7 @@
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Stripe ID</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -35,8 +36,12 @@
                         <span class="sh-badge sh-badge--status-{{ $payment->status === 'paid' ? 'ready' : ($payment->status === 'failed' ? 'failed' : 'processing') }}">
                             {{ ucfirst($payment->status) }}
                         </span>
+                        @if($payment->refund_status)
+                        <span class="sh-badge sh-badge--status-failed" style="margin-left:0.25rem;">{{ ucfirst(str_replace('_', ' ', $payment->refund_status)) }}</span>
+                        @endif
                     </td>
                     <td style="font-size:0.75rem;color:var(--sh-text-muted);">{{ Str::limit($payment->stripe_payment_intent_id, 20) }}</td>
+                    <td><a href="{{ route('admin.payments.show', $payment) }}" class="sh-btn sh-btn--sm sh-btn--ghost">View</a></td>
                 </tr>
                 @empty
                 <tr><td colspan="6" style="text-align:center;color:var(--sh-text-muted);padding:2rem;">No payments yet.</td></tr>
