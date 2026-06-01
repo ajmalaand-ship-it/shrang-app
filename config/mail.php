@@ -111,8 +111,13 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+        'address' => env('MAIL_FROM_ADDRESS', 'noreply@shrang.com'),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Shrang')),
+    ],
+
+    'reply_to' => [
+        'address' => env('MAIL_REPLY_TO_ADDRESS', 'support@shrang.com'),
+        'name' => env('MAIL_REPLY_TO_NAME', 'Shrang Support'),
     ],
 
 ];
