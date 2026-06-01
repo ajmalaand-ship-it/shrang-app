@@ -1288,10 +1288,11 @@ img { max-width: 100%; display: block; }
     display: flex;
     align-items: center;
     justify-content: center;
+    direction: ltr;
     gap: 0;
     margin: 0 0 1.5rem 0;
     padding: 1rem 1.5rem;
-    background: var(--sh-surface, rgba(255,255,255,0.03));
+    background: var(--sh-dark-3);
     border-radius: 0.75rem;
     border: 1px solid var(--sh-border);
     flex-wrap: nowrap;
@@ -1312,8 +1313,8 @@ img { max-width: 100%; display: block; }
     background: transparent;
 }
 .studio-timeline__step--done .studio-timeline__dot {
-    background: var(--sh-primary);
-    border-color: var(--sh-primary);
+    background: var(--sh-orange);
+    border-color: var(--sh-orange);
 }
 .studio-timeline__label {
     font-size: 0.7rem;
@@ -1332,5 +1333,5 @@ img { max-width: 100%; display: block; }
     margin-bottom: 1rem;
 }
 .studio-timeline__line--done {
-    background: var(--sh-primary);
+    background: var(--sh-orange);
 }
