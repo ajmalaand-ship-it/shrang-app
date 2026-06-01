@@ -1,65 +1,21 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ps','fa','ur','ar']) ? 'rtl' : 'ltr' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $direction ?? 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Shrang')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    @if($isRtl ?? false)
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    @endif
     <link rel="stylesheet" href="{{ asset('css/shrang.css') }}">
     @yield('head_extra')
 </head>
 <body class="public-body">
 
-<nav class="pub-nav">
-    <div class="pub-nav__inner">
-        <a href="/" class="pub-nav__logo">
-            <span class="pub-nav__logo-ar">شرنګ</span>
-            <span class="pub-nav__logo-en">Shrang</span>
-        </a>
-        <ul class="pub-nav__links">
-            <li><a href="{{ route('how-it-works') }}" class="{{ request()->routeIs('how-it-works') ? 'active' : '' }}">How it works</a></li>
-            <li><a href="{{ route('discover') }}" class="{{ request()->routeIs('discover*') ? 'active' : '' }}">Discover</a></li>
-            <li><a href="{{ route('pricing') }}" class="{{ request()->routeIs('pricing') ? 'active' : '' }}">Pricing</a></li>
-            <li><a href="{{ route('faq') }}" class="{{ request()->routeIs('faq') ? 'active' : '' }}">FAQ</a></li>
-        </ul>
-        <div class="pub-nav__actions">
-            @auth
-                <a href="{{ route('dashboard') }}" class="pub-nav__login">My Clips</a>
-                <a href="{{ route('create') }}" class="pub-nav__cta">Create Music</a>
-            @else
-                <a href="{{ route('login') }}" class="pub-nav__login">Log in</a>
-                <a href="{{ route('register') }}" class="pub-nav__cta">Start Free</a>
-            @endauth
-        </div>
-        <button class="pub-nav__burger" id="pub-burger" aria-label="Open menu">
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</nav>
-
-<div class="pub-nav__drawer" id="pub-drawer">
-    <div class="pub-nav__drawer-inner">
-        <a href="/">Home</a>
-        <a href="{{ route('how-it-works') }}">How it works</a>
-        <a href="{{ route('discover') }}">Discover</a>
-        <a href="{{ route('pricing') }}">Pricing</a>
-        <a href="{{ route('faq') }}">FAQ</a>
-        <a href="{{ route('about') }}">About</a>
-        <a href="{{ route('support') }}">Support</a>
-        <div class="pub-nav__drawer-divider"></div>
-        @auth
-            <a href="{{ route('create') }}" class="pub-nav__cta">Create Music</a>
-            <a href="{{ route('dashboard') }}">My Clips</a>
-            <a href="{{ route('account') }}">Account</a>
-        @else
-            <a href="{{ route('login') }}">Log in</a>
-            <a href="{{ route('register') }}" class="pub-nav__cta">Start Free</a>
-        @endauth
-    </div>
-</div>
-<div class="pub-nav__overlay" id="pub-overlay"></div>
+@include('components.nav')
 
 <main class="pub-main">
     @yield('content')
@@ -105,18 +61,36 @@
     </div>
 </footer>
 
-<script>
-var burger = document.getElementById('pub-burger');
-var drawer = document.getElementById('pub-drawer');
-var overlay = document.getElementById('pub-overlay');
-function toggleDrawer(){
-    drawer.classList.toggle('open');
-    overlay.classList.toggle('open');
-    burger.classList.toggle('open');
-}
-burger.addEventListener('click', toggleDrawer);
-overlay.addEventListener('click', toggleDrawer);
-</script>
+
+
+    @auth
+    <nav class="sh-bottom-nav">
+        <a href="{{ route('create') }}" class="sh-bottom-nav__item {{ request()->routeIs('create*') ? 'active' : '' }}">
+            <span class="sh-bottom-nav__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </span>
+            <span class="sh-bottom-nav__label">Create</span>
+        </a>
+        <a href="{{ route('discover') }}" class="sh-bottom-nav__item {{ request()->routeIs('discover*') ? 'active' : '' }}">
+            <span class="sh-bottom-nav__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </span>
+            <span class="sh-bottom-nav__label">Discover</span>
+        </a>
+        <a href="{{ route('dashboard') }}" class="sh-bottom-nav__item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <span class="sh-bottom-nav__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <span class="sh-bottom-nav__label">My Clips</span>
+        </a>
+        <a href="{{ route('account') }}" class="sh-bottom-nav__item {{ request()->routeIs('account*') ? 'active' : '' }}">
+            <span class="sh-bottom-nav__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <span class="sh-bottom-nav__label">Account</span>
+        </a>
+    </nav>
+    @endauth
 @yield('page_js')
 </body>
 </html>

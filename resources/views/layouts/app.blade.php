@@ -1,84 +1,58 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="ltr">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $direction ?? 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Shrang') — Shrang</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    @if($isRtl ?? false)
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    @endif
     <link rel="stylesheet" href="{{ asset('css/shrang.css') }}">
     @yield('head_extra')
 </head>
 <body>
-
-    <nav class="sh-nav">
-        <a href="/" class="sh-nav__logo">
-            <span class="sh-nav__logo-arabic">شرنګ</span>
-            <span class="sh-nav__logo-latin">Shrang</span>
-        </a>
-        <ul class="sh-nav__links">
-            <li><a href="{{ route('create') }}" class="{{ request()->routeIs('create*') ? 'active' : '' }}">Create</a></li>
-            <li><a href="{{ route('discover') }}" class="{{ request()->routeIs('discover*') ? 'active' : '' }}">Discover</a></li>
-            <li><a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">My Clips</a></li>
-            <li><a href="{{ route('credits') }}" class="{{ request()->routeIs('credits*') ? 'active' : '' }}">Credits</a></li>
-        </ul>
-        <div class="sh-nav__right">
-            @auth
-                <div class="sh-nav__credits">
-                    <strong>{{ auth()->user()->credit_balance }}</strong> credits
-                </div>
-                <div class="sh-nav__account">
-                    <button class="sh-nav__account-btn">
-                        {{ auth()->user()->name }} ▾
-                    </button>
-                    <div class="sh-nav__dropdown">
-                        <a href="{{ route('dashboard') }}">My Clips</a>
-                        <a href="{{ route('credits') }}">Credits & Billing</a>
-                        <a href="{{ route('account') }}">Account Settings</a>
-                        <div class="sh-nav__dropdown-divider"></div>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit">Log out</button>
-                        </form>
-                    </div>
-                </div>
-            @endauth
-        </div>
-    </nav>
-
+    @include('components.nav')
     <main>
         @yield('content')
     </main>
-
     <footer class="sh-footer">
         <span>&copy; {{ date('Y') }} Shrang</span>
         <a href="{{ route('create') }}">Create</a>
-        <a href="{{ route('dashboard') }}">My Clips</a>
+        <a href="{{ route('discover') }}">Discover</a>
+        <a href="{{ route('pricing') }}">Pricing</a>
     </footer>
 
     @auth
-<nav class="sh-bottom-nav">
-    <div class="sh-bottom-nav__items">
+    <nav class="sh-bottom-nav">
         <a href="{{ route('create') }}" class="sh-bottom-nav__item {{ request()->routeIs('create*') ? 'active' : '' }}">
-            <span class="sh-bottom-nav__icon">🎵</span>
-            <span>Create</span>
+            <span class="sh-bottom-nav__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </span>
+            <span class="sh-bottom-nav__label">Create</span>
         </a>
         <a href="{{ route('discover') }}" class="sh-bottom-nav__item {{ request()->routeIs('discover*') ? 'active' : '' }}">
-            <span class="sh-bottom-nav__icon">🔍</span>
-            <span>Discover</span>
+            <span class="sh-bottom-nav__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </span>
+            <span class="sh-bottom-nav__label">Discover</span>
         </a>
         <a href="{{ route('dashboard') }}" class="sh-bottom-nav__item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <span class="sh-bottom-nav__icon">📂</span>
-            <span>My Clips</span>
+            <span class="sh-bottom-nav__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <span class="sh-bottom-nav__label">My Clips</span>
         </a>
         <a href="{{ route('account') }}" class="sh-bottom-nav__item {{ request()->routeIs('account*') ? 'active' : '' }}">
-            <span class="sh-bottom-nav__icon">👤</span>
-            <span>Account</span>
+            <span class="sh-bottom-nav__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <span class="sh-bottom-nav__label">Account</span>
         </a>
-    </div>
-</nav>
-@endauth
-@yield("page_js")
+    </nav>
+    @endauth
+    @yield('page_js')
 </body>
 </html>
