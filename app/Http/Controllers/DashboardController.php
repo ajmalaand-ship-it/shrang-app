@@ -10,7 +10,7 @@ class DashboardController extends Controller
 {
     public function index(Request $request): View
     {
-        $filter = in_array($request->query('filter'), ['ready', 'failed']) ? $request->query('filter') : 'all';
+        $filter = in_array($request->query('filter'), ['ready', 'failed', 'all']) ? $request->query('filter') : 'ready';
 
         $query = Clip::where('user_id', $request->user()->id)
             ->with(['mediaAssets' => function ($q) {

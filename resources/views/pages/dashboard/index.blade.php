@@ -17,7 +17,7 @@
 
     {{-- Filter tabs --}}
     <div class="dashboard-filters">
-        <a href="{{ route('dashboard') }}" class="dashboard-filters__tab {{ $filter === 'all' ? 'dashboard-filters__tab--active' : '' }}">All</a>
+        <a href="{{ route('dashboard', ['filter' => 'all']) }}" class="dashboard-filters__tab {{ $filter === 'all' ? 'dashboard-filters__tab--active' : '' }}">All</a>
         <a href="{{ route('dashboard', ['filter' => 'ready']) }}" class="dashboard-filters__tab {{ $filter === 'ready' ? 'dashboard-filters__tab--active' : '' }}">Ready</a>
         <a href="{{ route('dashboard', ['filter' => 'failed']) }}" class="dashboard-filters__tab {{ $filter === 'failed' ? 'dashboard-filters__tab--active' : '' }}">Failed</a>
     </div>
