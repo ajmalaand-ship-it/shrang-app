@@ -1374,3 +1374,15 @@ img { max-width: 100%; display: block; }
     background: var(--sh-orange);
     color: #fff;
 }
+
+/* ── Admin packages table fix ────────────────────────────────── */
+.admin-table td, .admin-table th {
+    white-space: nowrap;
+    padding: 0.6rem 0.75rem;
+}
+.admin-packages-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: flex-start;
+}

@@ -43,7 +43,7 @@
                                     {{ $package->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
-                            <td style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                            <td><div class="admin-packages-actions">
                                 <button type="button"
                                     class="sh-btn sh-btn--sm sh-btn--ghost"
                                     onclick="openEdit({{ $package->id }}, '{{ addslashes($package->name) }}', {{ $package->credits }}, {{ $package->price_cents / 100 }}, {{ $package->sort_order }}, '{{ $package->stripe_price_id ?? '' }}')">
@@ -62,7 +62,7 @@
                                     @method('DELETE')
                                     <button type="submit" class="sh-btn sh-btn--sm sh-btn--danger">Delete</button>
                                 </form>
-                            </td>
+                            </div></td>
                         </tr>
                         @empty
                         <tr><td colspan="6" style="text-align:center;color:var(--sh-text-muted);padding:2rem;">No packages yet.</td></tr>
