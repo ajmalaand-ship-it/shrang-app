@@ -30,6 +30,20 @@
                 <p class="admin-page__stat-number">{{ number_format($stats["avg_latency_ms"]) }}ms</p>
             </div>
         </div>
+        <div class="sh-card admin-page__stat">
+            <div class="sh-card__body">
+                <p class="admin-page__stat-label">Today's Cost</p>
+                <p class="admin-page__stat-number">${{ number_format($stats["today_cost_usd"], 2) }}</p>
+                <p style="font-size:0.75rem;color:var(--sh-text-muted);">{{ $stats["today_calls"] }} calls</p>
+            </div>
+        </div>
+        <div class="sh-card admin-page__stat">
+            <div class="sh-card__body">
+                <p class="admin-page__stat-label">This Week's Cost</p>
+                <p class="admin-page__stat-number">${{ number_format($stats["week_cost_usd"], 2) }}</p>
+                <p style="font-size:0.75rem;color:var(--sh-text-muted);">{{ $stats["week_calls"] }} calls</p>
+            </div>
+        </div>
     </div>
     <div class="sh-card">
         <div class="sh-card__header">Recent Calls (last 50)</div>
