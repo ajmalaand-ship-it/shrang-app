@@ -1,5 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\Auth\LoginController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\DashboardController;
 
 // Public
 Route::get("/", [App\Http\Controllers\HomeController::class, "index"]);
+Route::get("/sitemap.xml", [SitemapController::class, "index"])->name("sitemap");
 Route::get("/lang/{code}", [LanguageController::class, "switch"])->name("lang.switch");
 Route::get("/about", fn() => view("pages.static.about"))->name("about");
 Route::get("/how-it-works", fn() => view("pages.static.how-it-works"))->name("how-it-works");

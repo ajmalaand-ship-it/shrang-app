@@ -1,2 +1,18 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /admin/
+Disallow: /studio
+Disallow: /studio/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /account
+Disallow: /credits
+Disallow: /create
+Disallow: /webhooks
+Disallow: /api
+
+Allow: /
+Allow: /discover
+Allow: /player/
+
+Sitemap: https://shrang.com/sitemap.xml
