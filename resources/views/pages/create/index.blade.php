@@ -225,16 +225,15 @@
                         <input id="upload-title" name="title" type="text" class="sh-input" placeholder="My Audio Clip">
                     </div>
                     <div class="sh-field">
-                        <label class="sh-label">Audio file <span class="sh-label-req">MP3 or WAV, max 50MB</span></label>
-                        <label class="sh-upload-zone" id="upload-zone" for="upload-file">
-                            <div class="sh-upload-zone__icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            </div>
-                            <div class="sh-upload-zone__label">Click to choose audio file</div>
-                            <div class="sh-upload-zone__hint">MP3 or WAV — max 50MB</div>
-                            <div class="sh-upload-zone__filename" id="upload-filename"></div>
-                            <input id="upload-file" name="audio" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav">
-                        </label>
+                        <label class="sh-label" for="upload-file">Audio file <span class="sh-label-req">MP3 or WAV, max 50MB</span></label>
+                        <div class="sh-upload-compact">
+                            <input id="upload-file" name="audio" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav" style="display:none;">
+                            <label for="upload-file" class="sh-btn sh-btn--ghost sh-btn--sm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Choose file
+                            </label>
+                            <span class="sh-upload-compact__name" id="upload-filename">No file chosen</span>
+                        </div>
                         @error('audio') <span class="sh-field-error">{{ $message }}</span> @enderror
                     </div>
                     <div class="sh-field">
@@ -315,10 +314,10 @@ updateStyles('en');
     input.addEventListener('change', function() {
         if (input.files && input.files.length > 0) {
             label.textContent = input.files[0].name;
-            zone.classList.add('sh-upload-zone--has-file');
+            label.classList.add('sh-upload-compact__name--chosen');
         } else {
-            label.textContent = '';
-            zone.classList.remove('sh-upload-zone--has-file');
+            label.textContent = 'No file chosen';
+            label.classList.remove('sh-upload-compact__name--chosen');
         }
     });
 })();

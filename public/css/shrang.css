@@ -600,7 +600,7 @@ img { max-width: 100%; display: block; }
 /* ── CREATE PAGE ─────────────────────────────────────────────── */
 .create-paths { display:flex; flex-direction:column; gap:1rem; margin-top:1.5rem; }
 .create-path { background:var(--sh-dark-2); border:1px solid var(--sh-dark-4); border-radius:var(--sh-radius-lg); overflow:hidden; transition:border-color 0.2s; }
-.create-path--open { border-color:var(--sh-orange); }
+.create-path--open { border-color:var(--sh-orange); overflow:visible; }
 .create-path__header { display:flex; align-items:center; justify-content:space-between; padding:1.25rem 1.5rem; cursor:pointer; gap:1rem; }
 .create-path__header:hover { background:var(--sh-dark-3); }
 .create-path__info { display:flex; align-items:center; gap:1rem; flex:1; min-width:0; }
@@ -1501,7 +1501,7 @@ input[type="password"] {
     background: var(--sh-dark-3);
 }
 .sh-upload-zone:hover { border-color: var(--sh-orange); background: var(--sh-dark-4); }
-.sh-upload-zone input[type="file"] { display: none; }
+.sh-upload-zone input[type="file"] { display: none !important; }
 .sh-upload-zone__icon { color: var(--sh-orange); margin-bottom: 0.5rem; }
 .sh-upload-zone__label { font-size: 0.9rem; color: var(--sh-text-primary); margin-bottom: 0.25rem; }
 .sh-upload-zone__hint { font-size: 0.75rem; color: var(--sh-text-muted); }
@@ -1511,3 +1511,8 @@ input[type="password"] {
 
 /* Studio cover upload — hide native input */
 .studio-cover-upload-input { display: none; }
+
+/* ── Compact file upload ─────────────────────────────────────── */
+.sh-upload-compact { display: flex; align-items: center; gap: 0.75rem; }
+.sh-upload-compact__name { font-size: 0.8rem; color: var(--sh-text-muted); }
+.sh-upload-compact__name--chosen { color: var(--sh-orange); }
