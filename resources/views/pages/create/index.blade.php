@@ -25,7 +25,7 @@
         <div class="create-path" id="path-song">
             <div class="create-path__header" onclick="togglePath('song-form', this)">
                 <div class="create-path__info">
-                    <span class="create-path__icon">&#127925;</span>
+                    <span class="create-path__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
                     <div>
                         <div class="create-path__title">Create Song</div>
                         <div class="create-path__desc">Turn your lyrics or poetry into an original AI song.</div>
@@ -125,7 +125,7 @@
         <div class="create-path" id="path-bed">
             <div class="create-path__header" onclick="togglePath('bed-form', this)">
                 <div class="create-path__info">
-                    <span class="create-path__icon">&#127908;</span>
+                    <span class="create-path__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
                     <div>
                         <div class="create-path__title">Generate Bed Music</div>
                         <div class="create-path__desc">Create instrumental background music for videos, reels, or podcasts.</div>
@@ -206,7 +206,7 @@
         <div class="create-path" id="path-upload">
             <div class="create-path__header" onclick="togglePath('upload-form', this)">
                 <div class="create-path__info">
-                    <span class="create-path__icon">&#128190;</span>
+                    <span class="create-path__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
                     <div>
                         <div class="create-path__title">Upload Audio</div>
                         <div class="create-path__desc">Save your own audio as a Shrang clip.</div>
