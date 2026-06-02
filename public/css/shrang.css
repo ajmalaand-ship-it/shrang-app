@@ -1489,3 +1489,25 @@ input[type="password"] {
     text-align: right;
 }
 .sh-audio-player__native { display: none; }
+
+/* ── Branded file upload zone ────────────────────────────────── */
+.sh-upload-zone {
+    border: 2px dashed var(--sh-border);
+    border-radius: var(--sh-radius);
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--sh-transition), background var(--sh-transition);
+    background: var(--sh-dark-3);
+}
+.sh-upload-zone:hover { border-color: var(--sh-orange); background: var(--sh-dark-4); }
+.sh-upload-zone input[type="file"] { display: none; }
+.sh-upload-zone__icon { color: var(--sh-orange); margin-bottom: 0.5rem; }
+.sh-upload-zone__label { font-size: 0.9rem; color: var(--sh-text-primary); margin-bottom: 0.25rem; }
+.sh-upload-zone__hint { font-size: 0.75rem; color: var(--sh-text-muted); }
+.sh-upload-zone__filename { font-size: 0.8rem; color: var(--sh-orange); margin-top: 0.5rem; display: none; }
+.sh-upload-zone--has-file { border-color: var(--sh-orange); }
+.sh-upload-zone--has-file .sh-upload-zone__filename { display: block; }
+
+/* Studio cover upload — hide native input */
+.studio-cover-upload-input { display: none; }
