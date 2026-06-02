@@ -1544,3 +1544,9 @@ input[type="password"] {
 
 /* ── No-cover card — remove dark overlay so placeholder is visible ── */
 .discover-card--no-cover .discover-card__cover-overlay { background: transparent; }
+
+/* ── Single column on small mobile (Task 8) ─────────────────── */
+@media(max-width:480px){
+    .discover-grid { grid-template-columns: 1fr; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+}
