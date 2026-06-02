@@ -1202,6 +1202,13 @@ img { max-width: 100%; display: block; }
 .player-btn--whatsapp:hover {
     background:rgba(37,211,102,0.1) !important;
 }
+.player-btn--facebook {
+    color:#1877F2 !important;
+    border-color:#1877F2 !important;
+}
+.player-btn--facebook:hover {
+    background:rgba(24,119,242,0.1) !important;
+}
 .player-share-box { margin-top:1rem; }
 .player-share-box__row {
     display:flex; gap:0.5rem; align-items:center;

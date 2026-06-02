@@ -190,8 +190,10 @@ $displayTitle = $clip->display_title;
                 <p class="studio-nba__label">&#10003; Your reel is ready</p>
                 <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary">&#8595; Download Reel</a>
                 @if($clip->visibility === 'public' && $clip->slug)
-                <a href="https://wa.me/?text={{ urlencode(route('player.show', $clip->slug)) }}" target="_blank" class="sh-btn sh-btn--whatsapp studio-hero__action-primary">Share on WhatsApp</a>
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('player.show', $clip->slug)) }}" target="_blank" class="sh-btn sh-btn--facebook studio-hero__action-primary">Share on Facebook</a>
+                <a href="{{ route('player.show', $clip->slug) }}" target="_blank" class="sh-btn sh-btn--ghost studio-hero__action-primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Open Public Player
+                </a>
                 @endif
 
             @elseif(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
