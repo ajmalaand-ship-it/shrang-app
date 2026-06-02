@@ -618,7 +618,31 @@ img { max-width: 100%; display: block; }
 .sh-radio { display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.875rem; color:var(--sh-text-primary); }
 .sh-radio input { accent-color:var(--sh-orange); }
 .sh-checkbox { display:flex; align-items:flex-start; gap:0.6rem; cursor:pointer; font-size:0.8rem; color:var(--sh-text-muted); line-height:1.5; }
-.sh-checkbox input { accent-color:var(--sh-orange); margin-top:0.2rem; flex-shrink:0; }
+.sh-checkbox input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 2px solid var(--sh-border);
+    border-radius: 0.25rem;
+    background: var(--sh-dark-3);
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: border-color var(--sh-transition), background var(--sh-transition);
+}
+.sh-checkbox input[type="checkbox"]:checked {
+    background: var(--sh-orange);
+    border-color: var(--sh-orange);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23fff' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-size: 65%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.sh-checkbox input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--sh-orange);
+    outline-offset: 2px;
+}
 .sh-field-hint { font-size:0.75rem; color:var(--sh-text-muted); margin-top:0.4rem; }
 .sh-btn-badge { background:rgba(255,255,255,0.15); border-radius:var(--sh-radius-pill); padding:0.15rem 0.5rem; font-size:0.75rem; margin-left:0.4rem; }
 .sh-btn--orange-border { border-color:var(--sh-orange); color:var(--sh-orange); }
