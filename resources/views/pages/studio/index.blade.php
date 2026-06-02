@@ -188,13 +188,8 @@ $displayTitle = $clip->display_title;
             @if($reel && $reel->cdn_url)
                 {{-- STATE: Reel ready --}}
                 <p class="studio-nba__label">&#10003; Your reel is ready</p>
-                <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary">&#8595; Download Reel</a>
-                @if($clip->visibility === 'public' && $clip->slug)
-                <a href="{{ route('player.show', $clip->slug) }}" target="_blank" class="sh-btn sh-btn--ghost studio-hero__action-primary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    Open Public Player
-                </a>
-                @endif
+                <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Reel</a>
+
 
             @elseif(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
                 {{-- STATE: Reel generating --}}
@@ -232,10 +227,20 @@ $displayTitle = $clip->display_title;
             {{-- Secondary row: always available when assets exist --}}
             <div class="studio-hero__action-row" style="margin-top:0.75rem;">
                 @if($audioAsset && $audioAsset->cdn_url)
-                <a href="{{ $audioAsset->cdn_url }}" download class="sh-btn sh-btn--ghost studio-hero__action-secondary">&#8595; MP3</a>
+                <a href="{{ $audioAsset->cdn_url }}" download class="sh-btn {{ $reel && $reel->cdn_url ? 'sh-btn--ghost studio-hero__action-secondary' : 'sh-btn--primary studio-hero__action-primary' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download MP3
+                </a>
                 @endif
                 @if($clip->visibility === 'public' && $clip->slug)
-                <button type="button" class="sh-btn sh-btn--ghost studio-hero__action-secondary" onclick="studioShare(this)" data-url="{{ route('player.show', $clip->slug) }}">&#128279; Copy Link</button>
+                <button type="button" class="sh-btn sh-btn--ghost studio-hero__action-secondary" onclick="studioShare(this)" data-url="{{ route('player.show', $clip->slug) }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    Copy Link
+                </button>
+                <a href="{{ route('player.show', $clip->slug) }}" target="_blank" class="sh-btn sh-btn--ghost studio-hero__action-secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Open Public Player
+                </a>
                 @endif
             </div>
             @if($clip->visibility !== 'public')
