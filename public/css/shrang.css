@@ -1386,3 +1386,19 @@ img { max-width: 100%; display: block; }
     gap: 0.35rem;
     align-items: flex-start;
 }
+
+/* ── Stage 2.1: Input autofill + email/password LTR ─────────── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 9999px var(--sh-dark-3) inset !important;
+    -webkit-text-fill-color: var(--sh-text) !important;
+    caret-color: var(--sh-text);
+}
+
+input[type="email"],
+input[type="password"] {
+    direction: ltr;
+    text-align: left;
+}
