@@ -93,6 +93,17 @@
         </a>
     </nav>
     @endauth
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.sh-select').forEach(function(sel) {
+        if (sel.closest('.sh-select-wrap')) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'sh-select-wrap' + (sel.classList.contains('sh-select--sm') ? ' sh-select-wrap--sm' : '');
+        sel.parentNode.insertBefore(wrap, sel);
+        wrap.appendChild(sel);
+    });
+});
+</script>
 @yield('page_js')
 </body>
 </html>

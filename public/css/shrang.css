@@ -1516,3 +1516,20 @@ input[type="password"] {
 .sh-upload-compact { display: flex; align-items: center; gap: 0.75rem; }
 .sh-upload-compact__name { font-size: 0.8rem; color: var(--sh-text-muted); }
 .sh-upload-compact__name--chosen { color: var(--sh-orange); }
+
+/* ── Select wrapper with custom chevron (Task 5A) ────────────── */
+.sh-select-wrap { position: relative; display: block; }
+.sh-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--sh-text-muted);
+    pointer-events: none;
+}
+.sh-select-wrap .sh-select { padding-right: 2.5rem; }
+.sh-select-wrap--sm::after { right: 0.75rem; border-left-width: 4px; border-right-width: 4px; border-top-width: 5px; }
