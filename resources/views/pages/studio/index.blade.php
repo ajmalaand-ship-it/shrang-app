@@ -157,23 +157,23 @@ $displayTitle = $clip->display_title;
 
         {{-- Custom audio player --}}
         @if($audioAsset && $audioAsset->cdn_url)
-        <div class="studio-player" id="studioPlayer">
-            <p class="studio-player__label">Listen to your {{ strtolower($typeLabel) }}</p>
-            <div class="studio-player__ui">
-                <button class="studio-player__playbtn" id="studioPlayBtn" aria-label="Play">
+        <div class="sh-audio-player" id="studioPlayer">
+            <p class="sh-audio-player__label">Listen to your {{ strtolower($typeLabel) }}</p>
+            <div class="sh-audio-player__ui">
+                <button class="sh-audio-player__playbtn" id="studioPlayBtn" aria-label="Play">
                     <svg id="studioIconPlay" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                     <svg id="studioIconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none;" aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                 </button>
-                <div class="studio-player__progress-wrap">
-                    <div class="studio-player__bar" id="studioBar" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
-                        <div class="studio-player__bar-fill" id="studioFill"></div>
-                        <div class="studio-player__bar-thumb" id="studioThumb"></div>
+                <div class="sh-audio-player__progress-wrap">
+                    <div class="sh-audio-player__bar" id="studioBar" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+                        <div class="sh-audio-player__bar-fill" id="studioFill"></div>
+                        <div class="sh-audio-player__bar-thumb" id="studioThumb"></div>
                     </div>
                 </div>
-                <span class="studio-player__time" id="studioTime">0:00 / 0:00</span>
+                <span class="sh-audio-player__time" id="studioTime">0:00 / 0:00</span>
             </div>
             {{-- Native audio kept as DOM fallback — hidden, still functional if JS fails --}}
-            <audio id="studioAudio" class="studio-player__native" controls>
+            <audio id="studioAudio" class="sh-audio-player__native" controls>
                 <source src="{{ $audioAsset->cdn_url }}" type="{{ $audioAsset->mime_type ?? 'audio/mpeg' }}">
             </audio>
         </div>

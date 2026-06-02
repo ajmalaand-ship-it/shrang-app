@@ -39,9 +39,24 @@
     <div class="sh-card player-card">
         <div class="sh-card__body">
             @if($audioUrl)
-                <audio controls class="player-audio" preload="metadata">
-                    <source src="{{ $audioUrl }}" type="audio/mpeg">
-                </audio>
+                <div class="sh-audio-player" id="pubPlayer">
+                    <div class="sh-audio-player__ui">
+                        <button class="sh-audio-player__playbtn" id="pubPlayBtn" aria-label="Play">
+                            <svg id="pubIconPlay" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                            <svg id="pubIconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none;" aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        </button>
+                        <div class="sh-audio-player__progress-wrap">
+                            <div class="sh-audio-player__bar" id="pubBar" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+                                <div class="sh-audio-player__bar-fill" id="pubFill"></div>
+                                <div class="sh-audio-player__bar-thumb" id="pubThumb"></div>
+                            </div>
+                        </div>
+                        <span class="sh-audio-player__time" id="pubTime">0:00 / 0:00</span>
+                    </div>
+                    <audio id="pubAudio" class="sh-audio-player__native" preload="metadata">
+                        <source src="{{ $audioUrl }}" type="audio/mpeg">
+                    </audio>
+                </div>
             @else
                 <div class="sh-notice sh-notice--info">Audio not available.</div>
             @endif
@@ -137,5 +152,69 @@ function showCopied() {
     el.style.opacity = '1';
     setTimeout(function() { el.style.opacity = '0'; }, 2000);
 }
+
+// ── Public Player — branded audio player ─────────────────────
+(function() {
+    var audio   = document.getElementById('pubAudio');
+    var playBtn = document.getElementById('pubPlayBtn');
+    var iconPlay  = document.getElementById('pubIconPlay');
+    var iconPause = document.getElementById('pubIconPause');
+    var bar     = document.getElementById('pubBar');
+    var fill    = document.getElementById('pubFill');
+    var thumb   = document.getElementById('pubThumb');
+    var timeEl  = document.getElementById('pubTime');
+
+    if (!audio || !playBtn) return;
+
+    function fmt(s) {
+        s = Math.floor(s || 0);
+        var m = Math.floor(s / 60);
+        var sec = s % 60;
+        return m + ':' + (sec < 10 ? '0' : '') + sec;
+    }
+    function updateBar() {
+        var pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+        fill.style.width = pct + '%';
+        thumb.style.left = pct + '%';
+        if (bar) bar.setAttribute('aria-valuenow', Math.round(pct));
+        timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+    }
+    function setPlaying(playing) {
+        iconPlay.style.display  = playing ? 'none'  : 'block';
+        iconPause.style.display = playing ? 'block' : 'none';
+        playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    }
+    playBtn.addEventListener('click', function() {
+        if (audio.paused) { audio.play(); } else { audio.pause(); }
+    });
+    audio.addEventListener('play',  function() { setPlaying(true); });
+    audio.addEventListener('pause', function() { setPlaying(false); });
+    audio.addEventListener('ended', function() { setPlaying(false); updateBar(); });
+    audio.addEventListener('timeupdate', updateBar);
+    audio.addEventListener('loadedmetadata', updateBar);
+    audio.addEventListener('durationchange', updateBar);
+    if (audio.readyState >= 1) { updateBar(); }
+
+    var dragging = false;
+    function seek(e) {
+        if (!audio.duration) return;
+        var rect = bar.getBoundingClientRect();
+        var x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        var pct = Math.max(0, Math.min(1, x / rect.width));
+        audio.currentTime = pct * audio.duration;
+        updateBar();
+    }
+    bar.addEventListener('mousedown', function(e) { dragging = true; seek(e); });
+    document.addEventListener('mousemove', function(e) { if (dragging) seek(e); });
+    document.addEventListener('mouseup', function() { dragging = false; });
+    bar.addEventListener('touchstart', function(e) { seek(e); e.preventDefault(); }, { passive: false });
+    bar.addEventListener('touchmove',  function(e) { seek(e); e.preventDefault(); }, { passive: false });
+    bar.addEventListener('keydown', function(e) {
+        if (!audio.duration) return;
+        if (e.key === 'ArrowRight') { audio.currentTime = Math.min(audio.duration, audio.currentTime + 5); }
+        if (e.key === 'ArrowLeft')  { audio.currentTime = Math.max(0, audio.currentTime - 5); }
+        updateBar();
+    });
+})();
 </script>
 @endsection
