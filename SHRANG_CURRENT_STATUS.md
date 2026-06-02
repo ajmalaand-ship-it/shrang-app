@@ -52,7 +52,7 @@ Task 6 My Clips: visually confirmed - same warm brown #1c1208 + music watermark 
 ## 4. Remaining Stage 2 Tasks (Roadmap Order)
 
 Task 6:  No-cover placeholder My Clips - COMPLETE
-Task 7:  Move sharing buttons from Studio to Public Player + restructure Studio workspace actions
+Task 7:  Move sharing buttons from Studio to Public Player + restructure Studio workspace actions - COMPLETE
 Task 8:  Mobile My Clips single column below 480px
 Task 9:  Admin Discover panel - show cover/title, add Remove button, sort newest first
 Task 10: MP3 vs Reel download distinction with icons and clearer labels
@@ -129,7 +129,7 @@ Stage 7 gaps:
 
 ## 11. Current Exact Task
 
-CURRENT: Task 7 - Move sharing buttons from Studio to Public Player + restructure Studio workspace actions
+CURRENT: Task 8 - Mobile My Clips single column below 480px
 
 ---
 
