@@ -45,13 +45,13 @@ Task 6 Discover: no-cover placeholder visually confirmed
   - large 120px orange music-note watermark at 15% opacity, absolutely centered
   - overlay made transparent on no-cover cards via .discover-card--no-cover .discover-card__cover-overlay
   - no small centered icon competing with the play button
-Task 6 My Clips: CSS changes made but NOT yet visually confirmed by Ajmal
+Task 6 My Clips: visually confirmed - same warm brown #1c1208 + music watermark as Discover
 
 ---
 
 ## 4. Remaining Stage 2 Tasks (Roadmap Order)
 
-Task 6:  No-cover placeholder My Clips - CURRENT TASK
+Task 6:  No-cover placeholder My Clips - COMPLETE
 Task 7:  Move sharing buttons from Studio to Public Player + restructure Studio workspace actions
 Task 8:  Mobile My Clips single column below 480px
 Task 9:  Admin Discover panel - show cover/title, add Remove button, sort newest first
@@ -129,9 +129,7 @@ Stage 7 gaps:
 
 ## 11. Current Exact Task
 
-CURRENT: My Clips no-cover placeholder
-- Same design as Discover: warm brown #1c1208, large 120px music watermark, orange color
-- Do not move to Task 7 until Ajmal visually confirms My Clips placeholder
+CURRENT: Task 7 - Move sharing buttons from Studio to Public Player + restructure Studio workspace actions
 
 ---
 
