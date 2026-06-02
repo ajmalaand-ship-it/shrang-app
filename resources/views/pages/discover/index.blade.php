@@ -52,7 +52,7 @@
                 $liked = in_array($clip->id, $likedIds);
                 $type  = $audio?->type === 'bed_audio' ? 'Bed Music' : 'Song';
             @endphp
-            <div class="discover-card" data-slug="{{ $clip->slug }}">
+            <div class="discover-card {{ !$cover ? 'discover-card--no-cover' : '' }}" data-slug="{{ $clip->slug }}">
 
                 {{-- Cover --}}
                 <div class="discover-card__cover">
@@ -60,12 +60,13 @@
                         <img src="{{ $cover->cdn_url }}" alt="{{ $clip->title }}" class="discover-card__cover-img">
                     @else
                         <div class="discover-card__cover-placeholder">
-                            <span class="discover-card__cover-icon">♪</span>
+                            <span class="discover-card__cover-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="40" height="40"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
                         </div>
                     @endif
                     <div class="discover-card__cover-overlay">
                         <div class="discover-card__badges">
-                            <span class="sh-badge sh-badge--lang">{{ strtoupper($clip->language) }}</span>
+                            @php $langNames = ["ps"=>"Pashto","fa"=>"Dari","ur"=>"Urdu","ar"=>"Arabic","hi"=>"Hindi","en"=>"English"]; @endphp
+                            <span class="sh-badge sh-badge--lang">{{ $langNames[$clip->language] ?? strtoupper($clip->language) }}</span>
                             <span class="sh-badge">{{ $type }}</span>
                             @if($clip->is_pinned) <span class="sh-badge" style="color:var(--sh-gold);">📌 Pinned</span> @endif
                         </div>
