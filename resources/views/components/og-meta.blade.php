@@ -3,8 +3,10 @@
 <meta property="og:description" content="{{ $description }}">
 <meta property="og:type" content="music.song">
 <meta property="og:url" content="{{ $pageUrl ?: request()->url() }}">
+<meta property="og:site_name" content="Shrang">
 @if ($imageUrl)
     <meta property="og:image" content="{{ $imageUrl }}">
+    <meta property="og:image:secure_url" content="{{ $imageUrl }}">
     <meta name="twitter:image" content="{{ $imageUrl }}">
 @endif
 <meta name="twitter:card" content="summary_large_image">
