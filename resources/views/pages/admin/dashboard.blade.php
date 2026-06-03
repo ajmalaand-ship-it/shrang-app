@@ -2,6 +2,13 @@
 @section('title', 'Dashboard')
 @section('content')
 
+@if($stats['daily_spend_cap_usd'] > 0 && $stats['today_spend_usd'] >= $stats['daily_spend_cap_usd'])
+<div class="sh-notice sh-notice--danger">
+    <strong>Daily AI spend cap hit</strong> — generations are paused until tomorrow.<br>
+    Today: ${{ number_format($stats['today_spend_usd'], 2) }} &nbsp;/&nbsp; Cap: ${{ number_format($stats['daily_spend_cap_usd'], 2) }}
+</div>
+@endif
+
 <div class="admin-stats">
     <div class="sh-card admin-stat">
         <div class="sh-card__body">
