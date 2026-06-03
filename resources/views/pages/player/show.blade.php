@@ -20,7 +20,7 @@
     <div class="player-cover">
         <img src="{{ $coverUrl }}" alt="{{ $clip->display_title }}" class="player-cover__img">
         <div class="player-cover__overlay">
-            <h1 class="player-cover__title">{{ $clip->display_title }}</h1>
+            <h1 class="player-cover__title" dir="auto">{{ $clip->display_title }}</h1>
             <div class="player-cover__badges">
                 <span class="sh-badge sh-badge--lang">{{ $langLabel }}</span>
             </div>
@@ -28,7 +28,7 @@
     </div>
     @else
     <div class="player-cover player-cover--no-image">
-        <h1 class="player-cover__title">{{ $clip->display_title }}</h1>
+        <h1 class="player-cover__title" dir="auto">{{ $clip->display_title }}</h1>
         <div class="player-cover__badges">
             <span class="sh-badge sh-badge--lang">{{ $langLabel }}</span>
         </div>
@@ -61,15 +61,34 @@
                 <div class="sh-notice sh-notice--info">Audio not available.</div>
             @endif
 
-            {{-- Actions --}}
-            <div class="player-actions">
-                {{-- Native share / copy --}}
+            {{-- Download row (primary actions) --}}
+            <div class="player-actions player-actions--downloads">
+                @if($reelUrl)
+                    <a href="{{ $reelUrl }}" download class="sh-btn sh-btn--primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download Reel
+                    </a>
+                    @if($downloadUrl)
+                    <a href="{{ $downloadUrl }}" download class="sh-btn sh-btn--ghost">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download MP3
+                    </a>
+                    @endif
+                @elseif($downloadUrl)
+                    <a href="{{ $downloadUrl }}" download class="sh-btn sh-btn--primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download MP3
+                    </a>
+                @endif
+            </div>
+
+            {{-- Share row --}}
+            <div class="player-actions player-actions--share">
                 <button type="button" class="sh-btn sh-btn--ghost" id="share-btn"
                         data-url="{{ $shareUrl }}" data-title="{{ $clip->display_title }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     Share
                 </button>
-                {{-- WhatsApp --}}
                 <a href="https://wa.me/?text={{ urlencode($clip->display_title . ' — ' . $shareUrl) }}"
                    target="_blank" rel="noopener"
                    class="sh-btn sh-btn--ghost player-btn--whatsapp">
@@ -83,14 +102,6 @@
                     Facebook
                 </a>
                 <span class="player-actions__copied" id="share-copied">Link copied!</span>
-
-                {{-- Download --}}
-                @if($downloadUrl)
-                    <a href="{{ $downloadUrl }}" download class="sh-btn sh-btn--primary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Download
-                    </a>
-                @endif
             </div>
 
             {{-- Share URL display --}}
@@ -102,26 +113,35 @@
                 </div>
             </div>
 
-            {{-- Embed --}}
-            <div class="player-share-box">
-                <label class="sh-label">Embed</label>
-                <div class="player-share-box__row">
+            {{-- Embed (collapsed by default) --}}
+            <details class="player-share-box player-share-box--collapsible">
+                <summary class="player-share-box__summary">Show embed code</summary>
+                <div class="player-share-box__row" style="margin-top:0.5rem;">
                     <input type="text" class="sh-input" value="{{ $embedCode }}" readonly id="embed-input">
                     <button type="button" class="sh-btn sh-btn--ghost sh-btn--sm" onclick="copyEmbed()">Copy</button>
                 </div>
+            </details>
+
+            {{-- Shrang brand mark --}}
+            <div class="player-brand-mark">
+                <span class="player-brand-mark__label">Made with</span>
+                <a href="/" class="player-brand-mark__logo">
+                    <span class="player-brand-mark__logo-ar">شرنګ</span>
+                    <span class="player-brand-mark__logo-en">Shrang</span>
+                </a>
             </div>
         </div>
     </div>
 
     {{-- Lyrics --}}
     @if($clip->lyrics_input && $audioUrl)
-    <div class="sh-card">
-        <div class="sh-card__header">Lyrics</div>
+    <div class="sh-card player-lyrics-card">
+        <div class="sh-card__header player-lyrics-card__header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            <span>{{ $clip->script_direction === 'rtl' ? 'Lyrics / Poem' : 'Lyrics' }}</span>
+        </div>
         <div class="sh-card__body">
-            <div class="studio-page__lyrics {{ $clip->script_direction === 'rtl' ? 'sh-script-rtl' : '' }}"
-                 dir="{{ $clip->script_direction }}">
-                {!! nl2br(e($clip->lyrics_input)) !!}
-            </div>
+            <div class="studio-lyrics {{ $clip->script_direction === 'rtl' ? 'studio-lyrics--rtl' : 'studio-lyrics--ltr' }}" dir="{{ $clip->script_direction }}">{{ trim($clip->lyrics_input) }}</div>
         </div>
     </div>
     @endif

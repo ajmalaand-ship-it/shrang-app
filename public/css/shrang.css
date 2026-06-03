@@ -426,6 +426,7 @@ img { max-width: 100%; display: block; }
 .player-cover__overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem 1.5rem 1.5rem; background: linear-gradient(transparent, rgba(0,0,0,0.85)); }
 .player-cover--no-image { background: var(--sh-dark-3); border: 1px solid var(--sh-border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; min-height: 200px; }
 .player-cover__title { font-size: clamp(1.25rem, 4vw, 2rem); font-weight: 700; color: #fff; margin: 0 0 0.5rem; }
+.player-cover__title[dir="rtl"], .player-cover__title:dir(rtl) { font-family: var(--sh-font-rtl); }
 .player-cover__badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .player-card { margin-bottom: 1.5rem; }
 .player-audio { width: 100%; display: block; accent-color: var(--sh-orange); margin-bottom: 1.25rem; }
@@ -661,7 +662,7 @@ img { max-width: 100%; display: block; }
 .studio-cover-preview .studio-cover__placeholder { width:160px; height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--sh-dark-3); border-radius:var(--sh-radius-lg); }
 .studio-cover-actions { flex:1; }
 .studio-lyrics { font-size:1rem; line-height:2; white-space:pre-wrap; color:var(--sh-text-primary); }
-.studio-lyrics--rtl { text-align:right; direction:rtl; font-size:1.1rem; line-height:2.2; }
+.studio-lyrics--rtl { text-align:right; direction:rtl; font-size:1.1rem; line-height:1.8; }
 .studio-lyrics--ltr { text-align:left; direction:ltr; }
 .studio-action-row { display:flex; align-items:center; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--sh-dark-4); gap:1rem; }
 .studio-action-row:last-child { border-bottom:none; }
@@ -720,8 +721,8 @@ img { max-width: 100%; display: block; }
 .studio-meta-value { font-size:0.875rem; color:var(--sh-text-primary); font-weight:500; }
 
 /* Lyrics */
-.studio-lyrics { font-size:1rem; line-height:2; color:var(--sh-text-primary); }
-.studio-lyrics--rtl { direction:rtl; text-align:right; font-size:1.1rem; line-height:2.4; font-family:'Noto Naskh Arabic','Segoe UI',sans-serif; }
+.studio-lyrics { font-size:1rem; line-height:2; white-space:pre-wrap; color:var(--sh-text-primary); }
+.studio-lyrics--rtl { direction:rtl; text-align:right; font-size:1.1rem; line-height:1.8; font-family:var(--sh-font-rtl); }
 .studio-lyrics--ltr { direction:ltr; text-align:left; }
 
 /* Danger Zone */
@@ -1549,4 +1550,84 @@ input[type="password"] {
 @media(max-width:480px){
     .discover-grid { grid-template-columns: 1fr; }
     .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Public Player collapsible Embed section ─────────────────── */
+.player-share-box--collapsible { margin-top: 1rem; }
+.player-share-box__summary {
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--sh-text-muted);
+    padding: 0.5rem 0;
+    list-style: none;
+    user-select: none;
+}
+.player-share-box__summary::-webkit-details-marker { display: none; }
+.player-share-box__summary::before {
+    content: '+ ';
+    color: var(--sh-orange);
+    font-weight: 600;
+}
+.player-share-box--collapsible[open] .player-share-box__summary::before {
+    content: '− ';
+}
+.player-share-box--collapsible[open] .player-share-box__summary {
+    color: var(--sh-text-primary);
+}
+
+/* ── Public Player action rows ───────────────────────────────── */
+.player-actions--downloads {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0 0.5rem;
+}
+.player-actions--downloads .sh-btn { flex: 1; min-width: 0; justify-content: center; }
+.player-actions--share {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.player-actions--share .sh-btn { flex: 1; min-width: 0; justify-content: center; }
+
+/* ── Public Player brand mark ────────────────────────────────── */
+.player-brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--sh-border);
+    font-size: 0.75rem;
+    color: var(--sh-text-muted);
+}
+.player-brand-mark__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    text-decoration: none;
+    color: var(--sh-orange);
+    font-weight: 600;
+}
+.player-brand-mark__logo-ar {
+    font-family: var(--sh-font-rtl);
+    font-size: 0.95rem;
+}
+.player-brand-mark__logo-en {
+    font-family: var(--sh-font-en);
+    font-size: 0.85rem;
+}
+.player-brand-mark__logo:hover { color: var(--sh-orange-light); }
+
+/* ── Public Player lyrics card polish ────────────────────────── */
+.player-lyrics-card__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.player-lyrics-card__header svg {
+    color: var(--sh-orange);
+    flex-shrink: 0;
 }
