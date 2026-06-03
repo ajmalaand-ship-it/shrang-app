@@ -69,7 +69,7 @@ Stage 3 gaps:
 
 Stage 6 gaps:
 - OG image reel thumbnail - deferred (reel is MP4, needs FFmpeg frame extraction first)
-- Telegram link preview - verified WhatsApp but not Telegram yet
+- Telegram link preview - COMPLETE (added og:site_name and og:image:secure_url; og:image:width/height omitted — cover dimensions vary)
 
 Stage 7 gaps:
 - Admin alert when daily spend cap is hit - enforcement exists but no email/log notification
@@ -129,7 +129,7 @@ Stage 7 gaps:
 
 ## 11. Current Exact Task
 
-CURRENT: Stage 3 gaps closed. Next: Stage 6 or Stage 7 gaps, or move to Stage 8.
+CURRENT: Stage 6 Telegram link preview gap closed. Remaining open gaps: Stage 6 OG reel thumbnail (blocked on FFmpeg), Stage 7 admin spend-cap alert, or move to Stage 8.
 
 ---
 
@@ -219,3 +219,4 @@ This file is the single source of truth. Keep it updated after every confirmed t
 
 - June 2, 2026 (session 1): Stage 2 Tasks 1-10 complete; SHRANG_CURRENT_STATUS.md created.
 - June 2-3, 2026 (session 2): Stage 3 gaps closed - Public Player visual redesign (6 steps: Vazirmatn font, lyrics alignment fix, collapsible embed, consistent share grid, brand mark, polished lyrics card); reel preview on Discover (desktop hover, revisit for animation). Commits: cbfbdb0, c4d9587, 9c52988, 7eaaaaf.
+- June 3, 2026 (session 3): Stage 6 Telegram link preview gap closed — added og:site_name and og:image:secure_url to og-meta component. Commit: 7603e33.
