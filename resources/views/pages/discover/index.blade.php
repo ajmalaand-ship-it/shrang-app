@@ -52,11 +52,13 @@
                 $liked = in_array($clip->id, $likedIds);
                 $type  = $audio?->type === 'bed_audio' ? 'Bed Music' : 'Song';
             @endphp
-            <div class="discover-card {{ !$cover ? 'discover-card--no-cover' : '' }}" data-slug="{{ $clip->slug }}">
+            <div class="discover-card {{ !$cover ? 'discover-card--no-cover' : '' }} {{ $reel ? 'discover-card--has-reel' : '' }}" data-slug="{{ $clip->slug }}">
 
                 {{-- Cover --}}
                 <div class="discover-card__cover">
-                    @if($cover)
+                    @if($reel)
+                        <video class="discover-card__cover-img discover-card__cover-reel" src="{{ $reel->cdn_url }}" muted loop playsinline preload="metadata" @if($cover) poster="{{ $cover->cdn_url }}" @endif></video>
+                    @elseif($cover)
                         <img src="{{ $cover->cdn_url }}" alt="{{ $clip->title }}" class="discover-card__cover-img">
                     @else
                         <div class="discover-card__cover-placeholder">
@@ -187,5 +189,25 @@ document.querySelectorAll('.discover-download-btn').forEach(btn => {
         });
     });
 });
+
+// ── Reel preview on Discover cards (desktop hover only) ────────
+(function() {
+    var reels = document.querySelectorAll('.discover-card__cover-reel');
+    if (!reels.length) return;
+
+    reels.forEach(function(video) {
+        var card = video.closest('.discover-card');
+        if (!card) return;
+
+        card.addEventListener('mouseenter', function() {
+            var p = video.play();
+            if (p && p.catch) p.catch(function(){});
+        });
+        card.addEventListener('mouseleave', function() {
+            video.pause();
+            video.currentTime = 0;
+        });
+    });
+})();
 </script>
 @endsection
