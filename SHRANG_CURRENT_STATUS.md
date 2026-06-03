@@ -188,3 +188,34 @@ CURRENT: Stage 3 gaps closed. Next: Stage 6 or Stage 7 gaps, or move to Stage 8.
 | Database | shrang_staging (MySQL) |
 | Queue worker | systemd shrang-worker - queues: ai-generation, default, notifications |
 | Branch | main - live at shrang.com |
+
+---
+
+## 16. Revisit Later (Deferred, Not Forgotten)
+
+- Reel preview on Discover: works on desktop hover, but current reels are static single-frame MP4s, so there is no visible motion yet. Revisit when reels become animated — hover preview will then show real motion automatically. Mobile one-visible-reel autoplay (IntersectionObserver) was attempted and deferred; revisit together with animated reels.
+- Task 5B: full custom select dropdown open-state across all 17 selects - deferred (risky).
+- OG image reel thumbnail (Stage 6): needs FFmpeg frame extraction from the MP4 reel.
+- Stage 2 audit leftovers: Like/download buttons small on Discover; Audio/Cover/Reel pills clickability unclear on My Clips; too many badges per card on mobile My Clips; replace play and pinned emoji with SVG.
+
+---
+
+## 17. Session Handoff - How to Resume in a New Chat
+
+A new chat has no memory of past sessions. To resume:
+1. Connect: ssh root@157.250.199.106
+2. Run:
+       cd /home/shrang/laravel-app
+       git status --short
+       git log --oneline -20
+       cat SHRANG_CURRENT_STATUS.md
+3. Tell the assistant: "Read SHRANG_CURRENT_STATUS.md fully, then continue from section 11 (Current Exact Task). Follow the Work Protocol in section 13 and Decision Rules in section 12 strictly."
+
+This file is the single source of truth. Keep it updated after every confirmed task.
+
+---
+
+## 18. Session Log
+
+- June 2, 2026 (session 1): Stage 2 Tasks 1-10 complete; SHRANG_CURRENT_STATUS.md created.
+- June 2-3, 2026 (session 2): Stage 3 gaps closed - Public Player visual redesign (6 steps: Vazirmatn font, lyrics alignment fix, collapsible embed, consistent share grid, brand mark, polished lyrics card); reel preview on Discover (desktop hover, revisit for animation). Commits: cbfbdb0, c4d9587, 9c52988, 7eaaaaf.
