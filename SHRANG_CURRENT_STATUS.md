@@ -64,7 +64,7 @@ Task 5B: Full custom dropdown open-state (deferred - risky across 17 selects)
 
 Stage 3 gaps:
 - Facebook share on Public Player (replacing Telegram - confirmed in session)
-- Public Player page visual redesign - functional but needs stronger design
+- Public Player page visual redesign - COMPLETE (Vazirmatn font, fixed lyrics alignment, collapsible embed, consistent share grid, Shrang brand mark, polished lyrics card)
 - Smart asset hierarchy on Discover - reel preview when reel exists
 
 Stage 6 gaps:
@@ -129,7 +129,7 @@ Stage 7 gaps:
 
 ## 11. Current Exact Task
 
-CURRENT: Stage 2 core tasks complete. Review remaining gaps before Stage 3.
+CURRENT: Stage 3 gap - reel preview on Discover cards when reel exists
 
 ---
 
