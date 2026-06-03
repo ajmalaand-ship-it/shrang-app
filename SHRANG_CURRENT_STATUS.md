@@ -63,7 +63,7 @@ Task 5B: Full custom dropdown open-state (deferred - risky across 17 selects)
 ## 5. Remaining Gaps in Completed Stages
 
 Stage 3 gaps:
-- Facebook share on Public Player (replacing Telegram - confirmed in session)
+- Facebook share on Public Player (replacing Telegram - confirmed in session) - COMPLETE (Facebook share button present in player share row)
 - Public Player page visual redesign - COMPLETE (Vazirmatn font, fixed lyrics alignment, collapsible embed, consistent share grid, Shrang brand mark, polished lyrics card)
 - Smart asset hierarchy on Discover - reel preview when reel exists - COMPLETE (desktop hover playback; mobile autoplay deferred; revisit when reels become animated)
 
@@ -197,6 +197,7 @@ CURRENT: Stage 6 and Stage 7 gaps closed. Only remaining gap: Stage 6 OG reel th
 - Task 5B: full custom select dropdown open-state across all 17 selects - deferred (risky).
 - OG image reel thumbnail (Stage 6): needs FFmpeg frame extraction from the MP4 reel.
 - Stage 2 audit leftovers: Like/download buttons small on Discover; Audio/Cover/Reel pills clickability unclear on My Clips; too many badges per card on mobile My Clips; replace play and pinned emoji with SVG.
+- Imagen 4 rate limiting (HTTP 429) — at scale, many simultaneous image generations will fail. Needs queue rate-limiting, retry/backoff, and a clear user-facing error message. Also: image generation failures show no frontend notification.
 
 ---
 
