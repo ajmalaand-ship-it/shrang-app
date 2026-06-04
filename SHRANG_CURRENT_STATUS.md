@@ -17,7 +17,7 @@
 | Stage 5 | Credits and Payments | Complete |
 | Stage 6 | SEO and Discoverability | Complete |
 | Stage 7 | Admin, Operations, and Cost Control | Complete |
-| Stage 8 | Staging Environment and Deployment Safety | Not started |
+| Stage 8 | Staging Environment and Deployment Safety | Not started (deferred — will be done last, after Stages 9 and 10) |
 | Stage 9 | Pashto and Regional Language Quality Depth | Not started |
 | Stage 10 | Production Launch Readiness Gate | Not started |
 
@@ -76,7 +76,9 @@ Stage 7 gaps:
 
 ---
 
-## 6. Stage 8 - Staging Environment (Not Started)
+## 6. Stage 8 - Staging Environment (Deferred — will be done last, after Stages 9 and 10)
+
+Live fixes are acceptable while unannounced. Staging will be set up before any public launch.
 
 - Recreate staging.shrang.com as separate Laravel clone - own folder, own .env, own database
 - Password-protect staging - HTTP basic auth or IP restriction
@@ -129,7 +131,7 @@ Stage 7 gaps:
 
 ## 11. Current Exact Task
 
-CURRENT: Cover generation failure now shows a user-facing error in Studio instead of silently getting stuck. clip.status untouched — song unaffected. Commit: bfc1fd1. Next: Stage 8 (staging environment) or remaining Imagen 4 rate-limit hardening (429 retry/backoff — see Section 16).
+CURRENT: Imagen 4 429 partial mitigation deployed (rate_limited detection, backoff, tries=3). Root cause is Google quota ceiling — see Section 16. Next: finish Stage 2 audit leftovers, then Stage 9 (Pashto quality). Stage 8 (staging) is deferred to last.
 
 ---
 
@@ -185,7 +187,7 @@ CURRENT: Cover generation failure now shows a user-facing error in Studio instea
 | /home/shrang/laravel-app/deploy.sh | Deploy script - always run after code changes |
 | /home/shrang/laravel-app/storage/logs/laravel.log | Laravel error log |
 | /home/shrang/laravel-app/SHRANG_CURRENT_STATUS.md | This file - source of truth |
-| Database | shrang_staging (MySQL) |
+| Database | shrang_staging (MySQL) — NOTE: production DB name unverified, needs confirming |
 | Queue worker | systemd shrang-worker - queues: ai-generation, default, notifications |
 | Branch | main - live at shrang.com |
 
@@ -197,7 +199,11 @@ CURRENT: Cover generation failure now shows a user-facing error in Studio instea
 - Task 5B: full custom select dropdown open-state across all 17 selects - deferred (risky).
 - OG image reel thumbnail (Stage 6): needs FFmpeg frame extraction from the MP4 reel.
 - Stage 2 audit leftovers: Like/download buttons small on Discover; Audio/Cover/Reel pills clickability unclear on My Clips; too many badges per card on mobile My Clips; replace play and pinned emoji with SVG.
-- Imagen 4 rate limiting (HTTP 429) — at scale, many simultaneous image generations will fail. Needs queue rate-limiting, retry/backoff. User-facing error message for cover failure is now fixed (bfc1fd1) — user sees "Cover image couldn't be generated — try again below" instead of silent stuck state. Remaining: 429-aware retry/backoff in GenerateCoverImageJob (no exponential backoff, no Retry-After header parsing, $tries=2 retries fire ~90s apart into same rate limit).
+- Imagen 4 / Vertex AI scaling — ROOT CAUSE is Google project quota, not a code bug. Current daily limit is only 70 images/day (Paid Tier 1) with a low per-minute burst limit. Concurrent requests trigger 429 RESOURCE_EXHAUSTED. Failing retries also count against the daily quota.
+  Fix has two parts:
+  (a) Google side: request a quota increase (daily + RPM); tier rises with billing history.
+  (b) App side: Redis throttle on GenerateCoverImageJob to limit concurrent Vertex requests, exponential backoff with jitter, and a guard against duplicate cover jobs for the same clip.
+  Current 429/backoff code (rate_limited detection + backoff, tries=3) is a partial mitigation only — does not solve the quota ceiling.
 
 ---
 
