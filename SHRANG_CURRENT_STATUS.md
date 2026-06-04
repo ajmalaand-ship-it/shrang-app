@@ -129,7 +129,7 @@ Stage 7 gaps:
 
 ## 11. Current Exact Task
 
-CURRENT: Stage 6 and Stage 7 gaps closed. Only remaining gap: Stage 6 OG reel thumbnail (blocked on FFmpeg). Next: Stage 8 (staging environment) or deferred gaps in Section 16.
+CURRENT: Cover generation failure now shows a user-facing error in Studio instead of silently getting stuck. clip.status untouched — song unaffected. Commit: bfc1fd1. Next: Stage 8 (staging environment) or remaining Imagen 4 rate-limit hardening (429 retry/backoff — see Section 16).
 
 ---
 
@@ -197,7 +197,7 @@ CURRENT: Stage 6 and Stage 7 gaps closed. Only remaining gap: Stage 6 OG reel th
 - Task 5B: full custom select dropdown open-state across all 17 selects - deferred (risky).
 - OG image reel thumbnail (Stage 6): needs FFmpeg frame extraction from the MP4 reel.
 - Stage 2 audit leftovers: Like/download buttons small on Discover; Audio/Cover/Reel pills clickability unclear on My Clips; too many badges per card on mobile My Clips; replace play and pinned emoji with SVG.
-- Imagen 4 rate limiting (HTTP 429) — at scale, many simultaneous image generations will fail. Needs queue rate-limiting, retry/backoff, and a clear user-facing error message. Also: image generation failures show no frontend notification.
+- Imagen 4 rate limiting (HTTP 429) — at scale, many simultaneous image generations will fail. Needs queue rate-limiting, retry/backoff. User-facing error message for cover failure is now fixed (bfc1fd1) — user sees "Cover image couldn't be generated — try again below" instead of silent stuck state. Remaining: 429-aware retry/backoff in GenerateCoverImageJob (no exponential backoff, no Retry-After header parsing, $tries=2 retries fire ~90s apart into same rate limit).
 
 ---
 
@@ -222,3 +222,4 @@ This file is the single source of truth. Keep it updated after every confirmed t
 - June 2-3, 2026 (session 2): Stage 3 gaps closed - Public Player visual redesign (6 steps: Vazirmatn font, lyrics alignment fix, collapsible embed, consistent share grid, brand mark, polished lyrics card); reel preview on Discover (desktop hover, revisit for animation). Commits: cbfbdb0, c4d9587, 9c52988, 7eaaaaf.
 - June 3, 2026 (session 3): Stage 6 Telegram link preview gap closed — added og:site_name and og:image:secure_url to og-meta component. Commit: 7603e33.
 - June 3, 2026 (session 3 cont): Stage 7 admin spend-cap alert gap closed — danger banner on admin dashboard when daily cap is hit. Commit: 23f7a11.
+- June 4, 2026 (session 4): Cover generation silent failure fixed — Studio now shows user-facing danger notice when cover_status === "failed" via polling JS; clip.status untouched, song unaffected. Commit: bfc1fd1.
