@@ -296,6 +296,8 @@ $displayTitle = $clip->display_title;
     </div>
 </div>
 
+<div id="cover-gen-error" class="sh-notice sh-notice--danger studio-notice" style="display:none;">Cover image couldn't be generated — you can try again below.</div>
+
 {{-- COVER TOOLS --}}
 <div class="sh-card studio-cover-card">
     <div class="sh-card__header">Cover Image</div>
@@ -543,7 +545,11 @@ function studioShare(btn) {
                 headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(function(r) { return r.json(); })
-            .then(function(d) { if (d.cover_ready) { location.reload(); } else { setTimeout(pollCover, 4000); } })
+            .then(function(d) {
+                if (d.cover_ready) { location.reload(); }
+                else if (d.cover_status === 'failed') { var e = document.getElementById('cover-gen-error'); if (e) e.style.display = 'block'; }
+                else { setTimeout(pollCover, 4000); }
+            })
             .catch(function() { setTimeout(pollCover, 6000); });
         }
         setTimeout(pollCover, 4000);
