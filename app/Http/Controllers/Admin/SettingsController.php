@@ -18,7 +18,11 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             "key"   => ["required", "string", "max:100"],
-            "value" => ["required", "string", "max:1000"],
+            "value" => ["required", "string", "max:1000",
+                \Illuminate\Validation\Rule::when(
+                    in_array($request->input("key"), ["lyria_song_mode", "lyria_bed_mode"]),
+                    ["in:dev_clip_30,dev_pro_60,dev_pro_180,vertex_002_30"]
+                )],
         ]);
         $this->settings->set($validated["key"], $validated["value"], $request->user()->id);
         return redirect()->route("admin.settings.index")

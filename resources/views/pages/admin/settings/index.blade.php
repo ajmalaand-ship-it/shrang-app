@@ -24,8 +24,15 @@
                                 <form method="POST" action="{{ route("admin.settings.update") }}" style="display:flex;gap:0.5rem;">
                                     @csrf
                                     <input type="hidden" name="key" value="{{ $setting->key }}">
-                                    <input type="text" name="value" class="sh-input"
-                                           value="{{ $setting->value }}" style="max-width:160px;">
+                                    @if (in_array($setting->key, ["lyria_song_mode", "lyria_bed_mode"]))
+                                        <select name="value" class="sh-input" style="max-width:180px;">
+                                            @foreach (["dev_clip_30" => "Developer Lyria Clip — 30s", "dev_pro_60" => "Developer Lyria Pro — about 60s", "dev_pro_180" => "Developer Lyria Pro — up to 3 min", "vertex_002_30" => "Vertex Lyria 002 — 30s test mode"] as $val => $label)
+                                                <option value="{{ $val }}" @selected($setting->value === $val)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    @else
+                                        <input type="text" name="value" class="sh-input" value="{{ $setting->value }}" style="max-width:160px;">
+                                    @endif
                                     <button type="submit" class="sh-btn sh-btn--sm sh-btn--primary">Save</button>
                                 </form>
                             </td>

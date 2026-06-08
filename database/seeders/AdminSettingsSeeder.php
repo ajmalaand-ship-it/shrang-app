@@ -18,6 +18,8 @@ class AdminSettingsSeeder extends Seeder
             ["key" => "song_duration_seconds",   "value" => "60",  "cast" => "int",  "group" => "ai",      "label" => "Song clip duration (seconds)",       "is_public" => false],
             ["key" => "bed_duration_seconds",    "value" => "180", "cast" => "int",  "group" => "ai",      "label" => "Bed music duration (seconds)",       "is_public" => false],
             ["key" => "ai_music_provider",       "value" => "lyria","cast" => "string","group" => "ai",    "label" => "Music generation provider",          "is_public" => false],
+            ["key" => "lyria_song_mode",         "value" => "pro_60",  "cast" => "string", "group" => "ai",       "label" => "Lyria song mode (generateMusic)",      "is_public" => false],
+            ["key" => "lyria_bed_mode",          "value" => "pro_180", "cast" => "string", "group" => "ai",       "label" => "Lyria bed music mode (generateBed)",   "is_public" => false],
             ["key" => "maintenance_mode",        "value" => "0",   "cast" => "bool", "group" => "features","label" => "Maintenance mode",                   "is_public" => true],
         ];
         foreach ($settings as $setting) {
