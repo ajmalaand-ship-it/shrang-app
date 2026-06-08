@@ -2,21 +2,34 @@
 
 **This file is the single source of truth.** It is both the live status and the plan. Update it after every confirmed task: move finished items into "DONE LOG" and tick them off the steps below.
 
-**Last updated:** June 7, 2026
+**Last updated:** June 8, 2026
 **Server:** 157.250.199.106 | **App:** /home/shrang/laravel-app | **Live:** shrang.com
 **Stack:** Laravel 13, PHP 8.5, MySQL, Redis, FFmpeg, Google Lyria 3, Imagen 4 (all on Vertex AI)
 **Goal:** Public launch as fast as *safely* possible.
 
 ---
 
-## CURRENT TASK
+## CURRENT TASK / NEXT UP
 
-**Admin model/duration switcher** — let admin choose the Lyria model + length per generation:
-- Lyria Clip — 30s
-- Lyria Pro — 60s (reel default)
-- Lyria Pro — 3min (full track, max 184s)
+AI Providers architecture + AI Settings tab are DONE (see DONE LOG). Music is working again. Next items, in order:
 
-First step (read-only): confirm whether `generateMusic()` actually reads `config('ai.lyria.model')` from `.env` or ignores it, so we know how the switcher feeds the chosen model + duration in.
+1. **Open action (Ajmal): request Vertex Lyria 3 allowlist for project `shrang`.** Vertex AI Media Studio (Cloud Console) → request access to the Lyria music models. Confirm the service account has `roles/aiplatform.user`. (IAM is likely NOT the blocker — `lyria-002` reached the model, which would have 403'd on a permission problem — so don't add unnecessary roles.) This unblocks long songs + Shrang languages on Vertex's scalable infra later; approval takes time, so submit early.
+
+2. **Long-song generation (the "up to 3 min" problem).** `dev_pro_180` mode is wired correctly (verified: the " Up to 3 minutes." hint reaches the prompt) but Lyria still returns ~59s. Root cause = Lyria behaviour, NOT a code bug: Lyria has no duration parameter; length is driven by how much musical/lyrical structure the prompt implies. A short lyric + "up to 3 minutes" yields ~60s. FIX = prompt engineering in `PromptService` (buildSongPrompt / bed prompt): add explicit structure (intro, verses, chorus repeats, bridge, outro) and richer arrangement cues to make the model fill the time. Note: even then length is not guaranteed — we improve odds, can't force it. This is a PromptService task, separate from LyriaProvider.
+
+3. Then **Step 2 — Safety Nets** (below) — the next real build phase; launch-blocking.
+
+### Confirmed Lyria diagnosis (verified June 8 — keep for reference)
+- **Imagen → Vertex: working.** Keep as-is.
+- **Vertex `lyria-002`: WORKING** on project `shrang` via `:predict` + `instances`/`parameters` + Bearer. Confirmed live (returned a 400 "Unsupported language: en" — i.e. reached the model and generated, but **English-only** right now). ~30s. Good as a scalable English test mode only; NOT suitable as the main path since Shrang is Pashto/Dari/Urdu-first.
+- **Vertex `lyria-3-pro-preview` / `lyria-3-clip-preview`: NOT accessible** (HTTP 404 = not allowlisted). Exist on Vertex but need access request. Endpoint/format for Vertex Lyria 3 is UNVERIFIED — must test after allowlist before enabling.
+- **Developer API Lyria 3 Pro/Clip: WORKING — current real path** for all languages + longer songs + bed music. Its own quota limits.
+
+### Rules (keep)
+- Do NOT force all music to Vertex. Do NOT remove Developer API Lyria 3 Pro. Do NOT enable Vertex Lyria 3 until allowlist granted AND endpoint/format tested.
+
+### AI Settings tab (built) — future rows to add later
+The dedicated `/admin/ai` page currently has the 2 Lyria mode dropdowns + a note. Later add: image provider control, cover fallback provider (Vertex Imagen → OpenAI), Vertex Imagen status, Vertex Lyria 3 pending/allowlist status, provider notes/limits.
 
 ---
 
@@ -32,6 +45,11 @@ Do not open Shrang to the public until ALL are true:
 ---
 
 ## DONE LOG (most recent first)
+
+- **June 8 — Music RESTORED + provider-aware architecture + AI Settings tab.** Rebuilt `LyriaProvider` to be provider-aware: `resolveMode()` returns provider+model+hint+duration; `callApi()` branches to `callDeveloper()` (generativelanguage + ?key= + generateContent) or `callVertex()` (aiplatform + Bearer + :predict + instances/parameters). Modes: dev_clip_30, dev_pro_60 (song default), dev_pro_180 (bed default), vertex_002_30 (English-only test). Song + bed generation confirmed working via Developer API; Vertex lyria-002 confirmed reachable (English-only). Added dedicated **Admin → AI Settings** page (`/admin/ai`: nav link, AiSettingsController, view with 2 dropdowns + note) and removed all AI rows (lyria_song_mode, lyria_bed_mode, ai_music_provider, song/bed_duration_seconds — all confirmed unused) from the general Settings page via a whereNotIn filter (DB rows kept). Commits: `19ab364` (provider-aware Lyria + validation), `a042ef2` (AI Settings tab). NOT pushed.
+- Known issue logged as a task: dev_pro_180 still yields ~59s — Lyria prompt-driven behaviour, fix in PromptService (see Next Up #2).
+
+- **June 8 — Admin music switcher built (UI works), but music generation currently BROKEN.** Added `lyria_song_mode`/`lyria_bed_mode` admin dropdowns (commit pending) and pointed `LyriaProvider` at Vertex. Problem: the switcher sends Developer-API model names (`lyria-3-*`) to the Vertex endpoint, which 404s because the project isn't allowlisted for Lyria 3 on Vertex. Net effect: songs/bed music do not generate right now. Resolution path = the AI Providers architecture in Current Task (Developer API stays for Lyria 3 Pro; Vertex Lyria 3 pending allowlist). **Music is currently down until this is built or the Lyria provider is pointed back at the working Developer API path.**
 
 - **June 7 — STEP 1 COMPLETE: Vertex AI migration.** Both image (`GeminiProvider`, `imagen-4.0-generate-001`) and music (`LyriaProvider`, `lyria-3-pro-preview`) now call `aiplatform.googleapis.com` using a Service Account OAuth Bearer token (key: `/home/shrang/shrang-322f6c4e0f1c.json`, project `shrang`, region `us-central1`). Live-confirmed (cover + song generated) and code-verified. Commits: `6d18abe` (Imagen), `5420f12` (Lyria). The 70/day Developer-API cap is gone.
 - June 4 — Cover silent-failure fixed: Studio shows a user notice when `cover_status === "failed"`; clip.status untouched. Commit `bfc1fd1`.
