@@ -3,9 +3,23 @@ namespace App\Services;
 class PromptService
 {
     private PronunciationService $pronunciation;
-    public function __construct(PronunciationService $pronunciation)
+    private AdminSettingsService $settings;
+    public function __construct(PronunciationService $pronunciation, AdminSettingsService $settings)
     {
         $this->pronunciation = $pronunciation;
+        $this->settings = $settings;
+    }
+
+    /**
+     * Resolves the admin-selected song mode to a target duration in seconds.
+     */
+    private function songDurationSeconds(): int
+    {
+        return match ($this->settings->get("lyria_song_mode", "dev_pro_60")) {
+            "dev_clip_30", "vertex_002_30" => 30,
+            "dev_pro_180", "vertex_lyria3_pro" => 180,
+            default => 60,
+        };
     }
     private array $languageLabels = [
         'ps' => 'Pashto',
@@ -83,7 +97,9 @@ class PromptService
         $direction = $params['creative_direction'] ?? '';
         $langLabel = $this->languageLabels[$language] ?? $language;
         $hints = $this->pronunciation->injectHints($lyrics, $language);
-        $prompt  = "Create an original song of exactly 59 to 60 seconds.\n";
+        $seconds = $this->songDurationSeconds();
+        $lengthPhrase = $seconds >= 180 ? "about 3 minutes (around 180 seconds), a full-length song with intro, verses, chorus, and a bridge" : ($seconds >= 60 ? "about {$seconds} seconds" : "about 30 seconds");
+        $prompt  = "Create an original song of {$lengthPhrase}.\n";
         $prompt .= "Language: {$langLabel}\n";
         if ($style) $prompt .= "Music style: {$style}\n";
         if ($voice && $voice !== 'no_preference') {
@@ -96,7 +112,7 @@ class PromptService
         $prompt .= "Lyrics:\n{$lyrics}\n";
         if ($hints) $prompt .= "Pronunciation notes: {$hints}\n";
         $prompt .= "Sing the lyrics exactly as written. Do not translate or rewrite them. Do not imitate any existing artist or song.\n";
-        $prompt .= "Duration: exactly 59-60 seconds.\n";
+        $prompt .= "Target duration: {$lengthPhrase}.\n";
         return trim($prompt);
     }
     public function buildBedPrompt(array $params): string

@@ -33,6 +33,7 @@
                                     <option value="dev_pro_60" @selected($songMode === 'dev_pro_60')>Developer Lyria Pro — about 60s</option>
                                     <option value="dev_pro_180" @selected($songMode === 'dev_pro_180')>Developer Lyria Pro — up to 3 min</option>
                                     <option value="vertex_002_30" @selected($songMode === 'vertex_002_30')>Vertex Lyria 002 — 30s test mode</option>
+                                    <option value="vertex_lyria3_pro" @selected($songMode === 'vertex_lyria3_pro')>Vertex Lyria 3 Pro — full song, vocals (preview)</option>
                                 </select>
                                 <button type="submit" class="sh-btn sh-btn--sm sh-btn--primary">Save</button>
                             </form>
@@ -49,6 +50,7 @@
                                     <option value="dev_pro_60" @selected($bedMode === 'dev_pro_60')>Developer Lyria Pro — about 60s</option>
                                     <option value="dev_pro_180" @selected($bedMode === 'dev_pro_180')>Developer Lyria Pro — up to 3 min</option>
                                     <option value="vertex_002_30" @selected($bedMode === 'vertex_002_30')>Vertex Lyria 002 — 30s test mode</option>
+                                    <option value="vertex_lyria3_pro" @selected($bedMode === 'vertex_lyria3_pro')>Vertex Lyria 3 Pro — full song, vocals (preview)</option>
                                 </select>
                                 <button type="submit" class="sh-btn sh-btn--sm sh-btn--primary">Save</button>
                             </form>

@@ -34,20 +34,20 @@ class LyriaProvider implements AIProviderInterface
 
     /**
      * Maps an admin mode string to provider + model + prompt hint + duration.
-     * Provider determines which endpoint/auth/payload callApi() uses.
-     *
-     * Vertex Lyria 3 modes are intentionally NOT offered — project `shrang`
-     * is not yet allowlisted for lyria-3-* on Vertex. vertex_002_30 is the only
-     * Vertex option and is a TEST mode until one successful generation is confirmed.
+     * Providers:
+     *   developer          -> Developer API (generativelanguage), ?key=, generateContent
+     *   vertex             -> Vertex :predict (lyria-002, English/instrumental, 30s)
+     *   vertex_interactions-> Vertex /interactions (lyria-3-pro, multilingual + vocals, up to ~184s)
      */
     private function resolveMode(string $settingKey, string $default): array
     {
         return match ($this->settings->get($settingKey, $default)) {
-            "dev_clip_30"   => ["provider" => "developer", "model" => "lyria-3-clip-preview", "hint" => "",                    "duration_seconds" => 30],
-            "dev_pro_60"    => ["provider" => "developer", "model" => "lyria-3-pro-preview",  "hint" => " Up to 1 minute.",    "duration_seconds" => 60],
-            "dev_pro_180"   => ["provider" => "developer", "model" => "lyria-3-pro-preview",  "hint" => " Up to 3 minutes.",   "duration_seconds" => 180],
-            "vertex_002_30" => ["provider" => "vertex",    "model" => "lyria-002",            "hint" => "",                    "duration_seconds" => 30],
-            default         => ["provider" => "developer", "model" => "lyria-3-pro-preview",  "hint" => " Up to 1 minute.",    "duration_seconds" => 60],
+            "dev_clip_30"       => ["provider" => "developer",           "model" => "lyria-3-clip-preview", "hint" => "",                  "duration_seconds" => 30],
+            "dev_pro_60"        => ["provider" => "developer",           "model" => "lyria-3-pro-preview",  "hint" => " Up to 1 minute.",  "duration_seconds" => 60],
+            "dev_pro_180"       => ["provider" => "developer",           "model" => "lyria-3-pro-preview",  "hint" => " Up to 3 minutes.", "duration_seconds" => 180],
+            "vertex_002_30"     => ["provider" => "vertex",              "model" => "lyria-002",            "hint" => "",                  "duration_seconds" => 30],
+            "vertex_lyria3_pro" => ["provider" => "vertex_interactions", "model" => "lyria-3-pro-preview",  "hint" => "",                  "duration_seconds" => 180],
+            default             => ["provider" => "developer",           "model" => "lyria-3-pro-preview",  "hint" => " Up to 1 minute.",  "duration_seconds" => 60],
         };
     }
 
@@ -72,9 +72,11 @@ class LyriaProvider implements AIProviderInterface
     private function callApi(string $provider, string $model, string $prompt, int $durationSeconds): array
     {
         try {
-            return $provider === "vertex"
-                ? $this->callVertex($model, $prompt, $durationSeconds)
-                : $this->callDeveloper($model, $prompt, $durationSeconds);
+            return match ($provider) {
+                "vertex"              => $this->callVertex($model, $prompt, $durationSeconds),
+                "vertex_interactions" => $this->callVertexInteractions($model, $prompt, $durationSeconds),
+                default               => $this->callDeveloper($model, $prompt, $durationSeconds),
+            };
         } catch (\Exception $e) {
             Log::error("LyriaProvider exception", ["message" => $e->getMessage()]);
             return ["status" => "error", "error" => $e->getMessage(), "provider" => $this->providerName()];
@@ -109,19 +111,14 @@ class LyriaProvider implements AIProviderInterface
     }
 
     /**
-     * Vertex AI (aiplatform.googleapis.com) — Service Account Bearer token, :predict.
-     * Only lyria-002 is accessible to project `shrang` today (~30s). TEST MODE:
-     * the response audio field is a best guess until one live success confirms it.
+     * Vertex AI :predict (lyria-002) — Service Account Bearer token.
+     * English-only, instrumental, ~30s. Kept as a scalable test mode.
      */
     private function callVertex(string $model, string $prompt, int $durationSeconds): array
     {
-        $keyPath = config("ai.vertex.key_path");
         $project = config("ai.vertex.project");
         $region  = config("ai.vertex.region", "us-central1");
-
-        $jsonKey     = json_decode(file_get_contents($keyPath), true);
-        $credentials = new ServiceAccountCredentials(["https://www.googleapis.com/auth/cloud-platform"], $jsonKey);
-        $token       = $credentials->fetchAuthToken()["access_token"];
+        $token   = $this->vertexToken();
 
         $url = "https://{$region}-aiplatform.googleapis.com/v1/projects/{$project}/locations/{$region}/publishers/google/models/{$model}:predict";
 
@@ -146,9 +143,52 @@ class LyriaProvider implements AIProviderInterface
     }
 
     /**
+     * Vertex AI /interactions (lyria-3-pro-preview) — Service Account Bearer token.
+     * Multilingual (incl. Pashto/Dari) + vocals + structured songs up to ~184s.
+     * Location is always "global" for this preview model. Generation takes 60-90s.
+     * NOTE: model is in public preview ("not for production use" per Google's card).
+     */
+    private function callVertexInteractions(string $model, string $prompt, int $durationSeconds): array
+    {
+        $project = config("ai.vertex.project");
+        $token   = $this->vertexToken();
+
+        $url = "https://aiplatform.googleapis.com/v1beta1/projects/{$project}/locations/global/interactions";
+
+        $payload = [
+            "model" => $model,
+            "input" => [["type" => "text", "text" => $prompt]],
+        ];
+
+        $response = Http::withHeaders([
+            "Authorization" => "Bearer {$token}",
+            "Content-Type"  => "application/json",
+        ])->timeout(180)->post($url, $payload);
+
+        // Do NOT log the full body — it contains multi-MB base64 audio.
+        Log::info("LyriaProvider vertex interactions response", ["status" => $response->status()]);
+
+        if ($response->successful()) {
+            return $this->parseInteractionsResponse($response->json(), $durationSeconds);
+        }
+
+        Log::error("LyriaProvider vertex interactions error", ["status" => $response->status(), "body" => substr($response->body(), 0, 500)]);
+        return ["status" => "error", "error" => substr($response->body(), 0, 500), "provider" => $this->providerName()];
+    }
+
+    /**
+     * Fetches a Service Account OAuth Bearer token for Vertex.
+     */
+    private function vertexToken(): string
+    {
+        $keyPath     = config("ai.vertex.key_path");
+        $jsonKey     = json_decode(file_get_contents($keyPath), true);
+        $credentials = new ServiceAccountCredentials(["https://www.googleapis.com/auth/cloud-platform"], $jsonKey);
+        return $credentials->fetchAuthToken()["access_token"];
+    }
+
+    /**
      * Parses the Developer API generateContent response.
-     * Audio is base64 in candidates[0].content.parts[].inlineData/inline_data.data;
-     * any text part is treated as lyrics.
      */
     private function parseDeveloperResponse(array $data, int $durationSeconds): array
     {
@@ -180,8 +220,6 @@ class LyriaProvider implements AIProviderInterface
 
     /**
      * Parses the Vertex :predict response (lyria-002).
-     * NOTE: field name not yet confirmed by a live success — tries audioContent
-     * then bytesBase64Encoded. Adjust after the first successful Vertex generation.
      */
     private function parseVertexResponse(array $data, int $durationSeconds): array
     {
@@ -194,5 +232,33 @@ class LyriaProvider implements AIProviderInterface
         }
 
         return ["status" => "done", "audio_data" => $audioData, "lyrics" => null, "duration_seconds" => $durationSeconds, "provider" => $this->providerName()];
+    }
+
+    /**
+     * Parses the Vertex /interactions response (lyria-3-pro-preview).
+     * outputs[] contains text item(s) (lyrics + description) and one audio item
+     * (type=audio, mime_type=audio/mpeg, data=base64 MP3).
+     */
+    private function parseInteractionsResponse(array $data, int $durationSeconds): array
+    {
+        $audioData = null;
+        $lyrics    = null;
+
+        foreach (($data["outputs"] ?? []) as $output) {
+            $type = $output["type"] ?? "";
+            if ($type === "audio" && isset($output["data"])) {
+                $audioData = $output["data"];
+            }
+            if ($type === "text" && $lyrics === null && isset($output["text"])) {
+                $lyrics = $output["text"]; // first text item = lyrics
+            }
+        }
+
+        if ($audioData === null) {
+            Log::warning("LyriaProvider: no audio in interactions response", ["status" => $data["status"] ?? "unknown"]);
+            return ["status" => "error", "error" => "No audio returned from Vertex Lyria 3.", "provider" => $this->providerName()];
+        }
+
+        return ["status" => "done", "audio_data" => $audioData, "lyrics" => $lyrics, "duration_seconds" => $durationSeconds, "provider" => $this->providerName()];
     }
 }

@@ -23,7 +23,7 @@ class AiSettingsController extends Controller
     {
         $validated = $request->validate([
             'key'   => ['required', 'string', 'in:lyria_song_mode,lyria_bed_mode'],
-            'value' => ['required', 'string', 'in:dev_clip_30,dev_pro_60,dev_pro_180,vertex_002_30'],
+            'value' => ['required', 'string', 'in:dev_clip_30,dev_pro_60,dev_pro_180,vertex_002_30,vertex_lyria3_pro'],
         ]);
 
         $this->settings->set($validated['key'], $validated['value'], $request->user()->id);
