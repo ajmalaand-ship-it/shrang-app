@@ -1,5 +1,6 @@
 <?php
 namespace App\Services\AI;
+use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 class LyriaProvider implements AIProviderInterface
@@ -44,8 +45,14 @@ class LyriaProvider implements AIProviderInterface
     private function callApi(string $model, array $payload): array
     {
         try {
-            $url = "{$this->baseUrl}/v1beta/models/{$model}:generateContent?key={$this->apiKey}";
-            $response = Http::withHeaders(["Content-Type" => "application/json"])->timeout(120)->post($url, $payload);
+            $keyPath     = config("ai.vertex.key_path");
+            $project     = config("ai.vertex.project");
+            $region      = config("ai.vertex.region", "us-central1");
+            $jsonKey     = json_decode(file_get_contents($keyPath), true);
+            $credentials = new ServiceAccountCredentials(["https://www.googleapis.com/auth/cloud-platform"], $jsonKey);
+            $token       = $credentials->fetchAuthToken()["access_token"];
+            $url = "https://{$region}-aiplatform.googleapis.com/v1/projects/{$project}/locations/{$region}/publishers/google/models/{$model}:generateContent";
+            $response = Http::withHeaders(["Authorization" => "Bearer {$token}", "Content-Type" => "application/json"])->timeout(120)->post($url, $payload);
             Log::info("LyriaProvider raw response", ["body" => substr($response->body(), 0, 500)]);
             if ($response->successful()) {
                 $data = $response->json();
