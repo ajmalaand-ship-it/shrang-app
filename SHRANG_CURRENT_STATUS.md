@@ -1,5 +1,5 @@
 # Shrang — Current Project Status
-**Last updated:** June 2, 2026
+**Last updated:** June 7, 2026
 **Server:** 157.250.199.106 | **App:** /home/shrang/laravel-app | **Live:** shrang.com
 **Stack:** Laravel 13, PHP 8.5, MySQL, Redis, FFmpeg, Google Lyria, Imagen 4
 
@@ -131,7 +131,8 @@ Live fixes are acceptable while unannounced. Staging will be set up before any p
 
 ## 11. Current Exact Task
 
-CURRENT: Imagen 4 429 partial mitigation deployed (rate_limited detection, backoff, tries=3). Root cause is Google quota ceiling — see Section 16. Next: finish Stage 2 audit leftovers, then Stage 9 (Pashto quality). Stage 8 (staging) is deferred to last.
+Vertex AI migration complete — both cover generation (imagen-4.0-generate-001) and music generation (lyria-3-pro-preview) now use Vertex AI with Service Account OAuth. 429 quota ceiling is a Google project limit, not a code issue — see Section 16.
+Next: finish Stage 2 audit leftovers, then Stage 9 (Pashto quality). Stage 8 (staging) is deferred to last.
 
 ---
 
@@ -199,8 +200,8 @@ CURRENT: Imagen 4 429 partial mitigation deployed (rate_limited detection, backo
 - Task 5B: full custom select dropdown open-state across all 17 selects - deferred (risky).
 - OG image reel thumbnail (Stage 6): needs FFmpeg frame extraction from the MP4 reel.
 - Stage 2 audit leftovers: Like/download buttons small on Discover; Audio/Cover/Reel pills clickability unclear on My Clips; too many badges per card on mobile My Clips; replace play and pinned emoji with SVG.
-- Imagen 4 / Vertex AI scaling — ROOT CAUSE is Google project quota, not a code bug. Current daily limit is only 70 images/day (Paid Tier 1) with a low per-minute burst limit. Concurrent requests trigger 429 RESOURCE_EXHAUSTED. Failing retries also count against the daily quota.
-  Fix has two parts:
+- Imagen 4 / Vertex AI quota — Migration to Vertex AI (Service Account OAuth) is complete for both imagen-4.0-generate-001 and lyria-3-pro-preview. The remaining 429 RESOURCE_EXHAUSTED issue is a Google project quota ceiling, not a code bug. Current daily limit is only 70 images/day (Paid Tier 1) with a low per-minute burst limit. Concurrent requests trigger quota exhaustion; failing retries also count against the daily limit.
+  Remaining fix has two parts:
   (a) Google side: request a quota increase (daily + RPM); tier rises with billing history.
   (b) App side: Redis throttle on GenerateCoverImageJob to limit concurrent Vertex requests, exponential backoff with jitter, and a guard against duplicate cover jobs for the same clip.
   Current 429/backoff code (rate_limited detection + backoff, tries=3) is a partial mitigation only — does not solve the quota ceiling.
@@ -229,3 +230,4 @@ This file is the single source of truth. Keep it updated after every confirmed t
 - June 3, 2026 (session 3): Stage 6 Telegram link preview gap closed — added og:site_name and og:image:secure_url to og-meta component. Commit: 7603e33.
 - June 3, 2026 (session 3 cont): Stage 7 admin spend-cap alert gap closed — danger banner on admin dashboard when daily cap is hit. Commit: 23f7a11.
 - June 4, 2026 (session 4): Cover generation silent failure fixed — Studio now shows user-facing danger notice when cover_status === "failed" via polling JS; clip.status untouched, song unaffected. Commit: bfc1fd1.
+- June 7, 2026 (session 5): Vertex AI migration complete — Imagen 4 cover generation (imagen-4.0-generate-001) and Lyria music generation (lyria-3-pro-preview) both migrated to Vertex AI Service Account OAuth. Commits: 6d18abe, 5420f12.
