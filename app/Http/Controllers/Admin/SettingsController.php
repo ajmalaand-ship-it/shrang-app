@@ -11,7 +11,7 @@ class SettingsController extends Controller
     public function __construct(private readonly AdminSettingsService $settings) {}
     public function index(): View
     {
-        $settings = AdminSetting::orderBy("group")->orderBy("key")->get();
+        $settings = AdminSetting::whereNotIn("key", ["lyria_song_mode", "lyria_bed_mode", "ai_music_provider", "song_duration_seconds", "bed_duration_seconds"])->orderBy("group")->orderBy("key")->get();
         return view("pages.admin.settings.index", compact("settings"));
     }
     public function update(Request $request): RedirectResponse

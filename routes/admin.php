@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AiUsageController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\LanguageHintController;
+use App\Http\Controllers\Admin\AiSettingsController;
 
 Route::prefix("admin")->name("admin.")->middleware(["auth", "admin", "audit"])->group(function () {
 
@@ -24,6 +25,9 @@ Route::prefix("admin")->name("admin.")->middleware(["auth", "admin", "audit"])->
 
     Route::get("/settings", [SettingsController::class, "index"])->name("settings.index");
     Route::post("/settings", [SettingsController::class, "update"])->name("settings.update");
+
+    Route::get("/ai",  [AiSettingsController::class, "index"])->name("ai.index");
+    Route::post("/ai", [AiSettingsController::class, "update"])->name("ai.update");
 
     Route::get("/audit-log", [AuditLogController::class, "index"])->name("audit-log.index");
 

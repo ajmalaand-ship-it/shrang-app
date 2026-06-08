@@ -43,6 +43,10 @@
                class="admin-sidebar__link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 ⚙️ Settings
             </a>
+            <a href="{{ route('admin.ai.index') }}"
+               class="admin-sidebar__link {{ request()->routeIs('admin.ai.*') ? 'active' : '' }}">
+                🤖 AI Settings
+            </a>
             <a href="{{ route('admin.language-hints.index') }}"
                class="admin-sidebar__link {{ request()->routeIs('admin.language-hints.*') ? 'active' : '' }}">
                 🌐 Language Hints
