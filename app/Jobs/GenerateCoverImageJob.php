@@ -16,7 +16,12 @@ class GenerateCoverImageJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     public int $timeout = 180;
-    public int $tries   = 2;
+    public int $tries   = 3;
+
+    public function backoff(): array
+    {
+        return [30, 60];
+    }
     public function __construct(
         private readonly string $clipId,
         private readonly array  $params
@@ -64,6 +69,10 @@ class GenerateCoverImageJob implements ShouldQueue
                 }
                 Log::info("Cover image generated", ["clip_id" => $this->clipId, "url" => $coverUrl]);
             } else {
+                if (($result["status"] ?? "") === "rate_limited" && $this->attempts() < $this->tries) {
+                    $this->release($this->backoff()[$this->attempts() - 1] ?? 60);
+                    return;
+                }
                 if ($genJob) {
                     $genJob->update([
                         "status"        => "failed",

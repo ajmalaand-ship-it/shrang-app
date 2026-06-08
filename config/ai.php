@@ -22,4 +22,9 @@ return [
         "api_key"  => env("STABILITY_API_KEY", ""),
         "base_url" => env("STABILITY_BASE_URL", "https://api.stability.ai"),
     ],
+    "vertex" => [
+        "key_path" => env("VERTEX_AI_KEY_PATH", ""),
+        "project"  => env("VERTEX_AI_PROJECT", ""),
+        "region"   => env("VERTEX_AI_REGION", "us-central1"),
+    ],
 ];

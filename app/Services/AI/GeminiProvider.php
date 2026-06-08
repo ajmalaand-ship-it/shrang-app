@@ -2,6 +2,7 @@
 
 namespace App\Services\AI;
 
+use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -42,10 +43,19 @@ class GeminiProvider implements AIProviderInterface
             "parameters" => ["sampleCount" => 1],
         ];
         try {
-            $url = "{$this->baseUrl}/v1beta/models/imagen-4.0-generate-001:predict";
+            $keyPath     = config("ai.vertex.key_path");
+            $project     = config("ai.vertex.project");
+            $region      = config("ai.vertex.region", "us-central1");
+            $jsonKey     = json_decode(file_get_contents($keyPath), true);
+            $credentials = new ServiceAccountCredentials(
+                ["https://www.googleapis.com/auth/cloud-platform"],
+                $jsonKey
+            );
+            $token = $credentials->fetchAuthToken()["access_token"];
+            $url = "https://{$region}-aiplatform.googleapis.com/v1/projects/{$project}/locations/{$region}/publishers/google/models/imagen-4.0-generate-001:predict";
             $response = Http::withHeaders([
-                "Content-Type"   => "application/json",
-                "x-goog-api-key" => $this->apiKey,
+                "Authorization" => "Bearer {$token}",
+                "Content-Type"  => "application/json",
             ])->timeout(60)->post($url, $payload);
             if ($response->successful()) {
                 $data      = $response->json();
@@ -58,6 +68,9 @@ class GeminiProvider implements AIProviderInterface
                 return ["status" => "error", "error" => "No image data returned from Imagen 4", "provider" => "imagen4"];
             }
             Log::error("Imagen4 cover error", ["http_status" => $response->status(), "body" => substr($response->body(), 0, 300)]);
+            if ($response->status() === 429) {
+                return ["status" => "rate_limited", "error" => "Imagen 4 rate limit hit (429)", "provider" => "imagen4"];
+            }
             return ["status" => "error", "error" => "Imagen 4 HTTP error: " . $response->status(), "provider" => "imagen4"];
         } catch (\Exception $e) {
             Log::error("Imagen4 cover exception", ["message" => $e->getMessage()]);
