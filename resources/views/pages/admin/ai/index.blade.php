@@ -9,8 +9,7 @@
     <div class="sh-card" style="margin-bottom:1.5rem;">
         <div class="sh-card__body">
             <p style="margin:0;">
-                <strong>Note:</strong> Developer API modes are the current working long-music path.
-                Vertex Lyria 002 is a short test mode. Vertex Lyria 3 is pending allowlist/access.
+                <strong>Note:</strong> Vertex Lyria 3 Pro generates full multilingual songs with vocals (up to ~3 min) — currently in Google preview, not guaranteed for production. Developer API modes also work and have their own quota. Vertex Lyria 002 is an English-only short test mode.
             </p>
         </div>
     </div>

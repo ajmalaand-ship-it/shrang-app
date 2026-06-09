@@ -2,7 +2,7 @@
 
 **This file is the single source of truth.** It is both the live status and the plan. Update it after every confirmed task: move finished items into "DONE LOG" and tick them off the steps below.
 
-**Last updated:** June 8, 2026
+**Last updated:** June 9, 2026
 **Server:** 157.250.199.106 | **App:** /home/shrang/laravel-app | **Live:** shrang.com
 **Stack:** Laravel 13, PHP 8.5, MySQL, Redis, FFmpeg, Google Lyria 3, Imagen 4 (all on Vertex AI)
 **Goal:** Public launch as fast as *safely* possible.
@@ -11,22 +11,24 @@
 
 ## CURRENT TASK / NEXT UP
 
-AI Providers architecture + AI Settings tab are DONE (see DONE LOG). Music is working again. Next items, in order:
+Core generation is WORKING end-to-end (Lyria 3 on Vertex, multilingual long songs, covers with reliability handling). See DONE LOG. Next items, in order:
 
-1. **Open action (Ajmal): request Vertex Lyria 3 allowlist for project `shrang`.** Vertex AI Media Studio (Cloud Console) → request access to the Lyria music models. Confirm the service account has `roles/aiplatform.user`. (IAM is likely NOT the blocker — `lyria-002` reached the model, which would have 403'd on a permission problem — so don't add unnecessary roles.) This unblocks long songs + Shrang languages on Vertex's scalable infra later; approval takes time, so submit early.
+1. **Push local commits to GitHub** when ready (review `git log origin/main..HEAD` first — many local commits, nothing pushed yet).
 
-2. **Long-song generation (the "up to 3 min" problem).** `dev_pro_180` mode is wired correctly (verified: the " Up to 3 minutes." hint reaches the prompt) but Lyria still returns ~59s. Root cause = Lyria behaviour, NOT a code bug: Lyria has no duration parameter; length is driven by how much musical/lyrical structure the prompt implies. A short lyric + "up to 3 minutes" yields ~60s. FIX = prompt engineering in `PromptService` (buildSongPrompt / bed prompt): add explicit structure (intro, verses, chorus repeats, bridge, outro) and richer arrangement cues to make the model fill the time. Note: even then length is not guaranteed — we improve odds, can't force it. This is a PromptService task, separate from LyriaProvider.
+2. **Step 2 — Safety Nets** (below) — the next real build phase; launch-blocking. Includes: transactional credit rollback, double-charge protection, no silent failures. (Cover backoff/retry + duplicate-guard already done — see DONE LOG.)
 
-3. Then **Step 2 — Safety Nets** (below) — the next real build phase; launch-blocking.
+3. **Pashto / language quality track** (parallel, longest lead time, now unblocked since generation works): native-speaker testing, top-50 pronunciation hints, Dari/Urdu/Hindi rendering, Pashto/Dari music styles.
 
-### Confirmed Lyria diagnosis (verified June 8 — keep for reference)
-- **Imagen → Vertex: working.** Keep as-is.
-- **Vertex `lyria-002`: WORKING** on project `shrang` via `:predict` + `instances`/`parameters` + Bearer. Confirmed live (returned a 400 "Unsupported language: en" — i.e. reached the model and generated, but **English-only** right now). ~30s. Good as a scalable English test mode only; NOT suitable as the main path since Shrang is Pashto/Dari/Urdu-first.
-- **Vertex `lyria-3-pro-preview` / `lyria-3-clip-preview`: NOT accessible** (HTTP 404 = not allowlisted). Exist on Vertex but need access request. Endpoint/format for Vertex Lyria 3 is UNVERIFIED — must test after allowlist before enabling.
-- **Developer API Lyria 3 Pro/Clip: WORKING — current real path** for all languages + longer songs + bed music. Its own quota limits.
+### Confirmed generation status (verified June 8-9 — keep for reference)
+- **Vertex Lyria 3 Pro (`lyria-3-pro-preview`): WORKING & LIVE.** This is the app's core promise delivered. Endpoint: `https://aiplatform.googleapis.com/v1beta1/projects/shrang/locations/global/interactions` (NOT `:predict`; location MUST be `global`). Request: `{"model":"lyria-3-pro-preview","input":[{"type":"text","text":PROMPT}]}`. Response: `outputs[]` array — audio item has `type:audio`, `mime_type:audio/mpeg`, base64 `data` (~5MB MP3); first `type:text` item = lyrics. Confirmed in Pashto (real Pashto vocals, referenced rubab), ~150-170s, up to 184s. Generation takes 60-90s. Google caveat: PUBLIC PREVIEW, "not for production use yet," limited capacity, SynthID watermark. Admin mode = `vertex_lyria3_pro`.
+- **Developer API Lyria 3 Pro/Clip: WORKING — alternate path** for all languages + songs + bed music. Its own quota. Admin modes dev_clip_30 / dev_pro_60 / dev_pro_180.
+- **Vertex `lyria-002`: WORKING but English-only + instrumental, ~30s.** Test mode only (`vertex_002_30`). NOT for main use (Shrang is Pashto/Dari/Urdu-first).
+- **Imagen 4 covers → Vertex (`us-central1`, `:predict`): WORKING with reliability handling.** Root cause of past outages = **Dynamic Shared Quota (DSQ)**: intermittent 429s + connection hangs from shared regional capacity, independent of own (low) usage — confirmed via Cloud metrics (429 row) + Cloud Assist. NOT a code/network/region bug. Self-serve quota increase is BLOCKED (capped at 10/min until more billing history or contact sales). Mitigation in place: app treats timeout-as-rate_limited → backoff+jitter retry (30/60s, 3 tries). Future hard-guarantee option = Provisioned Throughput (paid, committed cost) — for launch SLA only.
+- **Song length:** mode-driven now (PromptService reads song mode → 30/60/180s). Fixed the old hardcoded "59-60s". Lyria length still not guaranteed exact, but 3-min mode produces ~3-min songs (live-confirmed 3:01).
 
 ### Rules (keep)
-- Do NOT force all music to Vertex. Do NOT remove Developer API Lyria 3 Pro. Do NOT enable Vertex Lyria 3 until allowlist granted AND endpoint/format tested.
+- Do NOT force all music to one provider. Keep BOTH Vertex Lyria 3 and Developer API paths. Vertex Lyria 3 is preview — don't treat as production-guaranteed.
+- Imagen covers stay on Vertex us-central1 baseline (global also hangs under DSQ — tested; region is NOT the fix).
 
 ### AI Settings tab (built) — future rows to add later
 The dedicated `/admin/ai` page currently has the 2 Lyria mode dropdowns + a note. Later add: image provider control, cover fallback provider (Vertex Imagen → OpenAI), Vertex Imagen status, Vertex Lyria 3 pending/allowlist status, provider notes/limits.
@@ -45,6 +47,9 @@ Do not open Shrang to the public until ALL are true:
 ---
 
 ## DONE LOG (most recent first)
+
+- **June 8-9 — Vertex Lyria 3 Pro LIVE + song length fixed (commit `99a3092`).** Discovered Lyria 3 Pro works on Vertex via the `/interactions` endpoint (location `global`), not `:predict` — earlier 404s were wrong endpoint/format, NOT lack of access. Proven by direct test: full multilingual songs with vocals, ~150-170s, confirmed in Pashto (real Pashto lyrics, rubab). Added provider `vertex_interactions` + `callVertexInteractions()` + `parseInteractionsResponse()` to LyriaProvider; new admin mode `vertex_lyria3_pro` (song + bed dropdowns, validation). Fixed song length: PromptService was hardcoding "59-60 seconds" — now reads the selected song mode's duration (30/60/180) via injected AdminSettingsService. Live-confirmed 3:01 song. Lyria 3 Pro is Google PUBLIC PREVIEW (not production-guaranteed).
+- **June 8-9 — Cover generation reliability (commit `ccadc24`).** Diagnosed long cover outage: root cause = Imagen 4 Dynamic Shared Quota (intermittent 429 + connection hangs, independent of own usage; confirmed via Cloud metrics 429 row + Cloud Assist). NOT code/network/region (global endpoint also hangs; tested + reverted to us-central1 baseline). Fixes: (1) GeminiProvider treats cURL timeout/error-28 as `rate_limited` so the job's backoff fires (was dead code); (2) GenerateCoverImageJob backoff + random jitter (30/60s, 3 tries); (3) CoverController duplicate-job guard (no second cover job while one is pending/running — confirmed live); (4) studio view clears the stuck "being generated" banner on failure/timeout, no more banner-forever or generating+failed together (confirmed live). Self-serve Imagen quota increase BLOCKED by Google (capped 10/min until more billing history / contact sales).
 
 - **June 8 — Music RESTORED + provider-aware architecture + AI Settings tab.** Rebuilt `LyriaProvider` to be provider-aware: `resolveMode()` returns provider+model+hint+duration; `callApi()` branches to `callDeveloper()` (generativelanguage + ?key= + generateContent) or `callVertex()` (aiplatform + Bearer + :predict + instances/parameters). Modes: dev_clip_30, dev_pro_60 (song default), dev_pro_180 (bed default), vertex_002_30 (English-only test). Song + bed generation confirmed working via Developer API; Vertex lyria-002 confirmed reachable (English-only). Added dedicated **Admin → AI Settings** page (`/admin/ai`: nav link, AiSettingsController, view with 2 dropdowns + note) and removed all AI rows (lyria_song_mode, lyria_bed_mode, ai_music_provider, song/bed_duration_seconds — all confirmed unused) from the general Settings page via a whereNotIn filter (DB rows kept). Commits: `19ab364` (provider-aware Lyria + validation), `a042ef2` (AI Settings tab). NOT pushed.
 - Known issue logged as a task: dev_pro_180 still yields ~59s — Lyria prompt-driven behaviour, fix in PromptService (see Next Up #2).
