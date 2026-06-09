@@ -33,7 +33,7 @@ $displayTitle = $clip->display_title;
 </div>
 
 @if(session('success'))
-    <div class="sh-notice sh-notice--success studio-notice">{{ session('success') }}</div>
+    <div id="studio-flash-success" class="sh-notice sh-notice--success studio-notice">{{ session('success') }}</div>
 @endif
 @if(session('error'))
     <div class="sh-notice sh-notice--danger studio-notice">{{ session('error') }}</div>
@@ -540,14 +540,14 @@ function studioShare(btn) {
         var t = 0;
         function pollCover() {
             t++;
-            if (t > 40) return;
+            if (t > 40) { var gb = document.getElementById('studio-flash-success'); if (gb) gb.style.display = 'none'; return; }
             fetch('/studio/clip-status/' + clipId, {
                 headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(function(r) { return r.json(); })
             .then(function(d) {
                 if (d.cover_ready) { location.reload(); }
-                else if (d.cover_status === 'failed') { var e = document.getElementById('cover-gen-error'); if (e) e.style.display = 'block'; }
+                else if (d.cover_status === 'failed') { var e = document.getElementById('cover-gen-error'); if (e) e.style.display = 'block'; var b = document.getElementById('studio-flash-success'); if (b) b.style.display = 'none'; }
                 else { setTimeout(pollCover, 4000); }
             })
             .catch(function() { setTimeout(pollCover, 6000); });

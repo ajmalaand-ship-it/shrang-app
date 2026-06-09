@@ -75,6 +75,17 @@ class CoverController extends Controller
             "text_on_cover"    => ["nullable", "string", "in:none,title"],
         ]);
 
+        // Prevent duplicate cover jobs: if one is already pending/running for this clip, don't start another.
+        $existing = GenerationJob::where("clip_id", $clip->id)
+            ->where("job_class", GenerateCoverImageJob::class)
+            ->whereIn("status", ["pending", "running"])
+            ->exists();
+
+        if ($existing) {
+            return redirect()->route("studio.show", $clip)
+                ->with("success", "Cover generation is already in progress. Please wait for it to finish.");
+        }
+
         $generationJob = GenerationJob::create([
             "clip_id"          => $clip->id,
             "user_id"          => $request->user()->id,

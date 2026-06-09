@@ -70,7 +70,10 @@ class GenerateCoverImageJob implements ShouldQueue
                 Log::info("Cover image generated", ["clip_id" => $this->clipId, "url" => $coverUrl]);
             } else {
                 if (($result["status"] ?? "") === "rate_limited" && $this->attempts() < $this->tries) {
-                    $this->release($this->backoff()[$this->attempts() - 1] ?? 60);
+                    // Add a few seconds of random jitter so multiple failed cover jobs do not all
+                    // retry at the same instant and collide again on Vertex Imagen DSQ.
+                    $delay = ($this->backoff()[$this->attempts() - 1] ?? 60) + random_int(2, 10);
+                    $this->release($delay);
                     return;
                 }
                 if ($genJob) {

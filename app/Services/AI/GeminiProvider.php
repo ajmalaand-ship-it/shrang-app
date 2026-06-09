@@ -73,8 +73,20 @@ class GeminiProvider implements AIProviderInterface
             }
             return ["status" => "error", "error" => "Imagen 4 HTTP error: " . $response->status(), "provider" => "imagen4"];
         } catch (\Exception $e) {
-            Log::error("Imagen4 cover exception", ["message" => $e->getMessage()]);
-            return ["status" => "error", "error" => $e->getMessage(), "provider" => "imagen4"];
+            $msg = $e->getMessage();
+            Log::error("Imagen4 cover exception", ["message" => $msg]);
+            // A cURL timeout (error 28 / "Operation timed out") on Imagen is, in practice, the same
+            // capacity/throttling condition as a 429 (Vertex Imagen uses Dynamic Shared Quota and
+            // sometimes stalls the connection instead of returning 429). Treat it as rate_limited so
+            // the cover job's existing exponential backoff retries instead of failing immediately.
+            if (
+                stripos($msg, "cURL error 28") !== false
+                || stripos($msg, "Operation timed out") !== false
+                || stripos($msg, "timed out") !== false
+            ) {
+                return ["status" => "rate_limited", "error" => $msg, "provider" => "imagen4"];
+            }
+            return ["status" => "error", "error" => $msg, "provider" => "imagen4"];
         }
     }
 
