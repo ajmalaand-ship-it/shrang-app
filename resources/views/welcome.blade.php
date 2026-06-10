@@ -52,26 +52,32 @@
             @php
                 $cover = $clip->mediaAssets()->where('type','cover_image')->where('is_primary',true)->first();
                 $audio = $clip->mediaAssets()->whereIn('type',['song_audio','bed_audio'])->where('is_primary',true)->first();
+                $reel  = $clip->mediaAssets()->where('type','reel_video')->where('is_primary',true)->first();
+                $type  = $audio?->type === 'bed_audio' ? 'Background Music' : 'Song';
+                $langNames = ["ps"=>"Pashto","fa"=>"Dari","ur"=>"Urdu","ar"=>"Arabic","hi"=>"Hindi","en"=>"English"];
             @endphp
-            <div class="home-featured__card">
+            <a href="{{ route('player.show', $clip->slug) }}" class="home-featured__card" aria-label="Open {{ $clip->title }}">
                 <div class="home-featured__cover">
-                    @if($cover)
+                    @if($reel)
+                        <video class="home-featured__img home-featured__reel" src="{{ $reel->cdn_url }}" muted loop playsinline preload="metadata" @if($cover) poster="{{ $cover->cdn_url }}" @endif></video>
+                    @elseif($cover)
                         <img src="{{ $cover->cdn_url }}" alt="{{ $clip->title }}" class="home-featured__img">
                     @else
-                        <div class="home-featured__placeholder">♪</div>
-                    @endif
-                    @if($audio)
-                    <button class="home-featured__play" onclick="homePlay(this, '{{ $audio->cdn_url }}')" aria-label="Play">▶</button>
+                        <div class="home-featured__placeholder">
+                            <span>♪</span>
+                            <small>Shrang</small>
+                        </div>
                     @endif
                 </div>
                 <div class="home-featured__info">
                     <div class="home-featured__title">{{ $clip->title }}</div>
                     <div class="home-featured__meta">
-                        <span class="sh-badge sh-badge--lang">{{ strtoupper($clip->language) }}</span>
+                        <span class="sh-badge sh-badge--lang">{{ $langNames[$clip->language] ?? strtoupper($clip->language) }}</span>
+                        <span class="sh-badge">{{ $type }}</span>
                         <span class="home-featured__likes">♥ {{ number_format($clip->like_count ?? 0) }}</span>
                     </div>
                 </div>
-            </div>
+            </a>
             @endforeach
         </div>
         <div style="text-align:center;margin-top:2rem;">
