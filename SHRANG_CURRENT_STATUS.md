@@ -2,7 +2,7 @@
 
 **This file is the single source of truth.** It is both the live status and the plan. Update it after every confirmed task: move finished items into "DONE LOG" and tick them off the steps below.
 
-**Last updated:** June 9, 2026
+**Last updated:** June 10, 2026
 **Server:** 157.250.199.106 | **App:** /home/shrang/laravel-app | **Live:** shrang.com
 **Stack:** Laravel 13, PHP 8.5, MySQL, Redis, FFmpeg, Google Lyria 3, Imagen 4 (all on Vertex AI)
 **Goal:** Public launch as fast as *safely* possible.
@@ -23,12 +23,31 @@ Core generation is WORKING end-to-end (Lyria 3 on Vertex, multilingual long song
 - **Vertex Lyria 3 Pro (`lyria-3-pro-preview`): WORKING & LIVE.** This is the app's core promise delivered. Endpoint: `https://aiplatform.googleapis.com/v1beta1/projects/shrang/locations/global/interactions` (NOT `:predict`; location MUST be `global`). Request: `{"model":"lyria-3-pro-preview","input":[{"type":"text","text":PROMPT}]}`. Response: `outputs[]` array — audio item has `type:audio`, `mime_type:audio/mpeg`, base64 `data` (~5MB MP3); first `type:text` item = lyrics. Confirmed in Pashto (real Pashto vocals, referenced rubab), ~150-170s, up to 184s. Generation takes 60-90s. Google caveat: PUBLIC PREVIEW, "not for production use yet," limited capacity, SynthID watermark. Admin mode = `vertex_lyria3_pro`.
 - **Developer API Lyria 3 Pro/Clip: WORKING — alternate path** for all languages + songs + bed music. Its own quota. Admin modes dev_clip_30 / dev_pro_60 / dev_pro_180.
 - **Vertex `lyria-002`: WORKING but English-only + instrumental, ~30s.** Test mode only (`vertex_002_30`). NOT for main use (Shrang is Pashto/Dari/Urdu-first).
-- **Imagen 4 covers → Vertex (`us-central1`, `:predict`): WORKING with reliability handling.** Root cause of past outages = **Dynamic Shared Quota (DSQ)**: intermittent 429s + connection hangs from shared regional capacity, independent of own (low) usage — confirmed via Cloud metrics (429 row) + Cloud Assist. NOT a code/network/region bug. Self-serve quota increase is BLOCKED (capped at 10/min until more billing history or contact sales). Mitigation in place: app treats timeout-as-rate_limited → backoff+jitter retry (30/60s, 3 tries). Future hard-guarantee option = Provisioned Throughput (paid, committed cost) — for launch SLA only.
+- **Imagen 4 covers → Vertex (`us-central1`, `:predict`): WORKING. Quota confirmed June 10.** Active path: `CoverController` → `GenerateCoverImageJob` → `GeminiProvider::generateCover()` → Vertex REST `:predict` at `https://{region}-aiplatform.googleapis.com/v1/projects/{project}/locations/{region}/publishers/google/models/imagen-4.0-generate-001:predict`. `.env`: `VERTEX_AI_PROJECT=shrang`, `VERTEX_AI_REGION=us-central1`, `VERTEX_AI_KEY_PATH=/home/shrang/shrang-322f6c4e0f1c.json`. **Confirmed effective per-minute quota** (metric `aiplatform.googleapis.com/online_prediction_requests_per_base_model`, unit `1/min/{project}/{region}/{base_model}`, this is the Agent Platform / Vertex online-prediction quota — NOT the Gemini Developer quota): `imagen-4.0-generate`/us-central1 = **75 RPM**; `imagen-4.0-fast-generate`/us-central1 = **150 RPM**; `imagen-4.0-ultra-generate`/us-central1 = **30 RPM**. Past outages were Dynamic Shared Quota (DSQ) throttling — keep retry/backoff (timeout→rate_limited, 30/60s + jitter, 3 tries) because DSQ/regional capacity can still occasionally throttle under quota. See "Cover quota checkpoint" section below for test results + open items.
 - **Song length:** mode-driven now (PromptService reads song mode → 30/60/180s). Fixed the old hardcoded "59-60s". Lyria length still not guaranteed exact, but 3-min mode produces ~3-min songs (live-confirmed 3:01).
 
 ### Rules (keep)
 - Do NOT force all music to one provider. Keep BOTH Vertex Lyria 3 and Developer API paths. Vertex Lyria 3 is preview — don't treat as production-guaranteed.
 - Imagen covers stay on Vertex us-central1 baseline (global also hangs under DSQ — tested; region is NOT the fix).
+
+### Cover quota checkpoint (confirmed June 10, 2026)
+**Google quota / account verification:** Alex Cardenal (Google Cloud, Customer Engineer, Startups) submitted an account verification, which adjusts baseline quotas. We verified current quota from Cloud Console + Cloud Shell.
+- Correct metric: `aiplatform.googleapis.com/online_prediction_requests_per_base_model`, unit `1/min/{project}/{region}/{base_model}`.
+- Confirmed effective limits (us-central1): `imagen-4.0-generate` = **75 RPM**, `imagen-4.0-fast-generate` = **150 RPM**, `imagen-4.0-ultra-generate` = **30 RPM**. All other regions show **Unlimited** for these per-minute rows.
+- This is the **Agent Platform / Vertex** online-prediction quota, NOT the Gemini API Developer quota (Gemini rows are separate and lower: imagen-4.0-generate = 10 RPM / 70 per day tier 1).
+- **Prior confusion** came from checking the wrong metric (`generate_content_requests_per_minute_per_project_per_base_model`) — that is NOT the metric used by the current Imagen `:predict` cover endpoint.
+
+**Test results after quota confirmation:**
+- *Round 1 — sequential* (3 covers, one at a time): **3/3 success.** Logs: 05:28:27 clip `019eaffd-36bf-737a-a5fa-15a7a6446531`; 05:29:07 clip `019eaffc-8bd8-72b4-9089-0005b80796e8`; 05:30:42 clip `019eaff9-0eb0-7132-87b7-7e5ee99cffc8`.
+- *Round 2 — light burst* (3 covers close together): **3/3 success.** Logs: 05:45:39 clip `019eb00e-dfc9-714b-b777-ede1a133e0a5`; 05:45:47 clip `019eb00f-8fc9-71b8-b940-0203bf9b8624`; 05:45:55 clip `019eb00f-ec60-718a-808a-6f4db68545f4`.
+- **Conclusion:** after verification/quota confirmation, cover generation passed normal sequential + light burst tests; no new timeout / 429 / no-image-data errors in these windows. Enough for current beta-level testing. Keep retry/backoff (DSQ can still occasionally throttle under quota).
+
+**Remaining open questions (quota):**
+- Google/Alex still to confirm whether the original **120 RPM** target is approved, pending, or unnecessary.
+- Confirm whether Vertex/Agent Platform Imagen has any **daily** limit — Cloud Shell confirmed per-minute only.
+- Gemini API image quota rows are separate and lower; do NOT confuse with the Vertex cover path.
+
+**Next technical task (do NOT do now — documented only):** the cover-status UI truth issue — the UI must not show stale "Your cover image is being generated" after a job has failed or when no active cover job is running. (No quota work unless Alex replies.)
 
 ### AI Settings tab (built) — future rows to add later
 The dedicated `/admin/ai` page currently has the 2 Lyria mode dropdowns + a note. Later add: image provider control, cover fallback provider (Vertex Imagen → OpenAI), Vertex Imagen status, Vertex Lyria 3 pending/allowlist status, provider notes/limits.
