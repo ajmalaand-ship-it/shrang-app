@@ -12,8 +12,8 @@
                 <div class="home-hero__bar" style="animation-delay: {{ $i * 0.05 }}s; height: {{ rand(20, 100) }}%"></div>
             @endfor
         </div>
-        <h1 class="home-hero__headline-en">Turn Any Words Into <em>Original Music</em></h1>
-        <p class="home-hero__sub">Paste a poem, write lyrics, share a script, or type a few lines — Shrang turns your words into an original song, background music, or shareable reel. In Pashto, Dari, Urdu, Arabic, Hindi, or English.</p>
+        <h1 class="home-hero__headline-en">Turn Words Into <em>Music & Reels</em></h1>
+        <p class="home-hero__sub">Paste a poem, write lyrics, share a script, or type a few lines — Shrang turns your words into music, cover art, and downloadable reels for your own social posts. In Pashto, Dari, Urdu, Arabic, Hindi, or English.</p>
         <div class="home-hero__actions">
             @auth
                 <a href="{{ route('create') }}" class="sh-btn sh-btn--primary home-hero__cta">Create New</a>
@@ -92,23 +92,26 @@
     <div class="home-section__inner">
         <p class="home-section__label">Simple Process</p>
         <h3 class="home-section__title">How Shrang Works</h3>
-        <p class="home-section__sub">From any words to music, background sound, or a shareable reel</p>
+        <p class="home-section__sub">A simple path from your words to music, cover art, and downloadable social-ready reels.</p>
         <div class="home-steps">
             <div class="home-step">
-                <div class="home-step__number">١</div>
+                <div class="home-step__number">1</div>
                 <h4 class="home-step__title">Write Your Lyrics</h4>
-                <p class="home-step__text">Type or paste your poetry in any of our six supported languages. RTL fully supported for Pashto, Dari, Urdu, and Arabic.</p>
+                <p class="home-step__text">Type or paste your poem, lyrics, or idea in your language. Pashto, Dari, Urdu, Arabic, Hindi, and English are supported.</p>
             </div>
             <div class="home-step">
-                <div class="home-step__number">٢</div>
-                <h4 class="home-step__title">AI Composes Your Song</h4>
-                <p class="home-step__text">Google Lyria 3 creates an original song around your words — melody, rhythm, vocals, and full musical structure tailored to your language.</p>
+                <div class="home-step__number">2</div>
+                <h4 class="home-step__title">Shrang Shapes the Music</h4>
+                <p class="home-step__text">Shrang turns your words into melody, rhythm, and vocals tailored to your language and creative style.</p>
             </div>
             <div class="home-step">
-                <div class="home-step__number">٣</div>
-                <h4 class="home-step__title">Share & Download</h4>
-                <p class="home-step__text">Your song is ready in seconds. Add a cover image, create a short reel, share the link, or download the MP3.</p>
+                <div class="home-step__number">3</div>
+                <h4 class="home-step__title">Create Your Reel</h4>
+                <p class="home-step__text">Turn your song into a short video reel, cover image, or audio file you can download and post on your own social accounts.</p>
             </div>
+        </div>
+        <div class="home-section__more">
+            <a href="{{ route('how-it-works') }}" class="home-hero__ghost">Learn more about how Shrang works →</a>
         </div>
     </div>
 </section>
@@ -134,12 +137,12 @@
     <div class="home-section__inner">
         <p class="home-section__label">Pricing</p>
         <h3 class="home-section__title">Simple, Transparent Pricing</h3>
-        <p class="home-section__sub">Start free. Buy credits when you need more. No subscriptions.</p>
+        <p class="home-section__sub">Start free. Buy credits only when you need more. No subscriptions.</p>
         <div class="home-pricing">
             <div class="home-pricing__free">
                 <div class="home-pricing__free-badge">Free to Start</div>
                 <div class="home-pricing__free-credits">20 Credits</div>
-                <p class="home-pricing__free-desc">Every new account gets 20 free credits — enough to create 2 songs or 4 background music tracks.</p>
+                <p class="home-pricing__free-desc">Every new account gets 20 free credits to try Shrang and create your first music assets.</p>
                 @guest
                 <a href="{{ route('register') }}" class="sh-btn sh-btn--primary" style="margin-top:1rem;">Get Started Free</a>
                 @endguest
@@ -163,8 +166,8 @@
 {{-- FINAL CTA --}}
 <section class="home-section home-cta-section">
     <div class="home-section__inner" style="text-align:center;">
-        <h3 class="home-section__title">Your Words. Your Music.</h3>
-        <p class="home-section__sub">Join poets and musicians creating original AI music in their own language.</p>
+        <h3 class="home-section__title">Your Words. Your Reel. Your Music.</h3>
+        <p class="home-section__sub">Join creators turning poetry and lyrics into downloadable music, reels, and visual assets in their own language.</p>
         @auth
             <a href="{{ route('create') }}" class="pub-nav__cta" style="font-size:1rem;padding:0.875rem 2.5rem;">Create New Song</a>
         @else

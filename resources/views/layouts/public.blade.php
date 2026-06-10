@@ -30,7 +30,7 @@
                 <span class="pub-nav__logo-ar">شرنګ</span>
                 <span class="pub-nav__logo-en">Shrang</span>
             </a>
-            <p class="pub-footer__tagline">Turn your poetry into original AI music. Powered by Google Lyria 3.</p>
+            <p class="pub-footer__tagline">Turn your poetry and lyrics into downloadable music, reels, and visual assets.</p>
             <div class="pub-footer__langs">
                 @foreach(['ps'=>'پښتو','fa'=>'دری','ur'=>'اردو','ar'=>'عربي','hi'=>'हि','en'=>'EN'] as $code=>$label)
                     <a href="{{ route('lang.switch', $code) }}">{{ $label }}</a>
