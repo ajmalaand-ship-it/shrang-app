@@ -11,9 +11,7 @@
         <a href="{{ route('create') }}" class="sh-btn sh-btn--primary">+ Create New</a>
     </div>
 
-    @if(session('success'))
-        <div class="sh-notice sh-notice--success dashboard-notice">{{ session('success') }}</div>
-    @endif
+    <x-notice class="dashboard-notice" />
 
     {{-- Filter tabs --}}
     <div class="dashboard-filters">

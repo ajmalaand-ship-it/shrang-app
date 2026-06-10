@@ -8,12 +8,7 @@
         <p class="sh-text-muted">Manage your profile, preferences, and security.</p>
     </div>
 
-    @if(session('success'))
-        <div class="sh-notice sh-notice--success">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-        <div class="sh-notice sh-notice--danger">{{ session('error') }}</div>
-    @endif
+    <x-notice />
 
     <div class="sh-card" style="margin-bottom:1.5rem;">
         <div class="sh-card__body" style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
