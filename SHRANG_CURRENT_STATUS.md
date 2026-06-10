@@ -47,7 +47,9 @@ Core generation is WORKING end-to-end (Lyria 3 on Vertex, multilingual long song
 - Confirm whether Vertex/Agent Platform Imagen has any **daily** limit — Cloud Shell confirmed per-minute only.
 - Gemini API image quota rows are separate and lower; do NOT confuse with the Vertex cover path.
 
-**Next technical task (do NOT do now — documented only):** the cover-status UI truth issue — the UI must not show stale "Your cover image is being generated" after a job has failed or when no active cover job is running. (No quota work unless Alex replies.)
+### REVISIT LATER (parked — do NOT work on these now)
+- **Cover-status UI truth issue** (parked): the UI can show stale "Your cover image is being generated" after a job has failed or when no active cover job is running. Should show generating only while a job truly runs, a clear failure + retry when failed, never a stuck banner. NOT being worked on for now.
+- **Google/Alex quota thread** (parked): confirmation of the 120 RPM target and whether there is a daily limit is on hold. No quota work until we choose to revisit.
 
 ### AI Settings tab (built) — future rows to add later
 The dedicated `/admin/ai` page currently has the 2 Lyria mode dropdowns + a note. Later add: image provider control, cover fallback provider (Vertex Imagen → OpenAI), Vertex Imagen status, Vertex Lyria 3 pending/allowlist status, provider notes/limits.
