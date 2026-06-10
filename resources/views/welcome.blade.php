@@ -7,7 +7,11 @@
 {{-- HERO --}}
 <section class="home-hero">
     <div class="home-hero__inner">
-        <div class="home-hero__badge">● Powered by Google Lyria 3 AI</div>
+        <div class="home-hero__waveform">
+            @for($i = 0; $i < 40; $i++)
+                <div class="home-hero__bar" style="animation-delay: {{ $i * 0.05 }}s; height: {{ rand(20, 100) }}%"></div>
+            @endfor
+        </div>
         <h1 class="home-hero__headline-en">Turn Any Words Into <em>Original Music</em></h1>
         <p class="home-hero__sub">Paste a poem, write lyrics, share a script, or type a few lines — Shrang turns your words into an original song, background music, or shareable reel. In Pashto, Dari, Urdu, Arabic, Hindi, or English.</p>
         <div class="home-hero__actions">
@@ -19,11 +23,9 @@
                 <a href="#how-it-works" class="home-hero__ghost">See how it works</a>
             @endauth
         </div>
-        <div class="home-hero__waveform">
-            @for($i = 0; $i < 40; $i++)
-                <div class="home-hero__bar" style="animation-delay: {{ $i * 0.05 }}s; height: {{ rand(20, 100) }}%"></div>
-            @endfor
-        </div>
+        @guest
+            <p class="home-hero__login">Already have an account? <a href="{{ route('login') }}">Log in</a></p>
+        @endguest
     </div>
 </section>
 

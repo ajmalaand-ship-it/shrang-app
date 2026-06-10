@@ -23,7 +23,7 @@
             <select name="type" class="sh-select discover-filters__select" onchange="this.form.submit()">
                 <option value="" {{ empty($filters['type']) ? 'selected' : '' }}>All Types</option>
                 <option value="song" {{ ($filters['type'] ?? '') === 'song' ? 'selected' : '' }}>Songs</option>
-                <option value="bed" {{ ($filters['type'] ?? '') === 'bed' ? 'selected' : '' }}>Bed Music</option>
+                <option value="bed" {{ ($filters['type'] ?? '') === 'bed' ? 'selected' : '' }}>Background Music</option>
             </select>
             <select name="language" class="sh-select discover-filters__select" onchange="this.form.submit()">
                 <option value="" {{ empty($filters['language']) ? 'selected' : '' }}>All Languages</option>

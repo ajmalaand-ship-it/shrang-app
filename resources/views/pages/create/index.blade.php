@@ -127,7 +127,7 @@
                 <div class="create-path__info">
                     <span class="create-path__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
                     <div>
-                        <div class="create-path__title">Generate Bed Music</div>
+                        <div class="create-path__title">Generate Background Music</div>
                         <div class="create-path__desc">Create instrumental background music for videos, reels, or podcasts.</div>
                     </div>
                 </div>

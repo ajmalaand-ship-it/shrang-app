@@ -7,7 +7,7 @@
 
     <div style="margin-bottom:2rem;">
         <h1 class="sh-heading">Credits</h1>
-        <p class="sh-text-muted">Use credits to create songs, bed music, covers, and reels.</p>
+        <p class="sh-text-muted">Use credits to create songs, background music, covers, and reels.</p>
     </div>
 
     @if(session('success') || request('success'))
@@ -27,7 +27,7 @@
             </div>
             <div style="font-size:0.85rem;color:var(--sh-text-muted);line-height:2;">
                 <div>Song — 10 credits</div>
-                <div>Bed Music — 5 credits</div>
+                <div>Background Music — 5 credits</div>
                 <div>Cover Image — 3 credits</div>
                 <div>Reel — 5 credits</div>
             </div>
