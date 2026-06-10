@@ -13,7 +13,7 @@
             @endfor
         </div>
         <h1 class="home-hero__headline-en">Turn Words Into <em>Music & Reels</em></h1>
-        <p class="home-hero__sub">Paste a poem, write lyrics, share a script, or type a few lines — Shrang turns your words into music, cover art, and downloadable reels for your own social posts. In Pashto, Dari, Urdu, Arabic, Hindi, or English.</p>
+        <p class="home-hero__sub">Paste a poem, lyrics, or a few lines. Shrang turns your words into music, cover art, and downloadable reels for your social posts — in Pashto, Dari, Urdu, Arabic, Hindi, or English.</p>
         <div class="home-hero__actions">
             @auth
                 <a href="{{ route('create') }}" class="sh-btn sh-btn--primary home-hero__cta">Create New</a>

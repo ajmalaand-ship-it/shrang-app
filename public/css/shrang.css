@@ -590,7 +590,35 @@ img { max-width: 100%; display: block; }
 .home-pricing__pkg-price { font-size:1.25rem; font-weight:700; color:var(--sh-orange); }
 .home-cta-section { background:radial-gradient(ellipse at 50% 50%, rgba(232,115,42,0.1) 0%, transparent 70%); }
 .home-cta__poetry { font-family:var(--sh-font-poetry); font-size:1.5rem; color:var(--sh-orange-light); direction:rtl; margin-bottom:1rem; }
-@media(max-width:768px) { .home-steps { grid-template-columns:1fr; } .home-pricing { grid-template-columns:1fr; } .home-pricing__packages { grid-template-columns:1fr 1fr; } }
+@media(max-width:768px) {
+    .home-hero { padding:2rem 1.25rem 1.5rem; }
+    .home-hero__waveform { max-width:240px; height:52px; margin-bottom:1.5rem; }
+    .home-hero__headline-en { font-size:clamp(2rem,11vw,3rem); line-height:1.12; margin-bottom:1rem; }
+    .home-hero__sub { font-size:1rem; line-height:1.55; margin-bottom:1.75rem; max-width:92vw; }
+    .home-hero__actions { flex-direction:column; gap:0.8rem; width:100%; align-items:stretch; }
+    .home-hero__actions .sh-btn,
+    .home-hero__actions .home-hero__ghost { width:100%; text-align:center; justify-content:center; }
+    .home-hero__ghost { white-space:normal; line-height:1.35; padding:0.85rem 1rem; }
+    .home-section { padding:2.25rem 1.25rem; }
+    .home-section__sub { font-size:0.95rem; line-height:1.55; margin-bottom:1.5rem; }
+    .home-featured { grid-template-columns:1fr; gap:1rem; }
+    .home-steps { grid-template-columns:1fr; gap:1rem; }
+    .home-step { padding:1.25rem 1rem; }
+    .home-section__more { margin-top:1rem; }
+    .home-section__more .home-hero__ghost { display:block; width:100%; box-sizing:border-box; }
+    .home-langs { gap:0.75rem; margin-top:1rem; }
+    .home-lang { min-width:0; width:calc(50% - 0.4rem); padding:0.9rem 0.75rem; }
+    .home-lang__script { font-size:1.25rem; }
+    .home-pricing { grid-template-columns:1fr; gap:1rem; }
+    .home-pricing__free { padding:1.5rem 1rem; }
+    .home-pricing__free-credits { font-size:2rem; }
+    .home-pricing__packages { grid-template-columns:1fr 1fr; gap:0.8rem; }
+    .home-pricing__pkg { padding:1rem; }
+    .home-cta-section { padding:2.25rem 1.25rem; }
+    .pub-footer { margin-top:0; }
+    .pub-footer__inner { padding:2rem 1.25rem; gap:1.5rem; }
+    .pub-footer__cols { grid-template-columns:1fr 1fr; gap:1.5rem; }
+}
 @media(max-width:480px) { .home-hero__headline-ar { font-size:1.75rem; } .home-hero__headline-en { font-size:1.5rem; } }
 
 /* STUDIO PROGRESS BAR */
