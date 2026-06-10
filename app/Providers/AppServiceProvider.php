@@ -6,6 +6,7 @@ use App\Services\AI\AIProviderInterface;
 use App\Services\AI\AIService;
 use App\Services\AI\AIUsageTracker;
 use App\Services\AI\GeminiProvider;
+use App\Services\AdminSettingsService;
 use App\Services\AI\LyriaProvider;
 use App\Services\AI\StabilityProvider;
 use App\Services\AI\ElevenLabsProvider;
@@ -20,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
                 "gemini"     => new GeminiProvider(),
                 "stability"  => new StabilityProvider(),
                 "elevenlabs" => new ElevenLabsProvider(),
-                default      => new LyriaProvider(),
+                default      => new LyriaProvider($app->make(AdminSettingsService::class)),
             };
         });
         $this->app->singleton(AIService::class, function ($app) {
