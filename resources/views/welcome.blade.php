@@ -38,12 +38,12 @@
         ->where('clip_features.is_blocked', false)
         ->orderByDesc('clip_features.is_pinned')
         ->orderByDesc('clip_features.featured_at')
-        ->limit(4)
+        ->limit(5)
         ->get(['clips.*', 'clip_stats.play_count', 'clip_stats.like_count']);
 @endphp
 
 @if($featured->count() > 0)
-<section class="home-section">
+<section class="home-section home-section--featured">
     <div class="home-section__inner">
         <p class="home-section__label">Community Creations</p>
         <h3 class="home-section__title">Listen to What People Are Making</h3>
