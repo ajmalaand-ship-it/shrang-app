@@ -170,31 +170,72 @@ class GenerateReelJob implements ShouldQueue
                     );
                 }
             } else {
-                // No cover art (fallback bg): simple smooth zoom + optional title
-                $filter = "[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840," .
-                    "{$bgZoom},gblur=sigma=10,eq=brightness=-0.03:saturation=1.04,vignette=angle=PI/8[bg]";
+                // ---- No-cover fallback: Shrang brand background + center icon + rings ----
+                $ncStill = base_path("public/images/nc-still.png");
+                $ncRings = base_path("public/images/nc-rings.png");
+                $ncIglow = base_path("public/images/nc-iglow.png");
+                $ncIcon  = base_path("public/images/shrang-icon.png");
 
-                if ($titleOverlayPath && file_exists($titleOverlayPath)) {
-                    $filter .= ";[bg][2:v]overlay=(W-w)/2:1380,format=yuv420p[v]";
-                    $cmd = sprintf(
-                        "%s -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s " .
-                        "-filter_complex %s -map %s -map 1:a:0 " .
-                        "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
-                        "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
-                        $ffmpeg, escapeshellarg($imagePath), escapeshellarg($audioPath),
-                        escapeshellarg($titleOverlayPath),
-                        escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
-                    );
+                if (file_exists($ncStill) && file_exists($ncRings) && file_exists($ncIglow) && file_exists($ncIcon)) {
+                    $ncFilter =
+                        "[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840," .
+                        "scale=w='2160*(1+min(0.0010*t,0.06))':h=-1:eval=frame,crop=1080:1920,vignette=angle=PI/6[bg];" .
+                        "[2:v]scale=w='1100*(1+0.03*sin(t*0.55))':h=-1:eval=frame[rings];" .
+                        "[bg][rings]overlay=x='(W-w)/2':y='720-h/2'[a];" .
+                        "[a][3:v]overlay=x='(W-w)/2':y=370[b];" .
+                        "[4:v]scale=460:-1[ic];" .
+                        "[b][ic]overlay=x='(W-w)/2':y=490";
+
+                    if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+                        $ncFilter .= "[c];[c][5:v]overlay=(W-w)/2:1180,format=yuv420p[v]";
+                        $cmd = sprintf(
+                            "%s -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s -loop 1 -i %s -loop 1 -i %s -loop 1 -i %s " .
+                            "-filter_complex %s -map %s -map 1:a:0 " .
+                            "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+                            "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                            $ffmpeg, escapeshellarg($ncStill), escapeshellarg($audioPath),
+                            escapeshellarg($ncRings), escapeshellarg($ncIglow), escapeshellarg($ncIcon),
+                            escapeshellarg($titleOverlayPath),
+                            escapeshellarg($ncFilter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+                        );
+                    } else {
+                        $ncFilter .= ",format=yuv420p[v]";
+                        $cmd = sprintf(
+                            "%s -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s -loop 1 -i %s -loop 1 -i %s " .
+                            "-filter_complex %s -map %s -map 1:a:0 " .
+                            "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+                            "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                            $ffmpeg, escapeshellarg($ncStill), escapeshellarg($audioPath),
+                            escapeshellarg($ncRings), escapeshellarg($ncIglow), escapeshellarg($ncIcon),
+                            escapeshellarg($ncFilter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+                        );
+                    }
                 } else {
-                    $filter .= ",format=yuv420p[v]";
-                    $cmd = sprintf(
-                        "%s -y -loop 1 -framerate 30 -i %s -i %s " .
-                        "-filter_complex %s -map %s -map 1:a:0 " .
-                        "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
-                        "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
-                        $ffmpeg, escapeshellarg($imagePath), escapeshellarg($audioPath),
-                        escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
-                    );
+                    // Safety fallback: simple background if brand assets are missing
+                    $filter = "[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840," .
+                        "{$bgZoom},gblur=sigma=10,eq=brightness=-0.03:saturation=1.04,vignette=angle=PI/8[bg]";
+                    if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+                        $filter .= ";[bg][2:v]overlay=(W-w)/2:1380,format=yuv420p[v]";
+                        $cmd = sprintf(
+                            "%s -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s " .
+                            "-filter_complex %s -map %s -map 1:a:0 " .
+                            "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+                            "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                            $ffmpeg, escapeshellarg($imagePath), escapeshellarg($audioPath),
+                            escapeshellarg($titleOverlayPath),
+                            escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+                        );
+                    } else {
+                        $filter .= ",format=yuv420p[v]";
+                        $cmd = sprintf(
+                            "%s -y -loop 1 -framerate 30 -i %s -i %s " .
+                            "-filter_complex %s -map %s -map 1:a:0 " .
+                            "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+                            "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                            $ffmpeg, escapeshellarg($imagePath), escapeshellarg($audioPath),
+                            escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+                        );
+                    }
                 }
             }
 
