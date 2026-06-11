@@ -49,6 +49,12 @@ class GenerateReelJob implements ShouldQueue
             // Build FFmpeg command
             $ffmpeg = "/usr/bin/ffmpeg";
 
+            $overlayDir = storage_path("app/private/reel-overlays");
+            if (!is_dir($overlayDir)) {
+                mkdir($overlayDir, 0755, true);
+            }
+
+            // ---- Title overlay (clean white Pango text, RTL-safe) ----
             $titleOverlayPath = null;
             $titleText = trim((string) ($clip->display_title ?? ""));
             $titleText = preg_replace('/[\x00-\x1F\x7F\x{061C}\x{200B}\x{200E}\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]/u', '', $titleText) ?? "";
@@ -57,107 +63,146 @@ class GenerateReelJob implements ShouldQueue
             if ($titleText !== "" && $titleText !== "Untitled Clip") {
                 $titleText = mb_substr($titleText, 0, 80);
 
-                $overlayDir = storage_path("app/private/reel-overlays");
-                if (!is_dir($overlayDir)) {
-                    mkdir($overlayDir, 0755, true);
-                }
-
-                $titleShadowPath = $overlayDir . "/{$clip->id}-{$this->generationJobId}-title-shadow.png";
-                $titleMainPath = $overlayDir . "/{$clip->id}-{$this->generationJobId}-title-main.png";
                 $titleOverlayPath = $overlayDir . "/{$clip->id}-{$this->generationJobId}-title.png";
-                $titleTempPaths = [$titleShadowPath, $titleMainPath, $titleOverlayPath];
+                $titleTempPaths[] = $titleOverlayPath;
 
-                $titleMarkup = 'pango:<span font="Vazirmatn Bold 56">' .
+                $titleMarkup = 'pango:<span font="Vazirmatn Bold 52" foreground="white">' .
                     htmlspecialchars($titleText, ENT_QUOTES | ENT_XML1, 'UTF-8') .
                     '</span>';
 
-                $shadowCmd = sprintf(
-                    "/usr/bin/convert -background none -fill 'rgba(0,0,0,0.88)' -size 980x260 %s -trim +repage -gravity center -extent 980x260 -blur 0x2 PNG32:%s 2>&1",
+                $titleCmd = sprintf(
+                    "/usr/bin/convert -background none -size 920x300 -gravity center %s -trim +repage -bordercolor none -border 20 PNG32:%s 2>&1",
                     escapeshellarg($titleMarkup),
-                    escapeshellarg($titleShadowPath)
-                );
-
-                $mainCmd = sprintf(
-                    "/usr/bin/convert -background none -fill white -size 980x260 %s -trim +repage -gravity center -extent 980x260 PNG32:%s 2>&1",
-                    escapeshellarg($titleMarkup),
-                    escapeshellarg($titleMainPath)
-                );
-
-                $combineCmd = sprintf(
-                    "/usr/bin/convert -size 980x260 xc:none %s -gravity center -geometry +0+5 -composite %s -gravity center -composite PNG32:%s 2>&1",
-                    escapeshellarg($titleShadowPath),
-                    escapeshellarg($titleMainPath),
                     escapeshellarg($titleOverlayPath)
                 );
+                exec($titleCmd, $titleOut, $titleCode);
 
-                exec($shadowCmd, $shadowOut, $shadowCode);
-                exec($mainCmd, $mainOut, $mainCode);
-                exec($combineCmd, $combineOut, $combineCode);
-
-                if ($shadowCode !== 0 || $mainCode !== 0 || $combineCode !== 0 || !file_exists($titleOverlayPath)) {
+                if ($titleCode !== 0 || !file_exists($titleOverlayPath)) {
                     Log::warning("GenerateReelJob: title overlay creation failed", [
                         "clip_id" => $this->clipId,
-                        "shadow_output" => implode("\n", $shadowOut ?? []),
-                        "main_output" => implode("\n", $mainOut ?? []),
-                        "combine_output" => implode("\n", $combineOut ?? []),
+                        "title_output" => implode("\n", $titleOut ?? []),
                     ]);
-
                     $titleOverlayPath = null;
                 }
             }
 
-            $filter = "[0:v]split=2[bgsrc][fgsrc];" .
-                "[bgsrc]scale=1180:2098:force_original_aspect_ratio=increase,crop=1080:1920," .
-                "zoompan=z='1.04+0.025*sin(on/50)':x='iw/2-(iw/zoom/2)+30*sin(on/66)':y='ih/2-(ih/zoom/2)+26*cos(on/78)':d=1:s=1080x1920:fps=30," .
-                "gblur=sigma=20,eq=brightness=-0.03:saturation=1.08,vignette=angle=PI/9," .
-                "drawbox=x=210:y=505:w=660:h=2:color=0xFF9A4A@0.44:t=fill," .
-                "drawbox=x=210:y=1400:w=660:h=2:color=0xFF9A4A@0.30:t=fill[bg];" .
-                "[fgsrc]scale=820:820:force_original_aspect_ratio=decrease,pad=820:820:(ow-iw)/2:(oh-ih)/2:color=0x101014," .
-                "zoompan=z='1.008+0.012*sin(on/52)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=820x820:fps=30,format=rgba,split=2[shadowraw][fg];" .
-                "[shadowraw]boxblur=24:2,colorchannelmixer=rr=0:gg=0:bb=0:aa=0.30[shadow];" .
-                "[bg][shadow]overlay=(W-w)/2+4*sin(t*0.65):552+7*sin(t*0.8)[tmp];" .
-                "[tmp][fg]overlay=(W-w)/2+4*sin(t*0.65):540+7*sin(t*0.8)[base]";
+            // ---- Rounded cover with soft orange glow (only when a real cover exists) ----
+            $coverArtPath = null;
+            if ($coverPath && file_exists($coverPath)) {
+                $coverRoundPath = $overlayDir . "/{$clip->id}-{$this->generationJobId}-cover-round.png";
+                $coverArtPath   = $overlayDir . "/{$clip->id}-{$this->generationJobId}-cover-glow.png";
+                $titleTempPaths[] = $coverRoundPath;
+                $titleTempPaths[] = $coverArtPath;
 
-            if ($titleOverlayPath && file_exists($titleOverlayPath)) {
-                $filter .= ";[base][2:v]overlay=(W-w)/2:1375,format=yuv420p[v]";
-            } else {
-                $filter .= ";[base]format=yuv420p[v]";
+                $roundCmd = sprintf(
+                    "/usr/bin/convert %s -resize 820x820^ -gravity center -extent 820x820 ".
+                    "\\( +clone -alpha extract -draw 'fill black polygon 0,0 0,40 40,0 fill white circle 40,40 40,0' ".
+                    "\\( +clone -flip \\) -compose Multiply -composite ".
+                    "\\( +clone -flop \\) -compose Multiply -composite \\) ".
+                    "-alpha off -compose CopyOpacity -composite PNG32:%s 2>&1",
+                    escapeshellarg($coverPath),
+                    escapeshellarg($coverRoundPath)
+                );
+                exec($roundCmd, $roundOut, $roundCode);
+
+                $glowCmd = sprintf(
+                    "/usr/bin/convert -size 920x920 xc:none ".
+                    "\\( -size 820x820 xc:'#FF9A4A' -gravity center -background none -extent 920x920 -blur 0x22 \\) -composite ".
+                    "%s -gravity center -composite PNG32:%s 2>&1",
+                    escapeshellarg($coverRoundPath),
+                    escapeshellarg($coverArtPath)
+                );
+                exec($glowCmd, $glowOut, $glowCode);
+
+                if (($roundCode ?? 1) !== 0 || ($glowCode ?? 1) !== 0 || !file_exists($coverArtPath)) {
+                    Log::warning("GenerateReelJob: cover art creation failed", [
+                        "clip_id" => $this->clipId,
+                        "round_output" => implode("\n", $roundOut ?? []),
+                        "glow_output"  => implode("\n", $glowOut ?? []),
+                    ]);
+                    $coverArtPath = null;
+                }
             }
 
-            if ($titleOverlayPath && file_exists($titleOverlayPath)) {
-                $cmd = sprintf(
-                    "%s -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s " .
-                    "-filter_complex %s -map %s -map 1:a:0 " .
-                    "-c:v libx264 -preset fast -crf 24 -r 30 -pix_fmt yuv420p " .
-                    "-c:a aac -b:a 192k " .
-                    "-shortest -movflags +faststart %s 2>&1",
-                    $ffmpeg,
-                    escapeshellarg($imagePath),
-                    escapeshellarg($audioPath),
-                    escapeshellarg($titleOverlayPath),
-                    escapeshellarg($filter),
-                    escapeshellarg("[v]"),
-                    escapeshellarg($outputPath)
-                );
+            // ---- Probe audio duration for duration-aware motion ----
+            $durCmd = sprintf(
+                "/usr/bin/ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 %s 2>&1",
+                escapeshellarg($audioPath)
+            );
+            $durRaw = trim((string) shell_exec($durCmd));
+            $dur = is_numeric($durRaw) ? (float) $durRaw : 60.0;
+            if ($dur < 1) { $dur = 60.0; }
+
+            // ---- Smooth duration-aware Ken Burns zoom (no zoompan, no wobble) ----
+            $bgZoom = "scale=w='2160*(1+min(0.0015*t,0.20))':h=-1:eval=frame,crop=1080:1920";
+            $fgZoom = "scale=w='920*(1+min(0.0012*t,0.09))':h=-1:eval=frame";
+
+            if ($coverArtPath && file_exists($coverArtPath)) {
+                // Inputs: 0 = cover (blurred bg), 1 = audio, 2 = glow cover, 3 = title (optional)
+                $filter = "[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840," .
+                    "{$bgZoom},gblur=sigma=24,eq=brightness=-0.05:saturation=1.06,vignette=angle=PI/8[bgz];" .
+                    "color=black:s=1080x720:d={$dur},format=rgba,geq=r=0:g=0:b=0:a='245*(Y/720)'[fade];" .
+                    "[bgz][fade]overlay=0:1200[bg];" .
+                    "[2:v]format=rgba[cov];" .
+                    "[bg][cov]overlay=(W-w)/2:'380+20*sin(t*0.9)'[base]";
+
+                if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+                    $filter .= ";[base][3:v]overlay=(W-w)/2:1380,format=yuv420p[v]";
+                    $cmd = sprintf(
+                        "%s -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s -loop 1 -i %s " .
+                        "-filter_complex %s -map %s -map 1:a:0 " .
+                        "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+                        "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                        $ffmpeg, escapeshellarg($imagePath), escapeshellarg($audioPath),
+                        escapeshellarg($coverArtPath), escapeshellarg($titleOverlayPath),
+                        escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+                    );
+                } else {
+                    $filter .= ",format=yuv420p[v]";
+                    $cmd = sprintf(
+                        "%s -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s " .
+                        "-filter_complex %s -map %s -map 1:a:0 " .
+                        "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+                        "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                        $ffmpeg, escapeshellarg($imagePath), escapeshellarg($audioPath),
+                        escapeshellarg($coverArtPath),
+                        escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+                    );
+                }
             } else {
-                $cmd = sprintf(
-                    "%s -y -loop 1 -framerate 30 -i %s -i %s " .
-                    "-filter_complex %s -map %s -map 1:a:0 " .
-                    "-c:v libx264 -preset fast -crf 24 -r 30 -pix_fmt yuv420p " .
-                    "-c:a aac -b:a 192k " .
-                    "-shortest -movflags +faststart %s 2>&1",
-                    $ffmpeg,
-                    escapeshellarg($imagePath),
-                    escapeshellarg($audioPath),
-                    escapeshellarg($filter),
-                    escapeshellarg("[v]"),
-                    escapeshellarg($outputPath)
-                );
+                // No cover art (fallback bg): simple smooth zoom + optional title
+                $filter = "[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840," .
+                    "{$bgZoom},gblur=sigma=10,eq=brightness=-0.03:saturation=1.04,vignette=angle=PI/8[bg]";
+
+                if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+                    $filter .= ";[bg][2:v]overlay=(W-w)/2:1380,format=yuv420p[v]";
+                    $cmd = sprintf(
+                        "%s -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s " .
+                        "-filter_complex %s -map %s -map 1:a:0 " .
+                        "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+                        "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                        $ffmpeg, escapeshellarg($imagePath), escapeshellarg($audioPath),
+                        escapeshellarg($titleOverlayPath),
+                        escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+                    );
+                } else {
+                    $filter .= ",format=yuv420p[v]";
+                    $cmd = sprintf(
+                        "%s -y -loop 1 -framerate 30 -i %s -i %s " .
+                        "-filter_complex %s -map %s -map 1:a:0 " .
+                        "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+                        "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                        $ffmpeg, escapeshellarg($imagePath), escapeshellarg($audioPath),
+                        escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+                    );
+                }
             }
+
             Log::info("GenerateReelJob: running FFmpeg", [
                 "clip_id"    => $this->clipId,
                 "image_path" => $imagePath,
                 "audio_path" => $audioPath,
+                "duration"   => $dur,
                 "output"     => $outputPath,
             ]);
             $ffmpegOutput = shell_exec($cmd);

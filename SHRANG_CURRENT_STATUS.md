@@ -48,6 +48,7 @@ Core generation is WORKING end-to-end (Lyria 3 on Vertex, multilingual long song
 - Gemini API image quota rows are separate and lower; do NOT confuse with the Vertex cover path.
 
 ### REVISIT LATER (parked — do NOT work on these now)
+- **Studio job-status UX truth** (parked, found June 11): after Generate Reel, Studio takes ~2 min to update with no clear feedback — button stuck on "creating reel…", green message flickers/disappears as the page polls every few sec, no notification when done. Reel renders in ~50s (logs); the rest is queue-wait + polling. Same family as the cover-status UI truth issue — fix together as "Studio job-status truth" (clear generating/ready/failed state, stop flicker, notify on done).
 - **Cover-status UI truth issue** (parked): the UI can show stale "Your cover image is being generated" after a job has failed or when no active cover job is running. Should show generating only while a job truly runs, a clear failure + retry when failed, never a stuck banner. NOT being worked on for now.
 - **Google/Alex quota thread** (parked): confirmation of the 120 RPM target and whether there is a daily limit is on hold. No quota work until we choose to revisit.
 
