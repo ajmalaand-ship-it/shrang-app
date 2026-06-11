@@ -45,15 +45,29 @@ class GenerateReelJob implements ShouldQueue
             $outputPath     = storage_path("app/public/" . $outputFilename);
             // Build FFmpeg command
             $ffmpeg = "/usr/bin/ffmpeg";
+            $filter = "[0:v]split=2[bgsrc][fgsrc];" .
+                "[bgsrc]scale=1180:2098:force_original_aspect_ratio=increase,crop=1080:1920," .
+                "zoompan=z='1.04+0.025*sin(on/50)':x='iw/2-(iw/zoom/2)+30*sin(on/66)':y='ih/2-(ih/zoom/2)+26*cos(on/78)':d=1:s=1080x1920:fps=30," .
+                "gblur=sigma=20,eq=brightness=-0.03:saturation=1.08,vignette=angle=PI/9," .
+                "drawbox=x=210:y=505:w=660:h=2:color=0xFF9A4A@0.44:t=fill," .
+                "drawbox=x=210:y=1400:w=660:h=2:color=0xFF9A4A@0.30:t=fill[bg];" .
+                "[fgsrc]scale=820:820:force_original_aspect_ratio=decrease,pad=820:820:(ow-iw)/2:(oh-ih)/2:color=0x101014," .
+                "zoompan=z='1.008+0.012*sin(on/52)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=820x820:fps=30,format=rgba,split=2[shadowraw][fg];" .
+                "[shadowraw]boxblur=24:2,colorchannelmixer=rr=0:gg=0:bb=0:aa=0.30[shadow];" .
+                "[bg][shadow]overlay=(W-w)/2+4*sin(t*0.65):552+7*sin(t*0.8)[tmp];" .
+                "[tmp][fg]overlay=(W-w)/2+4*sin(t*0.65):540+7*sin(t*0.8),format=yuv420p[v]";
+
             $cmd = sprintf(
-                "%s -y -loop 1 -i %s -i %s " .
-                "-c:v libx264 -tune stillimage -preset fast -crf 23 -pix_fmt yuv420p " .
+                "%s -y -loop 1 -framerate 30 -i %s -i %s " .
+                "-filter_complex %s -map %s -map 1:a:0 " .
+                "-c:v libx264 -preset fast -crf 24 -r 30 -pix_fmt yuv420p " .
                 "-c:a aac -b:a 192k " .
-                "-vf \"scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black\" " .
                 "-shortest -movflags +faststart %s 2>&1",
                 $ffmpeg,
                 escapeshellarg($imagePath),
                 escapeshellarg($audioPath),
+                escapeshellarg($filter),
+                escapeshellarg("[v]"),
                 escapeshellarg($outputPath)
             );
             Log::info("GenerateReelJob: running FFmpeg", [
