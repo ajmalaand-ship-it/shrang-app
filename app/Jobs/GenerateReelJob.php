@@ -45,6 +45,63 @@ class GenerateReelJob implements ShouldQueue
             $outputPath     = storage_path("app/public/" . $outputFilename);
             // Build FFmpeg command
             $ffmpeg = "/usr/bin/ffmpeg";
+
+            $titleOverlayPath = null;
+            $titleTempPaths = [];
+            $titleText = trim((string) ($clip->display_title ?? ""));
+
+            if ($titleText !== "" && $titleText !== "Untitled Clip") {
+                $titleText = mb_substr($titleText, 0, 80);
+
+                $overlayDir = storage_path("app/public/reel-overlays");
+                if (!is_dir($overlayDir)) {
+                    mkdir($overlayDir, 0755, true);
+                }
+
+                $titleShadowPath = $overlayDir . "/{$clip->id}-{$this->generationJobId}-title-shadow.png";
+                $titleMainPath = $overlayDir . "/{$clip->id}-{$this->generationJobId}-title-main.png";
+                $titleOverlayPath = $overlayDir . "/{$clip->id}-{$this->generationJobId}-title.png";
+                $titleTempPaths = [$titleShadowPath, $titleMainPath, $titleOverlayPath];
+
+                $titleMarkup = 'pango:<span font="Vazirmatn Bold 56">' .
+                    htmlspecialchars($titleText, ENT_QUOTES | ENT_XML1, 'UTF-8') .
+                    '</span>';
+
+                $shadowCmd = sprintf(
+                    "/usr/bin/convert -background none -fill 'rgba(0,0,0,0.88)' -size 980x260 %s -trim +repage -gravity center -extent 980x260 -blur 0x2 PNG32:%s 2>&1",
+                    escapeshellarg($titleMarkup),
+                    escapeshellarg($titleShadowPath)
+                );
+
+                $mainCmd = sprintf(
+                    "/usr/bin/convert -background none -fill white -size 980x260 %s -trim +repage -gravity center -extent 980x260 PNG32:%s 2>&1",
+                    escapeshellarg($titleMarkup),
+                    escapeshellarg($titleMainPath)
+                );
+
+                $combineCmd = sprintf(
+                    "/usr/bin/convert -size 980x260 xc:none %s -gravity center -geometry +0+5 -composite %s -gravity center -composite PNG32:%s 2>&1",
+                    escapeshellarg($titleShadowPath),
+                    escapeshellarg($titleMainPath),
+                    escapeshellarg($titleOverlayPath)
+                );
+
+                exec($shadowCmd, $shadowOut, $shadowCode);
+                exec($mainCmd, $mainOut, $mainCode);
+                exec($combineCmd, $combineOut, $combineCode);
+
+                if ($shadowCode !== 0 || $mainCode !== 0 || $combineCode !== 0 || !file_exists($titleOverlayPath)) {
+                    Log::warning("GenerateReelJob: title overlay creation failed", [
+                        "clip_id" => $this->clipId,
+                        "shadow_output" => implode("\n", $shadowOut ?? []),
+                        "main_output" => implode("\n", $mainOut ?? []),
+                        "combine_output" => implode("\n", $combineOut ?? []),
+                    ]);
+
+                    $titleOverlayPath = null;
+                }
+            }
+
             $filter = "[0:v]split=2[bgsrc][fgsrc];" .
                 "[bgsrc]scale=1180:2098:force_original_aspect_ratio=increase,crop=1080:1920," .
                 "zoompan=z='1.04+0.025*sin(on/50)':x='iw/2-(iw/zoom/2)+30*sin(on/66)':y='ih/2-(ih/zoom/2)+26*cos(on/78)':d=1:s=1080x1920:fps=30," .
@@ -55,21 +112,44 @@ class GenerateReelJob implements ShouldQueue
                 "zoompan=z='1.008+0.012*sin(on/52)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=820x820:fps=30,format=rgba,split=2[shadowraw][fg];" .
                 "[shadowraw]boxblur=24:2,colorchannelmixer=rr=0:gg=0:bb=0:aa=0.30[shadow];" .
                 "[bg][shadow]overlay=(W-w)/2+4*sin(t*0.65):552+7*sin(t*0.8)[tmp];" .
-                "[tmp][fg]overlay=(W-w)/2+4*sin(t*0.65):540+7*sin(t*0.8),format=yuv420p[v]";
+                "[tmp][fg]overlay=(W-w)/2+4*sin(t*0.65):540+7*sin(t*0.8)[base]";
 
-            $cmd = sprintf(
-                "%s -y -loop 1 -framerate 30 -i %s -i %s " .
-                "-filter_complex %s -map %s -map 1:a:0 " .
-                "-c:v libx264 -preset fast -crf 24 -r 30 -pix_fmt yuv420p " .
-                "-c:a aac -b:a 192k " .
-                "-shortest -movflags +faststart %s 2>&1",
-                $ffmpeg,
-                escapeshellarg($imagePath),
-                escapeshellarg($audioPath),
-                escapeshellarg($filter),
-                escapeshellarg("[v]"),
-                escapeshellarg($outputPath)
-            );
+            if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+                $filter .= ";[base][2:v]overlay=(W-w)/2:1375,format=yuv420p[v]";
+            } else {
+                $filter .= ";[base]format=yuv420p[v]";
+            }
+
+            if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+                $cmd = sprintf(
+                    "%s -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s " .
+                    "-filter_complex %s -map %s -map 1:a:0 " .
+                    "-c:v libx264 -preset fast -crf 24 -r 30 -pix_fmt yuv420p " .
+                    "-c:a aac -b:a 192k " .
+                    "-shortest -movflags +faststart %s 2>&1",
+                    $ffmpeg,
+                    escapeshellarg($imagePath),
+                    escapeshellarg($audioPath),
+                    escapeshellarg($titleOverlayPath),
+                    escapeshellarg($filter),
+                    escapeshellarg("[v]"),
+                    escapeshellarg($outputPath)
+                );
+            } else {
+                $cmd = sprintf(
+                    "%s -y -loop 1 -framerate 30 -i %s -i %s " .
+                    "-filter_complex %s -map %s -map 1:a:0 " .
+                    "-c:v libx264 -preset fast -crf 24 -r 30 -pix_fmt yuv420p " .
+                    "-c:a aac -b:a 192k " .
+                    "-shortest -movflags +faststart %s 2>&1",
+                    $ffmpeg,
+                    escapeshellarg($imagePath),
+                    escapeshellarg($audioPath),
+                    escapeshellarg($filter),
+                    escapeshellarg("[v]"),
+                    escapeshellarg($outputPath)
+                );
+            }
             Log::info("GenerateReelJob: running FFmpeg", [
                 "clip_id"    => $this->clipId,
                 "image_path" => $imagePath,
@@ -77,6 +157,13 @@ class GenerateReelJob implements ShouldQueue
                 "output"     => $outputPath,
             ]);
             $ffmpegOutput = shell_exec($cmd);
+
+            foreach ($titleTempPaths as $tempPath) {
+                if ($tempPath && file_exists($tempPath)) {
+                    @unlink($tempPath);
+                }
+            }
+
             // Verify output file
             if (!file_exists($outputPath)) {
                 Log::error("GenerateReelJob: FFmpeg did not create output file", [
