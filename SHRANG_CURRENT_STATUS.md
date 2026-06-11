@@ -52,6 +52,20 @@ Core generation is WORKING end-to-end (Lyria 3 on Vertex, multilingual long song
 - **Cover-status UI truth issue** (parked): the UI can show stale "Your cover image is being generated" after a job has failed or when no active cover job is running. Should show generating only while a job truly runs, a clear failure + retry when failed, never a stuck banner. NOT being worked on for now.
 - **Google/Alex quota thread** (parked): confirmation of the 120 RPM target and whether there is a daily limit is on hold. No quota work until we choose to revisit.
 
+### REEL PIPELINE (GenerateReelJob.php) — progress + roadmap
+**Phase 1 DONE** (committed): cover-based animated reel, RTL-safe Pango title (no raw drawtext), private temp PNGs, cleanup in finally, downloadable 1080x1920 MP4.
+**Phase 2 DONE** (committed 8c5a509, June 11): Reel v2 visual — rounded cover + soft orange glow, gentle floating cover motion (20*sin(t*0.9)), soft bottom gradient fade, clean white Pango title in the fade, smooth duration-aware bg zoom (scale-based, no zoompan/jitter; constant-speed capped min(0.0015*t,0.20)). Cover-glow + title rendered as PNGs inside the job via ImageMagick/Pango. Validated on 2 clips + via real queue. Render ~95-110s for 60s audio.
+**Phase 3 NEXT** — real UI flow verification: Generate Reel from Studio UI (not just Tinker); confirm reel appears, Download Reel works, reel becomes primary visual when present, mobile playback OK. (Note: Studio job-status UX issue is parked in REVISIT LATER.)
+**Phase 4** — template system (Classic Cover+Title, Poetry Poster, Minimal Dark, Afghan Warm, Waveform); admin enable/disable; user picks before generation.
+**Phase 5** — better text: optional lyrics/subtitle overlays (PNG/Pango, RTL-safe; timed later).
+**Phase 6** — audio-reactive visuals (waveform/bars/subtle pulse).
+**Phase 7** — no-cover fallback improvement (branded background, not plain black; encourage cover first).
+**Phase 8** — uploaded video support (mute option, combine with generated audio, crop 9:16).
+**Phase 9** — reel credit cost (admin-controlled; heavier templates cost more).
+**Phase 10** — production polish (thumbnails, watermark by plan, mobile compat, clean old temp/failed, admin monitoring).
+**OPTIMIZATION (do when convenient):** cache the static orange-glow template + per-clip glow/title PNGs to cut render time.
+**SEPARATE ISSUE (park):** Imagen sometimes bakes unwanted text into covers — fix in cover generation, not reels.
+
 ### AI Settings tab (built) — future rows to add later
 The dedicated `/admin/ai` page currently has the 2 Lyria mode dropdowns + a note. Later add: image provider control, cover fallback provider (Vertex Imagen → OpenAI), Vertex Imagen status, Vertex Lyria 3 pending/allowlist status, provider notes/limits.
 
