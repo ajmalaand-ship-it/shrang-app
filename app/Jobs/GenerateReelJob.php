@@ -26,6 +26,9 @@ class GenerateReelJob implements ShouldQueue
         if ($genJob) {
             $genJob->update(["status" => "running", "started_at" => now()]);
         }
+
+        $titleTempPaths = [];
+
         try {
             $clip      = Clip::findOrFail($this->clipId);
             $audioPath = $this->params["audio_path"] ?? null;
@@ -47,13 +50,14 @@ class GenerateReelJob implements ShouldQueue
             $ffmpeg = "/usr/bin/ffmpeg";
 
             $titleOverlayPath = null;
-            $titleTempPaths = [];
             $titleText = trim((string) ($clip->display_title ?? ""));
+            $titleText = preg_replace('/[\x00-\x1F\x7F\x{061C}\x{200B}\x{200E}\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]/u', '', $titleText) ?? "";
+            $titleText = trim($titleText);
 
             if ($titleText !== "" && $titleText !== "Untitled Clip") {
                 $titleText = mb_substr($titleText, 0, 80);
 
-                $overlayDir = storage_path("app/public/reel-overlays");
+                $overlayDir = storage_path("app/private/reel-overlays");
                 if (!is_dir($overlayDir)) {
                     mkdir($overlayDir, 0755, true);
                 }
@@ -158,12 +162,6 @@ class GenerateReelJob implements ShouldQueue
             ]);
             $ffmpegOutput = shell_exec($cmd);
 
-            foreach ($titleTempPaths as $tempPath) {
-                if ($tempPath && file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-            }
-
             // Verify output file
             if (!file_exists($outputPath)) {
                 Log::error("GenerateReelJob: FFmpeg did not create output file", [
@@ -222,6 +220,12 @@ class GenerateReelJob implements ShouldQueue
                 "error"   => $e->getMessage(),
             ]);
             throw $e;
+        } finally {
+            foreach ($titleTempPaths as $tempPath) {
+                if ($tempPath && file_exists($tempPath)) {
+                    @unlink($tempPath);
+                }
+            }
         }
     }
 }
