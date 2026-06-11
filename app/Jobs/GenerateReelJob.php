@@ -15,6 +15,9 @@ class GenerateReelJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     public int $timeout = 300;
     public int $tries   = 2;
+
+    /** Allowed reel templates (Phase 6a plumbing; all render cover_glow for now). */
+    private const TEMPLATES = ["cover_glow", "minimal_dark", "poetry_poster"];
     public function __construct(
         private readonly string $clipId,
         private readonly string $generationJobId,
@@ -26,6 +29,12 @@ class GenerateReelJob implements ShouldQueue
         if ($genJob) {
             $genJob->update(["status" => "running", "started_at" => now()]);
         }
+
+        $template = $this->params["template"] ?? "cover_glow";
+        if (!in_array($template, self::TEMPLATES, true)) {
+            $template = "cover_glow";
+        }
+        Log::info("GenerateReelJob: template", ["clip_id" => $this->clipId, "template" => $template]);
 
         $titleTempPaths = [];
 

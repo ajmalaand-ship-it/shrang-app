@@ -39,6 +39,13 @@ class ReelController extends Controller
                 $coverPath = $possiblePath;
             }
         }
+        // Phase 6a: optional reel template (plumbing only; all render cover_glow for now)
+        $allowedTemplates = ["cover_glow", "minimal_dark", "poetry_poster"];
+        $template = (string) $request->input("template", "cover_glow");
+        if (!in_array($template, $allowedTemplates, true)) {
+            $template = "cover_glow";
+        }
+
         // Create generation job record
         $genJob = GenerationJob::create([
             "clip_id"          => $clip->id,
@@ -52,6 +59,7 @@ class ReelController extends Controller
             "user_id"    => $request->user()->id,
             "audio_path" => $audioPath,
             "cover_path" => $coverPath,
+            "template"   => $template,
         ])->onQueue("default");
         return redirect()->route("studio.show", $clip)
             ->with("success", "Your reel is being created. This may take a minute. The page will update automatically.");
