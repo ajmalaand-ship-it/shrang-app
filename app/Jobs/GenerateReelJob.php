@@ -95,9 +95,10 @@ class GenerateReelJob implements ShouldQueue
                 }
             }
 
-            // ---- Rounded cover with soft orange glow (only when a real cover exists) ----
+            // ---- Rounded cover with soft orange glow (cover_glow template only) ----
             $coverArtPath = null;
-            if ($coverPath && file_exists($coverPath)) {
+            $hasCover = ($coverPath && file_exists($coverPath));
+            if ($hasCover && $template === "cover_glow") {
                 $coverRoundPath = $overlayDir . "/{$clip->id}-{$this->generationJobId}-cover-round.png";
                 $coverArtPath   = $overlayDir . "/{$clip->id}-{$this->generationJobId}-cover-glow.png";
                 $titleTempPaths[] = $coverRoundPath;
@@ -146,8 +147,12 @@ class GenerateReelJob implements ShouldQueue
             $bgZoom = "scale=w='2160*(1+min(0.0015*t,0.20))':h=-1:eval=frame,crop=1080:1920";
             $fgZoom = "scale=w='920*(1+min(0.0012*t,0.09))':h=-1:eval=frame";
 
-            if ($coverArtPath && file_exists($coverArtPath)) {
-                // Inputs: 0 = cover (blurred bg), 1 = audio, 2 = glow cover, 3 = title (optional)
+            if ($hasCover && $template === "minimal_dark") {
+                $cmd = $this->buildMinimalDark($overlayDir, $clip, $coverPath, $audioPath, $outputPath, $titleOverlayPath, $titleTempPaths);
+            } elseif ($hasCover && $template === "poetry_poster") {
+                $cmd = $this->buildPoetryPoster($overlayDir, $clip, $coverPath, $audioPath, $outputPath, $titleOverlayPath, $titleTempPaths);
+            } elseif ($coverArtPath && file_exists($coverArtPath)) {
+                // cover_glow (unchanged). Inputs: 0 = cover (blurred bg), 1 = audio, 2 = glow cover, 3 = title (optional)
                 $filter = "[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840," .
                     "{$bgZoom},gblur=sigma=24,eq=brightness=-0.05:saturation=1.06,vignette=angle=PI/8[bgz];" .
                     "color=black:s=1080x720:d={$dur},format=rgba,geq=r=0:g=0:b=0:a='245*(Y/720)'[fade];" .
@@ -322,5 +327,72 @@ class GenerateReelJob implements ShouldQueue
                 }
             }
         }
+    }
+
+    /** Build the FFmpeg command for the MINIMAL DARK template (cover hero on warm charcoal). */
+    private function buildMinimalDark(string $overlayDir, $clip, string $coverPath, string $audioPath, string $outputPath, ?string $titleOverlayPath, array &$titleTempPaths): string
+    {
+        $C = "/usr/bin/convert";
+        $base = "{$overlayDir}/{$clip->id}-{$this->generationJobId}-md";
+        $still = "{$base}-still.png"; $cov = "{$base}-cover.png";
+        $gA = "{$base}-base.png"; $gW = "{$base}-warm.png"; $fd = "{$base}-fade.png"; $cr = "{$base}-cr.png";
+        foreach ([$still,$cov,$gA,$gW,$fd,$cr] as $p) { $titleTempPaths[] = $p; }
+
+        exec(sprintf("%s -size 1080x1920 radial-gradient:'#241C16'-'#120D0A' %s 2>&1", $C, escapeshellarg($gA)));
+        exec(sprintf("%s -size 1000x1000 radial-gradient:'#E8732A'-'#E8732A00' -blur 0x95 %s 2>&1", $C, escapeshellarg($gW)));
+        exec(sprintf("%s -size 1080x600 gradient:none-'#0C0805' %s 2>&1", $C, escapeshellarg($fd)));
+        exec(sprintf("%s %s \\( %s -channel A -evaluate multiply 0.20 +channel \\) -geometry +40+220 -compose screen -composite %s -geometry +0+1320 -compose over -composite %s 2>&1",
+            $C, escapeshellarg($gA), escapeshellarg($gW), escapeshellarg($fd), escapeshellarg($still)));
+        exec(sprintf("%s %s -resize 760x760^ -gravity center -extent 760x760 \\( +clone -alpha extract -draw 'fill black polygon 0,0 0,44 44,0 fill white circle 44,44 44,0' \\( +clone -flip \\) -compose Multiply -composite \\( +clone -flop \\) -compose Multiply -composite \\) -alpha off -compose CopyOpacity -composite PNG32:%s 2>&1",
+            $C, escapeshellarg($coverPath), escapeshellarg($cr)));
+        exec(sprintf("%s %s \\( +clone -background black -shadow 55x20+0+12 \\) +swap -background none -layers merge +repage PNG32:%s 2>&1",
+            $C, escapeshellarg($cr), escapeshellarg($cov)));
+
+        $bg = "[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840,scale=w='2160*(1+min(0.0008*t,0.05))':h=-1:eval=frame,crop=1080:1920,vignette=angle=PI/4.5[bg];[2:v]format=rgba[cov];[bg][cov]overlay=(W-w)/2:'350+16*sin(t*0.8)'[b]";
+        if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+            $bg .= ";[b][3:v]overlay=(W-w)/2:1330,format=yuv420p[v]";
+            return sprintf("/usr/bin/ffmpeg -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s -loop 1 -i %s -filter_complex %s -map %s -map 1:a:0 -c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                escapeshellarg($still), escapeshellarg($audioPath), escapeshellarg($cov), escapeshellarg($titleOverlayPath),
+                escapeshellarg($bg), escapeshellarg("[v]"), escapeshellarg($outputPath));
+        }
+        $bg .= ",format=yuv420p[v]";
+        return sprintf("/usr/bin/ffmpeg -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s -filter_complex %s -map %s -map 1:a:0 -c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+            escapeshellarg($still), escapeshellarg($audioPath), escapeshellarg($cov),
+            escapeshellarg($bg), escapeshellarg("[v]"), escapeshellarg($outputPath));
+    }
+
+    /** Build the FFmpeg command for the POETRY POSTER template (cover-colored ambient wash). */
+    private function buildPoetryPoster(string $overlayDir, $clip, string $coverPath, string $audioPath, string $outputPath, ?string $titleOverlayPath, array &$titleTempPaths): string
+    {
+        $C = "/usr/bin/convert";
+        $base = "{$overlayDir}/{$clip->id}-{$this->generationJobId}-pp";
+        $bgfull = "{$base}-bg.png"; $cov = "{$base}-cover.png"; $line = "{$base}-line.png";
+        $bgt = "{$base}-bgt.png"; $fb = "{$base}-fb.png"; $ft = "{$base}-ft.png"; $cr = "{$base}-cr.png";
+        foreach ([$bgfull,$cov,$line,$bgt,$fb,$ft,$cr] as $p) { $titleTempPaths[] = $p; }
+
+        exec(sprintf("%s %s -resize 1080x1920^ -gravity center -extent 1080x1920 -blur 0x45 -modulate 70,115 -fill black -colorize 18%% %s 2>&1",
+            $C, escapeshellarg($coverPath), escapeshellarg($bgt)));
+        exec(sprintf("%s -size 1080x820 gradient:none-'#08060A' %s 2>&1", $C, escapeshellarg($fb)));
+        exec(sprintf("%s -size 1080x460 gradient:'#08060A'-none %s 2>&1", $C, escapeshellarg($ft)));
+        exec(sprintf("%s %s %s -gravity south -geometry +0+0 -compose over -composite %s -gravity north -geometry +0+0 -compose over -composite %s 2>&1",
+            $C, escapeshellarg($bgt), escapeshellarg($fb), escapeshellarg($ft), escapeshellarg($bgfull)));
+        exec(sprintf("%s %s -resize 720x720^ -gravity center -extent 720x720 \\( +clone -alpha extract -draw 'fill black polygon 0,0 0,36 36,0 fill white circle 36,36 36,0' \\( +clone -flip \\) -compose Multiply -composite \\( +clone -flop \\) -compose Multiply -composite \\) -alpha off -compose CopyOpacity -composite PNG32:%s 2>&1",
+            $C, escapeshellarg($coverPath), escapeshellarg($cr)));
+        exec(sprintf("%s %s \\( +clone -background black -shadow 60x24+0+14 \\) +swap -background none -layers merge +repage PNG32:%s 2>&1",
+            $C, escapeshellarg($cr), escapeshellarg($cov)));
+        exec(sprintf("%s -size 130x4 xc:'#FFD3A8' -alpha set -channel A -evaluate multiply 0.85 +channel PNG32:%s 2>&1",
+            $C, escapeshellarg($line)));
+
+        $bg = "[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840,scale=w='2160*(1+min(0.0007*t,0.045))':h=-1:eval=frame,crop=1080:1920[bg];[2:v]format=rgba[cov];[bg][cov]overlay=(W-w)/2:'330+10*sin(t*0.7)'[b];[b][3:v]overlay=(W-w)/2:1300[c]";
+        if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+            $bg .= ";[c][4:v]overlay=(W-w)/2:1345,format=yuv420p[v]";
+            return sprintf("/usr/bin/ffmpeg -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s -loop 1 -i %s -loop 1 -i %s -filter_complex %s -map %s -map 1:a:0 -c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                escapeshellarg($bgfull), escapeshellarg($audioPath), escapeshellarg($cov), escapeshellarg($line), escapeshellarg($titleOverlayPath),
+                escapeshellarg($bg), escapeshellarg("[v]"), escapeshellarg($outputPath));
+        }
+        $bg .= ",format=yuv420p[v]";
+        return sprintf("/usr/bin/ffmpeg -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s -loop 1 -i %s -filter_complex %s -map %s -map 1:a:0 -c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+            escapeshellarg($bgfull), escapeshellarg($audioPath), escapeshellarg($cov), escapeshellarg($line),
+            escapeshellarg($bg), escapeshellarg("[v]"), escapeshellarg($outputPath));
     }
 }
