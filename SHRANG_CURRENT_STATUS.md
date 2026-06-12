@@ -64,6 +64,7 @@ Core generation is WORKING end-to-end (Lyria 3 on Vertex, multilingual long song
 - Studio picker: radio chips (sh-radio-group) in the has-cover Create Reel form; cover_glow pre-selected. Controller already validates template.
 - No-cover clips: all templates fall back to Phase 4 branded no-cover reel (verified: poetry_poster + no cover => Phase 4 fallback, no error).
 - OPEN (minor, deferred): 'Try Again' retry form has no picker (retry uses cover_glow). Decide later.
+**Phase 7 DONE** (committed ce4ce8d, June 12): Poetry Poster 2nd poem line. Rule: poem line = first non-empty lyrics_input line that is NOT the display_title (handles manual title correctly = uses lyric line 1; no manual title = uses line 2; single-line lyrics or duplicate = title only). RTL-safe Pango PNG, Vazirmatn 40, brand cream #FFD3A8, placed below title in buildPoetryPoster(). Cover_glow + minimal_dark unchanged (title only). Verified 3 cases (no title / manual title / single line) on real clip via temporary-edit-and-restore test.
 **Phase 4 (OLD roadmap)** — template system (Classic Cover+Title, Poetry Poster, Minimal Dark, Afghan Warm, Waveform); admin enable/disable; user picks before generation.
 **Phase 5** — better text: optional lyrics/subtitle overlays (PNG/Pango, RTL-safe; timed later).
 **Phase 6** — audio-reactive visuals (waveform/bars/subtle pulse).
