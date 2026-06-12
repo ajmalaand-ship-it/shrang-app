@@ -59,6 +59,11 @@ Core generation is WORKING end-to-end (Lyria 3 on Vertex, multilingual long song
 **Phase 4 DONE** (committed bce1358, June 11): branded no-cover fallback — warm dark brand background (#2B170C/#140F0B), center Shrang note icon with #E8732A glow, breathing brand-color sound-rings, white RTL-safe Pango title, Ken Burns push-in. Static assets in public/images (nc-still/nc-rings/nc-iglow/shrang-icon). No-cover branch only; cover path untouched; safety fallback if assets missing. NOTE: reel roadmap was re-scoped to Phases 4-12 (see separate roadmap); brand wordmark on clips deferred.
 **Phase 5 DONE/DECIDED** (June 11): no length cap. Songs are <=1 min, so reel simply follows audio length (current job already does this via -shortest). No code change needed.
 **Phase 6a DONE** (committed affe2a6, June 11): reel template plumbing. ReelController reads optional `template` from request, validates against [cover_glow, minimal_dark, poetry_poster], defaults/falls back to cover_glow, passes into job params. GenerateReelJob has TEMPLATES const + resolves $template at start of handle() (logs it). NO visual change yet — all templates render cover_glow. NEXT 6b: Studio picker UI, then build real minimal_dark + poetry_poster (preview-first).
+**Phase 6 DONE** (committed b9ee627 + 80ba3d5, June 11): reel template system.
+- Templates: cover_glow (default, unchanged Reel v2), minimal_dark (cover hero on warm charcoal, soft shadow, less orange), poetry_poster (cover-colored ambient wash + big poster title + thin accent line). Built as buildMinimalDark()/buildPoetryPoster() in GenerateReelJob; cover_glow path byte-identical.
+- Studio picker: radio chips (sh-radio-group) in the has-cover Create Reel form; cover_glow pre-selected. Controller already validates template.
+- No-cover clips: all templates fall back to Phase 4 branded no-cover reel (verified: poetry_poster + no cover => Phase 4 fallback, no error).
+- OPEN (minor, deferred): 'Try Again' retry form has no picker (retry uses cover_glow). Decide later.
 **Phase 4 (OLD roadmap)** — template system (Classic Cover+Title, Poetry Poster, Minimal Dark, Afghan Warm, Waveform); admin enable/disable; user picks before generation.
 **Phase 5** — better text: optional lyrics/subtitle overlays (PNG/Pango, RTL-safe; timed later).
 **Phase 6** — audio-reactive visuals (waveform/bars/subtle pulse).
