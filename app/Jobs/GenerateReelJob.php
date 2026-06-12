@@ -383,8 +383,36 @@ class GenerateReelJob implements ShouldQueue
         exec(sprintf("%s -size 130x4 xc:'#FFD3A8' -alpha set -channel A -evaluate multiply 0.85 +channel PNG32:%s 2>&1",
             $C, escapeshellarg($line)));
 
+        // ---- Optional 2nd poem line: first lyric line that is NOT the title ----
+        $line2Path = null;
+        $displayTitle = trim((string) ($clip->display_title ?? ""));
+        $rawLyrics = (string) ($clip->lyrics_input ?? "");
+        $lyricLines = array_values(array_filter(array_map("trim", preg_split('/\r\n|\r|\n/', $rawLyrics)), fn($l) => $l !== ""));
+        $poemLine = "";
+        foreach ($lyricLines as $ln) {
+            if ($ln !== $displayTitle) { $poemLine = $ln; break; }
+        }
+        $poemLine = preg_replace('/[\x00-\x1F\x7F\x{061C}\x{200B}\x{200E}\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]/u', '', $poemLine) ?? "";
+        $poemLine = trim($poemLine);
+        if ($poemLine !== "" && $poemLine !== $displayTitle) {
+            $poemLine = mb_substr($poemLine, 0, 60);
+            $line2Path = "{$base}-line2.png";
+            $titleTempPaths[] = $line2Path;
+            $line2Markup = 'pango:<span font="Vazirmatn 40" foreground="#FFD3A8">' .
+                htmlspecialchars($poemLine, ENT_QUOTES | ENT_XML1, 'UTF-8') . '</span>';
+            exec(sprintf("%s -background none -size 1000x200 -gravity center %s -trim +repage -bordercolor none -border 18 PNG32:%s 2>&1",
+                $C, escapeshellarg($line2Markup), escapeshellarg($line2Path)));
+            if (!file_exists($line2Path)) { $line2Path = null; }
+        }
+
         $bg = "[0:v]scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840,scale=w='2160*(1+min(0.0007*t,0.045))':h=-1:eval=frame,crop=1080:1920[bg];[2:v]format=rgba[cov];[bg][cov]overlay=(W-w)/2:'330+10*sin(t*0.7)'[b];[b][3:v]overlay=(W-w)/2:1300[c]";
         if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+            if ($line2Path && file_exists($line2Path)) {
+                $bg .= ";[c][4:v]overlay=(W-w)/2:1345[t];[t][5:v]overlay=(W-w)/2:1485,format=yuv420p[v]";
+                return sprintf("/usr/bin/ffmpeg -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s -loop 1 -i %s -loop 1 -i %s -loop 1 -i %s -filter_complex %s -map %s -map 1:a:0 -c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                    escapeshellarg($bgfull), escapeshellarg($audioPath), escapeshellarg($cov), escapeshellarg($line), escapeshellarg($titleOverlayPath), escapeshellarg($line2Path),
+                    escapeshellarg($bg), escapeshellarg("[v]"), escapeshellarg($outputPath));
+            }
             $bg .= ";[c][4:v]overlay=(W-w)/2:1345,format=yuv420p[v]";
             return sprintf("/usr/bin/ffmpeg -y -loop 1 -framerate 30 -i %s -i %s -loop 1 -i %s -loop 1 -i %s -loop 1 -i %s -filter_complex %s -map %s -map 1:a:0 -c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
                 escapeshellarg($bgfull), escapeshellarg($audioPath), escapeshellarg($cov), escapeshellarg($line), escapeshellarg($titleOverlayPath),
