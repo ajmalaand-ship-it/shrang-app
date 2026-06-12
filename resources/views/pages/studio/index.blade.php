@@ -220,6 +220,12 @@ $displayTitle = $clip->display_title;
                 <p class="studio-nba__label">&#8594; Next: Create a shareable reel</p>
                 <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
                     @csrf
+                    <span class="studio-reel-style__label">Reel style</span>
+                    <div class="sh-radio-group studio-reel-style">
+                        <label class="sh-radio"><input type="radio" name="template" value="cover_glow" checked> Cover Glow</label>
+                        <label class="sh-radio"><input type="radio" name="template" value="minimal_dark"> Minimal Dark</label>
+                        <label class="sh-radio"><input type="radio" name="template" value="poetry_poster"> Poetry Poster</label>
+                    </div>
                     <button type="submit" class="sh-btn sh-btn--primary studio-hero__action-primary">Create Reel</button>
                 </form>
             @endif
