@@ -21,6 +21,9 @@ class AdminSettingsSeeder extends Seeder
             ["key" => "lyria_song_mode",         "value" => "pro_60",  "cast" => "string", "group" => "ai",       "label" => "Lyria song mode (generateMusic)",      "is_public" => false],
             ["key" => "lyria_bed_mode",          "value" => "pro_180", "cast" => "string", "group" => "ai",       "label" => "Lyria bed music mode (generateBed)",   "is_public" => false],
             ["key" => "maintenance_mode",        "value" => "0",   "cast" => "bool", "group" => "features","label" => "Maintenance mode",                   "is_public" => true],
+            ["key" => "upload_video_enabled",    "value" => "1",   "cast" => "bool", "group" => "reels",   "label" => "Uploaded video enabled",             "is_public" => false],
+            ["key" => "upload_video_max_mb",     "value" => "100", "cast" => "int",  "group" => "reels",   "label" => "Uploaded video max size (MB)",       "is_public" => false],
+            ["key" => "upload_video_formats",    "value" => "mp4,mov,webm", "cast" => "string", "group" => "reels", "label" => "Uploaded video formats",      "is_public" => false],
         ];
         foreach ($settings as $setting) {
             DB::table("admin_settings")->updateOrInsert(

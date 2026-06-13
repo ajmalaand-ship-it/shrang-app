@@ -302,6 +302,7 @@ $displayTitle = $clip->display_title;
     </div>
 </div>
 
+@if($uploadedVideoEnabled)
 <div class="sh-card studio-video-card" id="studio-video">
     <div class="sh-card__header">Upload Your Own Video (optional)</div>
     <div class="sh-card__body">
@@ -343,6 +344,7 @@ $displayTitle = $clip->display_title;
     </div>
 </div>
 
+@endif
 <div id="cover-gen-error" class="sh-notice sh-notice--danger studio-notice" style="display:none;">Cover image couldn't be generated — you can try again below.</div>
 
 {{-- COVER TOOLS --}}

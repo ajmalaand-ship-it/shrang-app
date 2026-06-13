@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Studio;
 use App\Http\Controllers\Controller;
 use App\Models\Clip;
 use App\Models\MediaAsset;
+use App\Services\AdminSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,8 @@ use Illuminate\Support\Str;
 
 class UploadedVideoController extends Controller
 {
+    public function __construct(private readonly AdminSettingsService $settings) {}
+
     /**
      * Upload a user video to be used as the visual layer of a reel.
      * Mirrors CoverController::upload. Stores as MediaAsset type "uploaded_video".
@@ -21,12 +24,26 @@ class UploadedVideoController extends Controller
     {
         $this->authorize("update", $clip);
 
+        if (!$this->settings->get("upload_video_enabled", true)) {
+            return redirect()->route("studio.show", $clip)
+                ->with("error", "Video upload is currently disabled.");
+        }
+
+        $maxMb   = (int) $this->settings->get("upload_video_max_mb", 100);
+        if ($maxMb < 1) { $maxMb = 100; }
+        $maxKb   = $maxMb * 1024;
+
+        $formatsRaw = (string) $this->settings->get("upload_video_formats", "mp4,mov,webm");
+        $formats = array_filter(array_map(fn($x) => strtolower(trim($x)), explode(",", $formatsRaw)));
+        if (empty($formats)) { $formats = ["mp4", "mov", "webm"]; }
+        $mimes = implode(",", $formats);
+
         $request->validate([
             "video_file" => [
                 "required",
                 "file",
-                "mimes:mp4,mov,webm",
-                "max:102400", // 100 MB
+                "mimes:{$mimes}",
+                "max:{$maxKb}",
             ],
         ]);
 
