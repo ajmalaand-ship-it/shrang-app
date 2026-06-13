@@ -308,6 +308,11 @@ $displayTitle = $clip->display_title;
         <p class="studio-video-help">Use your own video as the reel background. The reel will use your song audio, not the video's sound.</p>
         @if($uploadedVideo && $uploadedVideo->cdn_url)
             <video class="studio-video-preview" src="{{ $uploadedVideo->cdn_url }}" controls playsinline muted></video>
+            <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-video-reel-form">
+                @csrf
+                <input type="hidden" name="source" value="uploaded_video">
+                <button type="submit" class="sh-btn sh-btn--primary studio-video-reel-btn">Create Reel from Uploaded Video</button>
+            </form>
             <div class="studio-video-actions">
                 <form method="POST" action="{{ route('studio.video.delete', $clip) }}" onsubmit="return confirm('Remove this uploaded video?');">
                     @csrf

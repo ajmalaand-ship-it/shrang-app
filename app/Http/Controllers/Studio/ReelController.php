@@ -39,11 +39,32 @@ class ReelController extends Controller
                 $coverPath = $possiblePath;
             }
         }
-        // Phase 6a: optional reel template (plumbing only; all render cover_glow for now)
+        // Reel template (cover templates) + Phase 9 uploaded-video source.
         $allowedTemplates = ["cover_glow", "minimal_dark", "poetry_poster"];
         $template = (string) $request->input("template", "cover_glow");
         if (!in_array($template, $allowedTemplates, true)) {
             $template = "cover_glow";
+        }
+
+        // Phase 9: optional "create reel from uploaded video".
+        $source = (string) $request->input("source", "cover");
+        $videoPath = null;
+        if ($source === "uploaded_video") {
+            $videoAsset = MediaAsset::where("clip_id", $clip->id)
+                ->where("type", "uploaded_video")
+                ->where("is_primary", true)
+                ->first();
+            if (!$videoAsset || !$videoAsset->storage_key) {
+                return redirect()->route("studio.show", $clip)
+                    ->with("error", "No uploaded video found. Please upload a video first.");
+            }
+            $possibleVideo = storage_path("app/public/" . $videoAsset->storage_key);
+            if (!file_exists($possibleVideo)) {
+                return redirect()->route("studio.show", $clip)
+                    ->with("error", "Uploaded video file is missing from storage. Please upload it again.");
+            }
+            $videoPath = $possibleVideo;
+            $template  = "uploaded_video_basic";
         }
 
         // Create generation job record
@@ -59,6 +80,7 @@ class ReelController extends Controller
             "user_id"    => $request->user()->id,
             "audio_path" => $audioPath,
             "cover_path" => $coverPath,
+            "video_path" => $videoPath,
             "template"   => $template,
         ])->onQueue("default");
         return redirect()->route("studio.show", $clip)

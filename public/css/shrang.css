@@ -1679,3 +1679,7 @@ input[type="password"] {
 .studio-video-preview { width:100%; max-width:280px; border-radius:12px; display:block; margin-bottom:0.75rem; background:#000; }
 .studio-video-actions { display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center; }
 .studio-video-upload-form { display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; }
+
+/* Create reel from uploaded video */
+.studio-video-reel-form { margin:0 0 0.75rem; }
+.studio-video-reel-btn { width:100%; }

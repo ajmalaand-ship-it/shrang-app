@@ -17,7 +17,7 @@ class GenerateReelJob implements ShouldQueue
     public int $tries   = 2;
 
     /** Allowed reel templates (Phase 6a plumbing; all render cover_glow for now). */
-    private const TEMPLATES = ["cover_glow", "minimal_dark", "poetry_poster"];
+    private const TEMPLATES = ["cover_glow", "minimal_dark", "poetry_poster", "uploaded_video_basic"];
     public function __construct(
         private readonly string $clipId,
         private readonly string $generationJobId,
@@ -42,6 +42,7 @@ class GenerateReelJob implements ShouldQueue
             $clip      = Clip::findOrFail($this->clipId);
             $audioPath = $this->params["audio_path"] ?? null;
             $coverPath = $this->params["cover_path"] ?? null;
+            $videoPath = $this->params["video_path"] ?? null;
             $defaultBg = base_path("public/images/default-reel-bg.png");
             // Audio is required
             if (!$audioPath || !file_exists($audioPath)) {
@@ -147,7 +148,9 @@ class GenerateReelJob implements ShouldQueue
             $bgZoom = "scale=w='2160*(1+min(0.0015*t,0.20))':h=-1:eval=frame,crop=1080:1920";
             $fgZoom = "scale=w='920*(1+min(0.0012*t,0.09))':h=-1:eval=frame";
 
-            if ($hasCover && $template === "minimal_dark") {
+            if ($template === "uploaded_video_basic" && $videoPath && file_exists($videoPath)) {
+                $cmd = $this->buildUploadedVideoBasic($overlayDir, $videoPath, $audioPath, $outputPath, $titleOverlayPath);
+            } elseif ($hasCover && $template === "minimal_dark") {
                 $cmd = $this->buildMinimalDark($overlayDir, $clip, $coverPath, $audioPath, $outputPath, $titleOverlayPath, $titleTempPaths);
             } elseif ($hasCover && $template === "poetry_poster") {
                 $cmd = $this->buildPoetryPoster($overlayDir, $clip, $coverPath, $audioPath, $outputPath, $titleOverlayPath, $titleTempPaths);
@@ -330,6 +333,57 @@ class GenerateReelJob implements ShouldQueue
     }
 
     /** Build the FFmpeg command for the MINIMAL DARK template (cover hero on warm charcoal). */
+    /**
+     * Phase 9: uploaded_video_basic — blurred-fill background + fitted video,
+     * muted video, clip audio, length follows audio (loop short / trim long),
+     * subtle bottom fade + RTL-safe title PNG.
+     */
+    private function buildUploadedVideoBasic(string $overlayDir, string $videoPath, string $audioPath, string $outputPath, ?string $titleOverlayPath): string
+    {
+        $ffmpeg = "/usr/bin/ffmpeg";
+
+        // Bottom fade strip for title readability.
+        $fadePath = $overlayDir . "/" . uniqid("uvfade_", true) . ".png";
+        exec(sprintf(
+            "/usr/bin/convert -size 1080x600 gradient:none-'#000000' -channel A -evaluate multiply 0.85 +channel PNG32:%s 2>&1",
+            escapeshellarg($fadePath)
+        ));
+
+        // Inputs: 0 = video (looped), 1 = audio, 2 = fade, [3 = title]
+        if ($titleOverlayPath && file_exists($titleOverlayPath)) {
+            $filter =
+                "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,gblur=sigma=28,eq=brightness=-0.06:saturation=1.05[bg];" .
+                "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease[fg];" .
+                "[bg][fg]overlay=(W-w)/2:(H-h)/2[base];" .
+                "[base][2:v]overlay=0:H-h[bf];" .
+                "[bf][3:v]overlay=(W-w)/2:1420,format=yuv420p[v]";
+            return sprintf(
+                "%s -y -stream_loop -1 -i %s -i %s -loop 1 -i %s -loop 1 -i %s " .
+                "-filter_complex %s -map %s -map 1:a:0 " .
+                "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+                "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+                $ffmpeg, escapeshellarg($videoPath), escapeshellarg($audioPath),
+                escapeshellarg($fadePath), escapeshellarg($titleOverlayPath),
+                escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+            );
+        }
+
+        $filter =
+            "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,gblur=sigma=28,eq=brightness=-0.06:saturation=1.05[bg];" .
+            "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease[fg];" .
+            "[bg][fg]overlay=(W-w)/2:(H-h)/2[base];" .
+            "[base][2:v]overlay=0:H-h,format=yuv420p[v]";
+        return sprintf(
+            "%s -y -stream_loop -1 -i %s -i %s -loop 1 -i %s " .
+            "-filter_complex %s -map %s -map 1:a:0 " .
+            "-c:v libx264 -preset fast -crf 22 -r 30 -pix_fmt yuv420p " .
+            "-c:a aac -b:a 192k -shortest -movflags +faststart %s 2>&1",
+            $ffmpeg, escapeshellarg($videoPath), escapeshellarg($audioPath),
+            escapeshellarg($fadePath),
+            escapeshellarg($filter), escapeshellarg("[v]"), escapeshellarg($outputPath)
+        );
+    }
+
     private function buildMinimalDark(string $overlayDir, $clip, string $coverPath, string $audioPath, string $outputPath, ?string $titleOverlayPath, array &$titleTempPaths): string
     {
         $C = "/usr/bin/convert";
