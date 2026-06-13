@@ -16,6 +16,7 @@ use App\Http\Controllers\Creation\UploadController;
 use App\Http\Controllers\Studio\ClipController;
 use App\Http\Controllers\Studio\CoverController;
 use App\Http\Controllers\Studio\ReelController;
+use App\Http\Controllers\Studio\UploadedVideoController;
 use App\Http\Controllers\Payments\CheckoutController;
 use App\Http\Controllers\DashboardController;
 
@@ -75,6 +76,8 @@ Route::middleware(["auth"])->group(function () {
     Route::post("/studio/{clip}/cover", [CoverController::class, "store"])->name("studio.cover");
     Route::post("/studio/{clip}/cover/upload", [CoverController::class, "upload"])->name("studio.cover.upload");
     Route::post("/studio/{clip}/reel", [ReelController::class, "store"])->name("studio.reel");
+    Route::post("/studio/{clip}/video/upload", [UploadedVideoController::class, "upload"])->name("studio.video.upload");
+    Route::delete("/studio/{clip}/video", [UploadedVideoController::class, "destroy"])->name("studio.video.delete");
 
     Route::get("/credits", [CheckoutController::class, "index"])->name("credits");
     Route::post("/credits/checkout", [CheckoutController::class, "createIntent"])->name("credits.checkout");

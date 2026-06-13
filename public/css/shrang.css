@@ -1673,3 +1673,9 @@ input[type="password"] {
 /* Reel template picker (Studio) */
 .studio-reel-style__label { display:block; font-size:0.8rem; color:var(--sh-text-muted); margin:0.2rem 0 0.1rem; }
 .studio-reel-style { margin-bottom:0.75rem; }
+
+/* Uploaded video card (Studio) */
+.studio-video-help { color:var(--sh-text-muted); font-size:0.85rem; margin-bottom:0.75rem; }
+.studio-video-preview { width:100%; max-width:280px; border-radius:12px; display:block; margin-bottom:0.75rem; background:#000; }
+.studio-video-actions { display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center; }
+.studio-video-upload-form { display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; }

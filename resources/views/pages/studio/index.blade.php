@@ -302,6 +302,42 @@ $displayTitle = $clip->display_title;
     </div>
 </div>
 
+<div class="sh-card studio-video-card" id="studio-video">
+    <div class="sh-card__header">Upload Your Own Video (optional)</div>
+    <div class="sh-card__body">
+        <p class="studio-video-help">Use your own video as the reel background. The reel will use your song audio, not the video's sound.</p>
+        @if($uploadedVideo && $uploadedVideo->cdn_url)
+            <video class="studio-video-preview" src="{{ $uploadedVideo->cdn_url }}" controls playsinline muted></video>
+            <div class="studio-video-actions">
+                <form method="POST" action="{{ route('studio.video.delete', $clip) }}" onsubmit="return confirm('Remove this uploaded video?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Remove Video</button>
+                </form>
+                <form method="POST" action="{{ route('studio.video.upload', $clip) }}" enctype="multipart/form-data" class="studio-video-upload-form">
+                    @csrf
+                    <input type="file" name="video_file" id="video_file" accept=".mp4,.mov,.webm" class="studio-cover-upload-input">
+                    <label for="video_file" class="sh-btn sh-btn--ghost sh-btn--sm">Choose New Video</label>
+                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">Replace Video</button>
+                </form>
+            </div>
+        @else
+            <form method="POST" action="{{ route('studio.video.upload', $clip) }}" enctype="multipart/form-data" class="studio-video-upload-form">
+                @csrf
+                <div class="studio-cover-upload-row">
+                    <input type="file" name="video_file" id="video_file" accept=".mp4,.mov,.webm" class="studio-cover-upload-input">
+                    <label for="video_file" class="sh-btn sh-btn--ghost sh-btn--sm studio-cover-upload-label">Choose Video</label>
+                    <span class="studio-cover-upload-name" id="video-file-name">MP4, MOV, or WebM — max 100MB</span>
+                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">Upload Video</button>
+                </div>
+            </form>
+        @endif
+        @error("video_file")
+            <p class="sh-field-error" style="margin-top:0.5rem;">{{ $message }}</p>
+        @enderror
+    </div>
+</div>
+
 <div id="cover-gen-error" class="sh-notice sh-notice--danger studio-notice" style="display:none;">Cover image couldn't be generated — you can try again below.</div>
 
 {{-- COVER TOOLS --}}
