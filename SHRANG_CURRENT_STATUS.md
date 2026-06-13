@@ -71,6 +71,12 @@ Core generation is WORKING end-to-end (Lyria 3 on Vertex, multilingual long song
 - Studio 'Create Reel from Uploaded Video' button (source=uploaded_video) reuses studio.reel route.
 - DECISIONS: always mute video + use clip audio for now. 'Keep original video audio' (toggle/mix) deferred to a possible Phase 9c. Blurred-fill chosen over center-crop (vertical fills frame so blur invisible there, which is fine; blur shows for horizontal/square). Cover templates + no-cover fallback untouched.
 - OPEN (minor): filename not shown next to 'Choose Video' (cosmetic JS); 'Create Reel from Uploaded Video' button still shows after a reel exists.
+**Phase 10 DONE** (committed 73b6653, June 13): admin controls for uploaded video.
+- Plugged into existing AdminSettings system (AdminSetting model + AdminSettingsService get/set, admin Settings UI lists rows by group). New 'reels' group, 3 keys: upload_video_enabled (bool), upload_video_max_mb (int), upload_video_formats (string mp4,mov,webm). Added to AdminSettingsSeeder for reproducibility.
+- UploadedVideoController reads these: blocks upload if disabled; builds mimes + max validation from settings instead of hard-coded 100MB.
+- ClipController passes $uploadedVideoEnabled; Studio video card wrapped in @if so it hides when disabled. Settings cached 300s (cache:clear to apply immediately).
+- Verified: toggling upload_video_enabled shows/hides the Studio card.
+- NOTE: only uploaded-video controls added (no per-template on/off or reel master toggle yet).
 **Phase 4 (OLD roadmap)** — template system (Classic Cover+Title, Poetry Poster, Minimal Dark, Afghan Warm, Waveform); admin enable/disable; user picks before generation.
 **Phase 5** — better text: optional lyrics/subtitle overlays (PNG/Pango, RTL-safe; timed later).
 **Phase 6** — audio-reactive visuals (waveform/bars/subtle pulse).
