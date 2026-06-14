@@ -86,4 +86,23 @@ class ReelController extends Controller
         return redirect()->route("studio.show", $clip)
             ->with("success", "Your reel is being created. This may take a minute. The page will update automatically.");
     }
+
+    public function destroy(Request $request, Clip $clip): RedirectResponse
+    {
+        $this->authorize("update", $clip);
+
+        $assets = MediaAsset::where("clip_id", $clip->id)
+            ->where("type", "reel_video")
+            ->get();
+
+        foreach ($assets as $asset) {
+            if ($asset->storage_key) {
+                Storage::disk("public")->delete($asset->storage_key);
+            }
+            $asset->delete();
+        }
+
+        return redirect()->route("studio.show", $clip)
+            ->with("success", "Reel video removed.");
+    }
 }

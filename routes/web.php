@@ -77,6 +77,7 @@ Route::middleware(["auth"])->group(function () {
     Route::post("/studio/{clip}/cover/upload", [CoverController::class, "upload"])->name("studio.cover.upload");
     Route::delete("/studio/{clip}/cover", [CoverController::class, "destroy"])->name("studio.cover.delete");
     Route::post("/studio/{clip}/reel", [ReelController::class, "store"])->name("studio.reel");
+    Route::delete("/studio/{clip}/reel", [ReelController::class, "destroy"])->name("studio.reel.delete");
     Route::post("/studio/{clip}/video/upload", [UploadedVideoController::class, "upload"])->name("studio.video.upload");
     Route::delete("/studio/{clip}/video", [UploadedVideoController::class, "destroy"])->name("studio.video.delete");
 

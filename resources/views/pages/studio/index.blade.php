@@ -216,6 +216,11 @@ $displayTitle = $clip->display_title;
                 <p class="studio-nba__label">&#10003; Your reel is ready</p>
                 <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Reel</a>
 
+                <form method="POST" action="{{ route('studio.reel.delete', $clip) }}" style="margin-top:0.65rem;" onsubmit="return confirm('Delete this reel video? The audio, cover, and uploaded video will stay safe.');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Reel</button>
+                </form>
 
             @elseif(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
                 {{-- STATE: Reel generating --}}
