@@ -207,80 +207,29 @@ $displayTitle = $clip->display_title;
         <div class="sh-notice sh-notice--info studio-hero__no-audio">Audio is being processed. Please refresh in a moment.</div>
         @endif
 
-        {{-- Actions --}}
-        {{-- Next Best Action system --}}
+        {{-- Actions: Current Result only --}}
         <div class="studio-hero__actions">
 
             @if(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
-                {{-- STATE: Reel generating --}}
                 <p class="studio-nba__label">Creating your reel...</p>
                 <button type="button" class="sh-btn sh-btn--primary studio-hero__action-primary studio-hero__action--muted" disabled>Creating Reel...</button>
                 <p class="studio-hero__action-hint">This page will update automatically when your reel is ready.</p>
 
             @elseif($reel && $reel->cdn_url)
-                {{-- STATE: Reel ready --}}
                 <p class="studio-nba__label">&#10003; Your reel is ready</p>
                 <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Reel</a>
+                <a href="#studio-reel-creation" class="sh-btn sh-btn--ghost studio-hero__action-secondary" style="margin-top:0.5rem;" onclick="document.querySelector('#studio-reel-creation').scrollIntoView({behavior:'smooth'});return false;">Recreate / Manage Reel</a>
 
-                <form method="POST" action="{{ route('studio.reel.delete', $clip) }}" style="margin-top:0.65rem;" onsubmit="return confirm('Delete this reel video? The audio, cover, and uploaded video will stay safe.');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Reel</button>
-                </form>
-
-                @if($coverAsset)
-                    <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form" style="margin-top:0.75rem;">
-                        @csrf
-                        <span class="studio-reel-style__label">Recreate reel with style</span>
-                        <div class="sh-radio-group studio-reel-style">
-                            <label class="sh-radio"><input type="radio" name="template" value="cover_glow" checked> Cover Glow</label>
-                            <label class="sh-radio"><input type="radio" name="template" value="minimal_dark"> Minimal Dark</label>
-                            <label class="sh-radio"><input type="radio" name="template" value="poetry_poster"> Poetry Poster</label>
-                        </div>
-                        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Recreate Reel</button>
-                    </form>
-                @else
-                    <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form" style="margin-top:0.75rem;">
-                        @csrf
-                        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Recreate Reel Without Cover</button>
-                    </form>
-                    <p class="studio-hero__action-hint">A reel with a cover image usually looks richer.</p>
-                @endif
-
-            @elseif(isset($reelJob) && $reelJob && $reelJob->status === 'failed')
-                {{-- STATE: Reel failed --}}
-                <p class="studio-nba__label studio-nba__label--warn">Reel could not be created</p>
-                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
-                    @csrf
-                    <button type="submit" class="sh-btn sh-btn--primary studio-hero__action-primary">Try Again</button>
-                </form>
-                <p class="studio-hero__action-hint">If it keeps failing, try regenerating your cover first.</p>
-
-            @elseif(!$coverAsset)
-                {{-- STATE: No cover — suggest generate cover first --}}
-                <p class="studio-nba__label">&#8594; Next: Generate a cover image</p>
-                <a href="#studio-cover" class="sh-btn sh-btn--primary studio-hero__action-primary" onclick="document.querySelector('.studio-cover-card').scrollIntoView({behavior:'smooth'});return false;">Generate Cover</a>
-                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form" style="margin-top:0.5rem;">
-                    @csrf
-                    <button type="submit" class="sh-btn sh-btn--ghost studio-hero__action-secondary">Skip — Create Reel Without Cover</button>
-                </form>
+            @elseif($coverAsset)
+                <p class="studio-nba__label">&#8594; Next: Create a shareable reel</p>
+                <a href="#studio-reel-creation" class="sh-btn sh-btn--primary studio-hero__action-primary" onclick="document.querySelector('#studio-reel-creation').scrollIntoView({behavior:'smooth'});return false;">Create Reel</a>
 
             @else
-                {{-- STATE: Has cover, no reel — suggest create reel --}}
-                <p class="studio-nba__label">&#8594; Next: Create a shareable reel</p>
-                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
-                    @csrf
-                    <span class="studio-reel-style__label">Reel style</span>
-                    <div class="sh-radio-group studio-reel-style">
-                        <label class="sh-radio"><input type="radio" name="template" value="cover_glow" checked> Cover Glow</label>
-                        <label class="sh-radio"><input type="radio" name="template" value="minimal_dark"> Minimal Dark</label>
-                        <label class="sh-radio"><input type="radio" name="template" value="poetry_poster"> Poetry Poster</label>
-                    </div>
-                    <button type="submit" class="sh-btn sh-btn--primary studio-hero__action-primary">Create Reel</button>
-                </form>
+                <p class="studio-nba__label">&#8594; Next: Generate or upload a cover</p>
+                <a href="#studio-cover" class="sh-btn sh-btn--primary studio-hero__action-primary" onclick="document.querySelector('.studio-cover-card').scrollIntoView({behavior:'smooth'});return false;">Go to Cover Image</a>
+                <a href="#studio-reel-creation" class="sh-btn sh-btn--ghost studio-hero__action-secondary" style="margin-top:0.5rem;" onclick="document.querySelector('#studio-reel-creation').scrollIntoView({behavior:'smooth'});return false;">Create Reel Without Cover</a>
             @endif
 
-            {{-- Secondary row: always available when assets exist --}}
             <div class="studio-hero__action-row" style="margin-top:0.75rem;">
                 @if($audioAsset && $audioAsset->cdn_url)
                 <a href="{{ $audioAsset->cdn_url }}" download class="sh-btn {{ $reel && $reel->cdn_url ? 'sh-btn--ghost studio-hero__action-secondary' : 'sh-btn--primary studio-hero__action-primary' }}">
@@ -333,6 +282,63 @@ $displayTitle = $clip->display_title;
     </form>
 </div>
 
+
+{{-- REEL CREATION --}}
+<div class="sh-card studio-reel-card" id="studio-reel-creation">
+    <div class="sh-card__header">{{ $reel ? 'Recreate Reel' : 'Create Reel' }}</div>
+    <div class="sh-card__body">
+        @if(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
+            <div class="sh-notice sh-notice--info studio-notice">Your reel is being created. This may take about a minute.</div>
+        @else
+            @if($coverAsset)
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
+                    @csrf
+                    <span class="studio-reel-style__label">Use current cover image</span>
+                    <div class="sh-radio-group studio-reel-style">
+                        <label class="sh-radio"><input type="radio" name="template" value="cover_glow" checked> Cover Glow</label>
+                        <label class="sh-radio"><input type="radio" name="template" value="minimal_dark"> Minimal Dark</label>
+                        <label class="sh-radio"><input type="radio" name="template" value="poetry_poster"> Poetry Poster</label>
+                    </div>
+                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">
+                        {{ $reel ? 'Recreate Reel from Current Cover' : 'Create Reel from Current Cover' }}
+                    </button>
+                </form>
+            @else
+                <p class="studio-video-help">A reel with a cover image usually looks richer. You can still create a simple reel without a cover.</p>
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
+                    @csrf
+                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
+                        {{ $reel ? 'Recreate Reel Without Cover' : 'Create Reel Without Cover' }}
+                    </button>
+                </form>
+            @endif
+
+            @if($uploadedVideoEnabled)
+                @if($uploadedVideo && $uploadedVideo->cdn_url)
+                    <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-video-reel-form" style="margin-top:0.85rem;">
+                        @csrf
+                        <input type="hidden" name="source" value="uploaded_video">
+                        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
+                            {{ $reel ? 'Recreate Reel from Uploaded Video' : 'Create Reel from Uploaded Video' }}
+                        </button>
+                    </form>
+                    <p class="studio-video-help" style="margin-top:0.45rem;">Uploaded-video reels use your song audio, not the video's original sound.</p>
+                @else
+                    <p class="studio-video-help" style="margin-top:0.85rem;">Want to use your own video? Upload one in the Uploaded Video card below.</p>
+                @endif
+            @endif
+
+            @if($reel && $reel->cdn_url)
+                <form method="POST" action="{{ route('studio.reel.delete', $clip) }}" style="margin-top:0.85rem;" onsubmit="return confirm('Delete this reel video? The audio, cover, and uploaded video will stay safe.');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Current Reel</button>
+                </form>
+            @endif
+        @endif
+    </div>
+</div>
+
 {{-- UPLOAD OWN COVER --}}
 <div class="sh-card studio-cover-card">
     <div class="sh-card__header">{{ $coverAsset ? 'Current Cover Image' : 'Upload Your Own Cover' }}</div>
@@ -380,11 +386,6 @@ $displayTitle = $clip->display_title;
         <p class="studio-video-help">Use your own video as the reel background. The reel will use your song audio, not the video's sound.</p>
         @if($uploadedVideo && $uploadedVideo->cdn_url)
             <video class="studio-video-preview" src="{{ $uploadedVideo->cdn_url }}" controls playsinline muted></video>
-            <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-video-reel-form">
-                @csrf
-                <input type="hidden" name="source" value="uploaded_video">
-                <button type="submit" class="sh-btn sh-btn--primary studio-video-reel-btn">Create Reel from Uploaded Video</button>
-            </form>
             <div class="studio-video-actions">
                 <form method="POST" action="{{ route('studio.video.delete', $clip) }}" onsubmit="return confirm('Remove this uploaded video?');">
                     @csrf
