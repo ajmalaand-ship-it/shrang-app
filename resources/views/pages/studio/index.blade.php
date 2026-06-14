@@ -415,53 +415,60 @@ $displayTitle = $clip->display_title;
 </div>
 @endif
 
+
 {{-- REEL CREATION --}}
 <div class="sh-card studio-reel-card" id="studio-reel-creation">
     <div class="sh-card__header">Create / Recreate Reel</div>
     <div class="sh-card__body">
+        <p class="studio-video-help" style="margin-top:0;">Choose the visual source for your social reel. A cover-based reel is recommended for most songs.</p>
+
         @if(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
             <div class="sh-notice sh-notice--info studio-notice">Your reel is being created. This may take about a minute.</div>
         @else
             @if($coverAsset)
-                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form" style="margin-top:0.85rem;">
                     @csrf
-                    <span class="studio-reel-style__label">Create from current cover image</span>
+                    <span class="studio-reel-style__label">Recommended: Use current cover image</span>
                     <div class="sh-radio-group studio-reel-style">
                         <label class="sh-radio"><input type="radio" name="template" value="cover_glow" checked> Cover Glow</label>
                         <label class="sh-radio"><input type="radio" name="template" value="minimal_dark"> Minimal Dark</label>
                         <label class="sh-radio"><input type="radio" name="template" value="poetry_poster"> Poetry Poster</label>
                     </div>
                     <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">
-                        {{ $reel ? 'Recreate Reel from Current Cover' : 'Create Reel from Current Cover' }}
+                        {{ $reel ? 'Recreate Reel from Cover' : 'Create Reel from Cover' }}
                     </button>
                 </form>
             @else
-                <p class="studio-video-help">A reel with a cover image usually looks richer. You can still create a simple reel without a cover.</p>
-                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
+                <div class="sh-notice sh-notice--info studio-notice" style="margin-top:0.85rem;">No cover image yet. Add or generate a cover above for a richer reel.</div>
+            @endif
+
+            @if($uploadedVideoEnabled && $uploadedVideo && $uploadedVideo->cdn_url)
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-video-reel-form" style="margin-top:1rem;">
                     @csrf
+                    <input type="hidden" name="source" value="uploaded_video">
+                    <span class="studio-reel-style__label">Use uploaded video visual</span>
+                    <p class="studio-video-help" style="margin-top:0.35rem;">The reel will use your song audio, not the video's original sound.</p>
                     <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
-                        {{ $reel ? 'Recreate Reel Without Cover' : 'Create Reel Without Cover' }}
+                        {{ $reel ? 'Recreate Reel from Uploaded Video' : 'Create Reel from Uploaded Video' }}
+                    </button>
+                </form>
+            @elseif($uploadedVideoEnabled)
+                <p class="studio-video-help" style="margin-top:1rem;">Upload a video above if you want to use your own video as the reel visual.</p>
+            @endif
+
+            @if(!$coverAsset)
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form" style="margin-top:1rem;">
+                    @csrf
+                    <span class="studio-reel-style__label">Simple fallback</span>
+                    <p class="studio-video-help" style="margin-top:0.35rem;">Create a basic reel without a cover image.</p>
+                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
+                        {{ $reel ? 'Recreate Simple Reel' : 'Create Simple Reel' }}
                     </button>
                 </form>
             @endif
 
-            @if($uploadedVideoEnabled)
-                @if($uploadedVideo && $uploadedVideo->cdn_url)
-                    <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-video-reel-form" style="margin-top:0.85rem;">
-                        @csrf
-                        <input type="hidden" name="source" value="uploaded_video">
-                        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
-                            {{ $reel ? 'Recreate Reel from Uploaded Video' : 'Create Reel from Uploaded Video' }}
-                        </button>
-                    </form>
-                    <p class="studio-video-help" style="margin-top:0.45rem;">Uploaded-video reels use your song audio, not the video's original sound.</p>
-                @else
-                    <p class="studio-video-help" style="margin-top:0.85rem;">Upload a video above to use it as the reel visual.</p>
-                @endif
-            @endif
-
             @if($reel && $reel->cdn_url)
-                <form method="POST" action="{{ route('studio.reel.delete', $clip) }}" style="margin-top:0.85rem;" onsubmit="return confirm('Delete this reel video? The audio, cover, and uploaded video will stay safe.');">
+                <form method="POST" action="{{ route('studio.reel.delete', $clip) }}" style="margin-top:1rem;" onsubmit="return confirm('Delete this reel video? The audio, cover, and uploaded video will stay safe.');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Current Reel</button>
