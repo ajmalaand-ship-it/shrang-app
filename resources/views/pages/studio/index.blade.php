@@ -283,73 +283,18 @@ $displayTitle = $clip->display_title;
 </div>
 
 
-{{-- REEL CREATION --}}
-<div class="sh-card studio-reel-card" id="studio-reel-creation">
-    <div class="sh-card__header">{{ $reel ? 'Recreate Reel' : 'Create Reel' }}</div>
-    <div class="sh-card__body">
-        @if(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
-            <div class="sh-notice sh-notice--info studio-notice">Your reel is being created. This may take about a minute.</div>
-        @else
-            @if($coverAsset)
-                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
-                    @csrf
-                    <span class="studio-reel-style__label">Use current cover image</span>
-                    <div class="sh-radio-group studio-reel-style">
-                        <label class="sh-radio"><input type="radio" name="template" value="cover_glow" checked> Cover Glow</label>
-                        <label class="sh-radio"><input type="radio" name="template" value="minimal_dark"> Minimal Dark</label>
-                        <label class="sh-radio"><input type="radio" name="template" value="poetry_poster"> Poetry Poster</label>
-                    </div>
-                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">
-                        {{ $reel ? 'Recreate Reel from Current Cover' : 'Create Reel from Current Cover' }}
-                    </button>
-                </form>
-            @else
-                <p class="studio-video-help">A reel with a cover image usually looks richer. You can still create a simple reel without a cover.</p>
-                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
-                    @csrf
-                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
-                        {{ $reel ? 'Recreate Reel Without Cover' : 'Create Reel Without Cover' }}
-                    </button>
-                </form>
-            @endif
 
-            @if($uploadedVideoEnabled)
-                @if($uploadedVideo && $uploadedVideo->cdn_url)
-                    <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-video-reel-form" style="margin-top:0.85rem;">
-                        @csrf
-                        <input type="hidden" name="source" value="uploaded_video">
-                        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
-                            {{ $reel ? 'Recreate Reel from Uploaded Video' : 'Create Reel from Uploaded Video' }}
-                        </button>
-                    </form>
-                    <p class="studio-video-help" style="margin-top:0.45rem;">Uploaded-video reels use your song audio, not the video's original sound.</p>
-                @else
-                    <p class="studio-video-help" style="margin-top:0.85rem;">Want to use your own video? Upload one in the Uploaded Video card below.</p>
-                @endif
-            @endif
-
-            @if($reel && $reel->cdn_url)
-                <form method="POST" action="{{ route('studio.reel.delete', $clip) }}" style="margin-top:0.85rem;" onsubmit="return confirm('Delete this reel video? The audio, cover, and uploaded video will stay safe.');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Current Reel</button>
-                </form>
-            @endif
-        @endif
-    </div>
-</div>
-
-{{-- UPLOAD OWN COVER --}}
-<div class="sh-card studio-cover-card">
-    <div class="sh-card__header">{{ $coverAsset ? 'Current Cover Image' : 'Upload Your Own Cover' }}</div>
+{{-- COVER IMAGE --}}
+<div class="sh-card studio-cover-card" id="studio-cover">
+    <div class="sh-card__header">Cover Image</div>
     <div class="sh-card__body">
         @if($coverAsset && $coverAsset->cdn_url)
             <div class="studio-cover-current" style="margin-bottom:0.85rem;">
                 <img src="{{ $coverAsset->cdn_url }}" alt="{{ $displayTitle }}" style="width:100%; max-width:220px; border-radius:14px; display:block; margin-bottom:0.6rem;">
-                <p class="studio-video-help">This is the current cover image. Uploading a new cover will replace it as the active cover.</p>
+                <p class="studio-video-help">This is the current cover image. Replacing it will make the new image the active cover.</p>
             </div>
         @else
-            <p class="studio-video-help">Upload your own image to use as this clip’s cover.</p>
+            <p class="studio-video-help">Add a cover before creating a reel. A cover-based reel usually looks richer.</p>
         @endif
 
         <form method="POST" action="{{ route('studio.cover.upload', $clip) }}" enctype="multipart/form-data" class="studio-cover-upload-form">
@@ -376,14 +321,65 @@ $displayTitle = $clip->display_title;
                 <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Current Cover Image</button>
             </form>
         @endif
+
+        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08);">
+            <div class="studio-reel-style__label" style="margin-bottom:0.65rem;">AI Cover Generator</div>
+            <form method="POST" action="{{ route('studio.cover', $clip) }}">
+                @csrf
+                <div class="studio-cover-grid">
+                    <div class="sh-field">
+                        <label class="sh-label">Cover Style</label>
+                        <select name="style" class="sh-select sh-select--sm">
+                            <option value="artistic">Artistic music album cover</option>
+                            <option value="photo">Photo-realistic scene</option>
+                            <option value="poetic">Poetic / symbolic</option>
+                            <option value="cultural">Traditional cultural style</option>
+                            <option value="cinematic">Modern cinematic</option>
+                            <option value="minimal">Minimal / clean</option>
+                            <option value="dramatic">Dramatic emotional</option>
+                        </select>
+                    </div>
+                    <div class="sh-field">
+                        <label class="sh-label">Mood</label>
+                        <select name="mood" class="sh-select sh-select--sm">
+                            <option value="">Any mood</option>
+                            <option value="calm">Calm</option>
+                            <option value="romantic">Romantic</option>
+                            <option value="sad">Sad</option>
+                            <option value="hopeful">Hopeful</option>
+                            <option value="patriotic">Patriotic</option>
+                            <option value="mystical">Mystical</option>
+                            <option value="joyful">Joyful</option>
+                            <option value="dramatic">Dramatic</option>
+                        </select>
+                    </div>
+                    <div class="sh-field">
+                        <label class="sh-label">Text on Cover</label>
+                        <select name="text_on_cover" class="sh-select sh-select--sm">
+                            <option value="none">No text</option>
+                            <option value="title">Song title only</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="sh-field" style="margin-top:0.75rem;">
+                    <label class="sh-label">Visual Direction <span class="studio-optional">(optional)</span></label>
+                    <input type="text" name="visual_direction" class="sh-input sh-input--sm" placeholder="e.g. a lonely traveler under moonlight, traditional Pashto rubab mood">
+                </div>
+                <div style="margin-top:0.85rem;">
+                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">
+                        {{ $coverAsset ? 'Regenerate AI Cover' : 'Generate AI Cover' }}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 @if($uploadedVideoEnabled)
 <div class="sh-card studio-video-card" id="studio-video">
-    <div class="sh-card__header">Upload Your Own Video (optional)</div>
+    <div class="sh-card__header">Uploaded Video Asset</div>
     <div class="sh-card__body">
-        <p class="studio-video-help">Use your own video as the reel background. The reel will use your song audio, not the video's sound.</p>
+        <p class="studio-video-help">Manage your uploaded video source. Uploaded-video reels use your song audio, not the video's sound.</p>
         @if($uploadedVideo && $uploadedVideo->cdn_url)
             <video class="studio-video-preview" src="{{ $uploadedVideo->cdn_url }}" controls playsinline muted></video>
             <div class="studio-video-actions">
@@ -417,61 +413,61 @@ $displayTitle = $clip->display_title;
         @enderror
     </div>
 </div>
-
 @endif
 
-
-{{-- COVER TOOLS --}}
-<div class="sh-card studio-cover-card">
-    <div class="sh-card__header">Cover Image</div>
+{{-- REEL CREATION --}}
+<div class="sh-card studio-reel-card" id="studio-reel-creation">
+    <div class="sh-card__header">Create / Recreate Reel</div>
     <div class="sh-card__body">
-        <form method="POST" action="{{ route('studio.cover', $clip) }}">
-            @csrf
-            <div class="studio-cover-grid">
-                <div class="sh-field">
-                    <label class="sh-label">Cover Style</label>
-                    <select name="style" class="sh-select sh-select--sm">
-                        <option value="artistic">Artistic music album cover</option>
-                        <option value="photo">Photo-realistic scene</option>
-                        <option value="poetic">Poetic / symbolic</option>
-                        <option value="cultural">Traditional cultural style</option>
-                        <option value="cinematic">Modern cinematic</option>
-                        <option value="minimal">Minimal / clean</option>
-                        <option value="dramatic">Dramatic emotional</option>
-                    </select>
-                </div>
-                <div class="sh-field">
-                    <label class="sh-label">Mood</label>
-                    <select name="mood" class="sh-select sh-select--sm">
-                        <option value="">Any mood</option>
-                        <option value="calm">Calm</option>
-                        <option value="romantic">Romantic</option>
-                        <option value="sad">Sad</option>
-                        <option value="hopeful">Hopeful</option>
-                        <option value="patriotic">Patriotic</option>
-                        <option value="mystical">Mystical</option>
-                        <option value="joyful">Joyful</option>
-                        <option value="dramatic">Dramatic</option>
-                    </select>
-                </div>
-                <div class="sh-field">
-                    <label class="sh-label">Text on Cover</label>
-                    <select name="text_on_cover" class="sh-select sh-select--sm">
-                        <option value="none">No text</option>
-                        <option value="title">Song title only</option>
-                    </select>
-                </div>
-            </div>
-            <div class="sh-field" style="margin-top:0.75rem;">
-                <label class="sh-label">Visual Direction <span class="studio-optional">(optional)</span></label>
-                <input type="text" name="visual_direction" class="sh-input sh-input--sm" placeholder="e.g. a lonely traveler under moonlight, traditional Pashto rubab mood">
-            </div>
-            <div style="margin-top:0.85rem;">
-                <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">
-                    {{ $coverAsset ? 'Regenerate AI Cover' : 'Generate AI Cover' }}
-                </button>
-            </div>
-        </form>
+        @if(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
+            <div class="sh-notice sh-notice--info studio-notice">Your reel is being created. This may take about a minute.</div>
+        @else
+            @if($coverAsset)
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
+                    @csrf
+                    <span class="studio-reel-style__label">Create from current cover image</span>
+                    <div class="sh-radio-group studio-reel-style">
+                        <label class="sh-radio"><input type="radio" name="template" value="cover_glow" checked> Cover Glow</label>
+                        <label class="sh-radio"><input type="radio" name="template" value="minimal_dark"> Minimal Dark</label>
+                        <label class="sh-radio"><input type="radio" name="template" value="poetry_poster"> Poetry Poster</label>
+                    </div>
+                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">
+                        {{ $reel ? 'Recreate Reel from Current Cover' : 'Create Reel from Current Cover' }}
+                    </button>
+                </form>
+            @else
+                <p class="studio-video-help">A reel with a cover image usually looks richer. You can still create a simple reel without a cover.</p>
+                <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form">
+                    @csrf
+                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
+                        {{ $reel ? 'Recreate Reel Without Cover' : 'Create Reel Without Cover' }}
+                    </button>
+                </form>
+            @endif
+
+            @if($uploadedVideoEnabled)
+                @if($uploadedVideo && $uploadedVideo->cdn_url)
+                    <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-video-reel-form" style="margin-top:0.85rem;">
+                        @csrf
+                        <input type="hidden" name="source" value="uploaded_video">
+                        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">
+                            {{ $reel ? 'Recreate Reel from Uploaded Video' : 'Create Reel from Uploaded Video' }}
+                        </button>
+                    </form>
+                    <p class="studio-video-help" style="margin-top:0.45rem;">Uploaded-video reels use your song audio, not the video's original sound.</p>
+                @else
+                    <p class="studio-video-help" style="margin-top:0.85rem;">Upload a video above to use it as the reel visual.</p>
+                @endif
+            @endif
+
+            @if($reel && $reel->cdn_url)
+                <form method="POST" action="{{ route('studio.reel.delete', $clip) }}" style="margin-top:0.85rem;" onsubmit="return confirm('Delete this reel video? The audio, cover, and uploaded video will stay safe.');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Current Reel</button>
+                </form>
+            @endif
+        @endif
     </div>
 </div>
 
