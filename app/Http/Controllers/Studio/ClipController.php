@@ -28,11 +28,15 @@ class ClipController extends Controller
             ->where('type', 'reel_video')
             ->where('is_primary', true)
             ->first();
+        $coverJob = $clip->generationJobs()
+            ->where('job_class', 'LIKE', '%GenerateCoverImageJob%')
+            ->latest()
+            ->first();
         $reelJob = $clip->generationJobs()
             ->where('job_class', 'LIKE', '%GenerateReelJob%')
             ->latest()
             ->first();
-        return view('pages.studio.index', compact('clip', 'latestJob', 'audioAsset', 'coverAsset', 'uploadedVideo', 'uploadedVideoEnabled', 'reel', 'reelJob'));
+        return view('pages.studio.index', compact('clip', 'latestJob', 'audioAsset', 'coverAsset', 'uploadedVideo', 'uploadedVideoEnabled', 'reel', 'reelJob', 'coverJob'));
     }
     public function updateVisibility(Request $request, Clip $clip): RedirectResponse
     {

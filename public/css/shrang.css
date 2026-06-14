@@ -1683,3 +1683,17 @@ input[type="password"] {
 /* Create reel from uploaded video */
 .studio-video-reel-form { margin:0 0 0.75rem; }
 .studio-video-reel-btn { width:100%; }
+
+
+/* Timeline states (Item 6) */
+.studio-timeline__state { display:block; font-size:0.65rem; margin-top:0.15rem; color:var(--sh-text-muted); }
+.studio-timeline__step--processing .studio-timeline__dot { background:var(--sh-orange); box-shadow:0 0 0 4px rgba(232,115,42,0.2); animation:sh-pulse 1.4s ease-in-out infinite; }
+.studio-timeline__step--processing .studio-timeline__label,
+.studio-timeline__step--processing .studio-timeline__state { color:var(--sh-orange); }
+.studio-timeline__step--failed .studio-timeline__dot { background:#e5484d; }
+.studio-timeline__step--failed .studio-timeline__label,
+.studio-timeline__step--failed .studio-timeline__state { color:#e5484d; }
+.studio-timeline__step--missing .studio-timeline__dot { background:var(--sh-dark-4); }
+.studio-timeline__step--missing .studio-timeline__label,
+.studio-timeline__step--missing .studio-timeline__state { color:var(--sh-text-muted); opacity:0.6; }
+@keyframes sh-pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }

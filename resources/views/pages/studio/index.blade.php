@@ -32,12 +32,23 @@ $displayTitle = $clip->display_title;
     </div>
 </div>
 
-@if(session('success'))
-    <div id="studio-flash-success" class="sh-notice sh-notice--success studio-notice">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-    <div class="sh-notice sh-notice--danger studio-notice">{{ session('error') }}</div>
-@endif
+{{-- ═══════════════════ NOTIFICATIONS (unified) ═══════════════════ --}}
+<div id="studio-notifications" class="studio-notifications">
+    @if(session('success'))
+        <div id="studio-flash-success" class="sh-notice sh-notice--success studio-notice">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="sh-notice sh-notice--danger studio-notice">{{ session('error') }}</div>
+    @endif
+    @if(session('warning'))
+        <div class="sh-notice sh-notice--warning studio-notice">{{ session('warning') }}</div>
+    @endif
+    @if(session('info'))
+        <div class="sh-notice sh-notice--info studio-notice">{{ session('info') }}</div>
+    @endif
+    {{-- cover generation error (shown by polling JS) lives here so errors are not buried --}}
+    <div id="cover-gen-error" class="sh-notice sh-notice--danger studio-notice" style="display:none;">Cover image couldn't be generated — you can try again below.</div>
+</div>
 
 {{-- ═══════════════════ PROCESSING ═══════════════════ --}}
 @if($clip->status === 'processing')
@@ -100,27 +111,42 @@ $displayTitle = $clip->display_title;
 
 
 {{-- CREATION STATE TIMELINE --}}
+@php
+    $audioState = $audioAsset ? 'done' : ($clip->status === 'processing' ? 'processing' : 'missing');
+    if ($coverAsset) { $coverState = 'done'; }
+    elseif (isset($coverJob) && $coverJob && in_array($coverJob->status, ['pending','running'])) { $coverState = 'processing'; }
+    elseif (isset($coverJob) && $coverJob && $coverJob->status === 'failed') { $coverState = 'failed'; }
+    else { $coverState = 'missing'; }
+    if ($reel) { $reelState = 'done'; }
+    elseif (isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending','running'])) { $reelState = 'processing'; }
+    elseif (isset($reelJob) && $reelJob && $reelJob->status === 'failed') { $reelState = 'failed'; }
+    else { $reelState = 'missing'; }
+    $stateLabels = ['done'=>'Done','processing'=>'Processing','failed'=>'Failed','missing'=>'Pending'];
+@endphp
 <div class="studio-timeline">
     <div class="studio-timeline__step studio-timeline__step--done">
         <div class="studio-timeline__dot"></div>
         <span class="studio-timeline__label">Lyrics</span>
+        <span class="studio-timeline__state">Done</span>
     </div>
     <div class="studio-timeline__line studio-timeline__line--done"></div>
-    <div class="studio-timeline__step {{ $audioAsset ? 'studio-timeline__step--done' : 'studio-timeline__step--missing' }}">
+    <div class="studio-timeline__step studio-timeline__step--{{ $audioState }}">
         <div class="studio-timeline__dot"></div>
         <span class="studio-timeline__label">Audio</span>
+        <span class="studio-timeline__state">{{ $stateLabels[$audioState] }}</span>
     </div>
-    <div class="studio-timeline__line {{ $coverAsset ? 'studio-timeline__line--done' : '' }}"></div>
-    <div class="studio-timeline__step {{ $coverAsset ? 'studio-timeline__step--done' : 'studio-timeline__step--missing' }}">
+    <div class="studio-timeline__line {{ $audioState === 'done' ? 'studio-timeline__line--done' : '' }}"></div>
+    <div class="studio-timeline__step studio-timeline__step--{{ $coverState }}">
         <div class="studio-timeline__dot"></div>
         <span class="studio-timeline__label">Cover</span>
+        <span class="studio-timeline__state">{{ $stateLabels[$coverState] }}</span>
     </div>
-    <div class="studio-timeline__line {{ $reel ? 'studio-timeline__line--done' : '' }}"></div>
-    <div class="studio-timeline__step {{ $reel ? 'studio-timeline__step--done' : 'studio-timeline__step--missing' }}">
+    <div class="studio-timeline__line {{ $coverState === 'done' ? 'studio-timeline__line--done' : '' }}"></div>
+    <div class="studio-timeline__step studio-timeline__step--{{ $reelState }}">
         <div class="studio-timeline__dot"></div>
         <span class="studio-timeline__label">Reel</span>
+        <span class="studio-timeline__state">{{ $stateLabels[$reelState] }}</span>
     </div>
-
 </div>
 
 {{-- CLIP HERO --}}
@@ -285,20 +311,41 @@ $displayTitle = $clip->display_title;
 
 {{-- UPLOAD OWN COVER --}}
 <div class="sh-card studio-cover-card">
-    <div class="sh-card__header">Upload Your Own Cover</div>
+    <div class="sh-card__header">{{ $coverAsset ? 'Current Cover Image' : 'Upload Your Own Cover' }}</div>
     <div class="sh-card__body">
+        @if($coverAsset && $coverAsset->cdn_url)
+            <div class="studio-cover-current" style="margin-bottom:0.85rem;">
+                <img src="{{ $coverAsset->cdn_url }}" alt="{{ $displayTitle }}" style="width:100%; max-width:220px; border-radius:14px; display:block; margin-bottom:0.6rem;">
+                <p class="studio-video-help">This is the current cover image. Uploading a new cover will replace it as the active cover.</p>
+            </div>
+        @else
+            <p class="studio-video-help">Upload your own image to use as this clip’s cover.</p>
+        @endif
+
         <form method="POST" action="{{ route('studio.cover.upload', $clip) }}" enctype="multipart/form-data" class="studio-cover-upload-form">
             @csrf
             <div class="studio-cover-upload-row">
                 <input type="file" name="cover_file" id="cover_file" accept=".jpg,.jpeg,.png,.webp" class="studio-cover-upload-input">
-                <label for="cover_file" class="sh-btn sh-btn--ghost sh-btn--sm studio-cover-upload-label">Choose Image</label>
+                <label for="cover_file" class="sh-btn sh-btn--ghost sh-btn--sm studio-cover-upload-label">
+                    {{ $coverAsset ? 'Choose New Cover' : 'Choose Image' }}
+                </label>
                 <span class="studio-cover-upload-name" id="cover-file-name">JPG, PNG, or WebP — max 5MB</span>
-                <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">Upload Cover</button>
+                <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">
+                    {{ $coverAsset ? 'Replace Cover Image' : 'Upload Cover' }}
+                </button>
             </div>
             @error("cover_file")
                 <p class="sh-field-error" style="margin-top:0.5rem;">{{ $message }}</p>
             @enderror
         </form>
+
+        @if($coverAsset)
+            <form method="POST" action="{{ route('studio.cover.delete', $clip) }}" style="margin-top:0.75rem;" onsubmit="return confirm('Delete the current cover image? The clip audio will stay safe.');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Current Cover Image</button>
+            </form>
+        @endif
     </div>
 </div>
 
@@ -322,30 +369,32 @@ $displayTitle = $clip->display_title;
                 </form>
                 <form method="POST" action="{{ route('studio.video.upload', $clip) }}" enctype="multipart/form-data" class="studio-video-upload-form">
                     @csrf
-                    <input type="file" name="video_file" id="video_file" accept=".mp4,.mov,.webm" class="studio-cover-upload-input">
-                    <label for="video_file" class="sh-btn sh-btn--ghost sh-btn--sm">Choose New Video</label>
-                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">Replace Video</button>
+                    <input type="file" name="video_file" id="video_file_replace" accept=".mp4,.mov,.webm" class="studio-cover-upload-input js-video-input" data-name-target="video-file-name-replace">
+                    <label for="video_file_replace" class="sh-btn sh-btn--ghost sh-btn--sm">Choose New Video</label>
+                    <span class="studio-cover-upload-name" id="video-file-name-replace">MP4, MOV, or WebM — max 100MB</span>
+                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm" disabled>Replace Video</button>
                 </form>
             </div>
         @else
             <form method="POST" action="{{ route('studio.video.upload', $clip) }}" enctype="multipart/form-data" class="studio-video-upload-form">
                 @csrf
                 <div class="studio-cover-upload-row">
-                    <input type="file" name="video_file" id="video_file" accept=".mp4,.mov,.webm" class="studio-cover-upload-input">
+                    <input type="file" name="video_file" id="video_file" accept=".mp4,.mov,.webm" class="studio-cover-upload-input js-video-input" data-name-target="video-file-name">
                     <label for="video_file" class="sh-btn sh-btn--ghost sh-btn--sm studio-cover-upload-label">Choose Video</label>
                     <span class="studio-cover-upload-name" id="video-file-name">MP4, MOV, or WebM — max 100MB</span>
-                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">Upload Video</button>
+                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm" disabled>Upload Video</button>
                 </div>
             </form>
         @endif
+        <p id="video-inline-error" class="sh-field-error" style="margin-top:0.5rem; display:none;"></p>
         @error("video_file")
-            <p class="sh-field-error" style="margin-top:0.5rem;">{{ $message }}</p>
+            <p id="video-server-error" class="sh-field-error" style="margin-top:0.5rem;">{{ $message }}</p>
         @enderror
     </div>
 </div>
 
 @endif
-<div id="cover-gen-error" class="sh-notice sh-notice--danger studio-notice" style="display:none;">Cover image couldn't be generated — you can try again below.</div>
+
 
 {{-- COVER TOOLS --}}
 <div class="sh-card studio-cover-card">
@@ -603,6 +652,43 @@ function studioShare(btn) {
         }
         setTimeout(pollCover, 4000);
     }
+})();
+</script>
+<script>
+(function () {
+    var MAX_MB = 100;
+    var inputs = document.querySelectorAll('.js-video-input');
+    inputs.forEach(function (input) {
+        input.addEventListener('change', function () {
+            var nameEl = document.getElementById(input.getAttribute('data-name-target'));
+            var inlineErr = document.getElementById('video-inline-error');
+            var serverErr = document.getElementById('video-server-error');
+            if (serverErr) { serverErr.style.display = 'none'; }
+            if (inlineErr) { inlineErr.style.display = 'none'; inlineErr.textContent = ''; }
+            var btn = input.form ? input.form.querySelector('button[type=submit]') : null;
+            if (!input.files || input.files.length === 0) {
+                if (btn) { btn.disabled = true; }
+                if (nameEl) { nameEl.textContent = 'MP4, MOV, or WebM \u2014 max ' + MAX_MB + 'MB'; }
+                return;
+            }
+            var f = input.files[0];
+            var sizeMb = f.size / (1024 * 1024);
+            if (sizeMb > MAX_MB) {
+                input.value = '';
+                if (btn) { btn.disabled = true; }
+                if (nameEl) { nameEl.textContent = 'MP4, MOV, or WebM \u2014 max ' + MAX_MB + 'MB'; }
+                if (inlineErr) {
+                    inlineErr.textContent = 'This video is too large. Maximum allowed size is ' + MAX_MB + ' MB.';
+                    inlineErr.style.display = 'block';
+                }
+                return;
+            }
+            if (btn) { btn.disabled = false; }
+            if (nameEl) {
+                nameEl.textContent = f.name + ' \u2014 ' + Math.round(sizeMb) + ' MB';
+            }
+        });
+    });
 })();
 </script>
 @endsection

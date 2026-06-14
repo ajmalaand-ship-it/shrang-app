@@ -118,4 +118,24 @@ class CoverController extends Controller
         return redirect()->route("studio.show", $clip)
             ->with("success", "Your cover image is being generated. This may take up to a minute. The page will update automatically.");
     }
+    public function destroy(Request $request, Clip $clip): RedirectResponse
+    {
+        $this->authorize("update", $clip);
+
+        $assets = MediaAsset::where("clip_id", $clip->id)
+            ->where("type", "cover_image")
+            ->get();
+
+        foreach ($assets as $asset) {
+            if ($asset->storage_key) {
+                Storage::disk("public")->delete($asset->storage_key);
+            }
+            $asset->delete();
+        }
+
+        $clip->update(["cover_image_key" => null]);
+
+        return redirect()->route("studio.show", $clip)
+            ->with("success", "Cover image removed.");
+    }
 }
