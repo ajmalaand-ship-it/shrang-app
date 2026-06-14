@@ -211,7 +211,13 @@ $displayTitle = $clip->display_title;
         {{-- Next Best Action system --}}
         <div class="studio-hero__actions">
 
-            @if($reel && $reel->cdn_url)
+            @if(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
+                {{-- STATE: Reel generating --}}
+                <p class="studio-nba__label">Creating your reel...</p>
+                <button type="button" class="sh-btn sh-btn--primary studio-hero__action-primary studio-hero__action--muted" disabled>Creating Reel...</button>
+                <p class="studio-hero__action-hint">This page will update automatically when your reel is ready.</p>
+
+            @elseif($reel && $reel->cdn_url)
                 {{-- STATE: Reel ready --}}
                 <p class="studio-nba__label">&#10003; Your reel is ready</p>
                 <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Reel</a>
@@ -222,11 +228,24 @@ $displayTitle = $clip->display_title;
                     <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Reel</button>
                 </form>
 
-            @elseif(isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending', 'running']))
-                {{-- STATE: Reel generating --}}
-                <p class="studio-nba__label">Creating your reel...</p>
-                <button type="button" class="sh-btn sh-btn--primary studio-hero__action-primary studio-hero__action--muted" disabled>Creating Reel...</button>
-                <p class="studio-hero__action-hint">This page will update automatically when your reel is ready.</p>
+                @if($coverAsset)
+                    <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form" style="margin-top:0.75rem;">
+                        @csrf
+                        <span class="studio-reel-style__label">Recreate reel with style</span>
+                        <div class="sh-radio-group studio-reel-style">
+                            <label class="sh-radio"><input type="radio" name="template" value="cover_glow" checked> Cover Glow</label>
+                            <label class="sh-radio"><input type="radio" name="template" value="minimal_dark"> Minimal Dark</label>
+                            <label class="sh-radio"><input type="radio" name="template" value="poetry_poster"> Poetry Poster</label>
+                        </div>
+                        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Recreate Reel</button>
+                    </form>
+                @else
+                    <form method="POST" action="{{ route('studio.reel', $clip) }}" class="studio-hero__reel-form" style="margin-top:0.75rem;">
+                        @csrf
+                        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Recreate Reel Without Cover</button>
+                    </form>
+                    <p class="studio-hero__action-hint">A reel with a cover image usually looks richer.</p>
+                @endif
 
             @elseif(isset($reelJob) && $reelJob && $reelJob->status === 'failed')
                 {{-- STATE: Reel failed --}}
