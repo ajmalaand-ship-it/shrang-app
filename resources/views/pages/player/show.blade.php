@@ -72,6 +72,16 @@
                 <span>{{ $clip->created_at ? $clip->created_at->format('M j, Y') : '' }}</span>
             </div>
 
+            {{-- Like --}}
+            <div class="player-like-row">
+                <button type="button"
+                        class="sh-btn sh-btn--sm {{ $liked ? 'sh-btn--primary' : 'sh-btn--ghost' }} player-like-btn"
+                        data-slug="{{ $clip->slug }}"
+                        data-liked="{{ $liked ? '1' : '0' }}">
+                    ♥ <span class="like-count">{{ number_format($likeCount ?? 0) }}</span>
+                </button>
+            </div>
+
             {{-- Download row (primary actions) --}}
             <div class="player-actions player-actions--downloads">
                 @if($reelUrl)
@@ -227,6 +237,32 @@ document.getElementById('share-btn').addEventListener('click', function() {
     } else {
         copyShareUrl();
     }
+});
+
+document.querySelectorAll('.player-like-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var slug = this.dataset.slug;
+        var liked = this.dataset.liked === '1';
+        var url = liked ? '/discover/' + slug + '/unlike' : '/discover/' + slug + '/like';
+        var csrf = document.querySelector('meta[name=csrf-token]').content;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json'
+            }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.ok !== false) {
+                btn.dataset.liked = liked ? '0' : '1';
+                btn.classList.toggle('sh-btn--primary');
+                btn.classList.toggle('sh-btn--ghost');
+                btn.querySelector('.like-count').textContent = Number(data.count || 0).toLocaleString();
+            }
+        });
+    });
 });
 function showCopied(message) {
     var el = document.getElementById('share-copied');

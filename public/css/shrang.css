@@ -1845,3 +1845,15 @@ input[type="password"] {
         justify-content: center;
     }
 }
+
+/* Public Player like row */
+.player-like-row {
+    display: flex;
+    justify-content: center;
+    margin: -0.35rem 0 1.25rem;
+}
+
+.player-like-btn {
+    min-width: 6rem;
+    justify-content: center;
+}
