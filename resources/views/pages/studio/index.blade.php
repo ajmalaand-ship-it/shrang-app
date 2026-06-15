@@ -5,7 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="{{ asset('css/studio.css') }}">
+<link rel="stylesheet" href="{{ asset('css/studio.css') }}?v={{ filemtime(public_path('css/studio.css')) }}">
 @endsection
 
 @section('content')
@@ -121,7 +121,7 @@ $displayTitle = $clip->display_title;
     elseif (isset($reelJob) && $reelJob && in_array($reelJob->status, ['pending','running'])) { $reelState = 'processing'; }
     elseif (isset($reelJob) && $reelJob && $reelJob->status === 'failed') { $reelState = 'failed'; }
     else { $reelState = 'missing'; }
-    $stateLabels = ['done'=>'Done','processing'=>'Processing','failed'=>'Failed','missing'=>'Pending'];
+    $stateLabels = ['done'=>'Done','processing'=>'Processing','failed'=>'Failed','missing'=>'Not created'];
 @endphp
 <div class="studio-timeline">
     <div class="studio-timeline__step studio-timeline__step--done">
@@ -148,6 +148,40 @@ $displayTitle = $clip->display_title;
         <span class="studio-timeline__state">{{ $stateLabels[$reelState] }}</span>
     </div>
 </div>
+<p class="studio-video-help" style="margin-top:0.75rem;">Audio is the main result. Cover image and reel are optional assets you can create below.</p>
+
+
+@if(isset($audioJob) && $audioJob)
+<script>
+(function(){
+    var jobId = '{{ $audioJob->id }}';
+    var csrf  = document.querySelector('meta[name=csrf-token]') ? document.querySelector('meta[name=csrf-token]').content : '';
+    var tries = 0;
+
+    function pollAudioJob() {
+        tries++;
+        if (tries > 120) { location.reload(); return; }
+
+        fetch('/studio/job-status/' + jobId, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.status === 'done' || d.status === 'failed') {
+                setTimeout(function() { location.reload(); }, 700);
+            } else {
+                setTimeout(pollAudioJob, 3000);
+            }
+        })
+        .catch(function() {
+            setTimeout(pollAudioJob, 5000);
+        });
+    }
+
+    setTimeout(pollAudioJob, 3000);
+})();
+</script>
+@endif
 
 {{-- CLIP HERO --}}
 <div class="studio-hero">
@@ -216,18 +250,18 @@ $displayTitle = $clip->display_title;
                 <p class="studio-hero__action-hint">This page will update automatically when your reel is ready.</p>
 
             @elseif($reel && $reel->cdn_url)
-                <p class="studio-nba__label">&#10003; Your reel is ready</p>
+                <p class="studio-nba__label">&#10003; Reel ready</p>
                 <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--primary studio-hero__action-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Reel</a>
-                <a href="#studio-reel-creation" class="sh-btn sh-btn--ghost studio-hero__action-secondary" style="margin-top:0.5rem;" onclick="document.querySelector('#studio-reel-creation').scrollIntoView({behavior:'smooth'});return false;">Recreate / Manage Reel</a>
+                <a href="#studio-reel-creation" class="sh-btn sh-btn--ghost studio-hero__action-secondary" style="margin-top:0.5rem;" onclick="document.querySelector('#studio-reel-creation').scrollIntoView({behavior:'smooth'});return false;">Manage Reel</a>
 
             @elseif($coverAsset)
-                <p class="studio-nba__label">&#8594; Next: Create a shareable reel</p>
-                <a href="#studio-reel-creation" class="sh-btn sh-btn--primary studio-hero__action-primary" onclick="document.querySelector('#studio-reel-creation').scrollIntoView({behavior:'smooth'});return false;">Create Reel</a>
+                <p class="studio-nba__label">&#8594; Next: Create your reel</p>
+                <a href="#studio-reel-creation" class="sh-btn sh-btn--primary studio-hero__action-primary" onclick="document.querySelector('#studio-reel-creation').scrollIntoView({behavior:'smooth'});return false;">Go to Reel Options</a>
 
             @else
-                <p class="studio-nba__label">&#8594; Next: Generate or upload a cover</p>
-                <a href="#studio-cover" class="sh-btn sh-btn--primary studio-hero__action-primary" onclick="document.querySelector('.studio-cover-card').scrollIntoView({behavior:'smooth'});return false;">Go to Cover Image</a>
-                <a href="#studio-reel-creation" class="sh-btn sh-btn--ghost studio-hero__action-secondary" style="margin-top:0.5rem;" onclick="document.querySelector('#studio-reel-creation').scrollIntoView({behavior:'smooth'});return false;">Create Reel Without Cover</a>
+                <p class="studio-nba__label">&#8594; Next: Prepare a cover image</p>
+                <a href="#studio-cover" class="sh-btn sh-btn--primary studio-hero__action-primary" onclick="document.querySelector('.studio-cover-card').scrollIntoView({behavior:'smooth'});return false;">Go to Cover Options</a>
+                <a href="#studio-reel-creation" class="sh-btn sh-btn--ghost studio-hero__action-secondary" style="margin-top:0.5rem;" onclick="document.querySelector('#studio-reel-creation').scrollIntoView({behavior:'smooth'});return false;">Skip Cover and Create Simple Reel</a>
             @endif
 
             <div class="studio-hero__action-row" style="margin-top:0.75rem;">
@@ -236,6 +270,13 @@ $displayTitle = $clip->display_title;
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Download MP3
                 </a>
+                @if($audioAsset->type !== 'uploaded_audio')
+                    @if(isset($audioJob) && $audioJob)
+                        <button type="button" class="sh-btn sh-btn--ghost studio-hero__action-secondary" disabled>Regenerating Audio...</button>
+                    @else
+                        <a href="#studio-audio-regenerate" class="sh-btn sh-btn--ghost studio-hero__action-secondary" onclick="openStudioCard('studio-audio-regenerate');return false;">Regenerate Audio</a>
+                    @endif
+                @endif
                 @endif
                 @if($clip->visibility === 'public' && $clip->slug)
                 <button type="button" class="sh-btn sh-btn--ghost studio-hero__action-secondary" onclick="studioShare(this)" data-url="{{ route('player.show', $clip->slug) }}">
@@ -249,7 +290,7 @@ $displayTitle = $clip->display_title;
                 @endif
             </div>
             @if($clip->visibility !== 'public')
-            <p class="studio-hero__action-hint">Set visibility to Public to share this clip</p>
+            <p class="studio-hero__action-hint">Set visibility to Public to enable public sharing links.</p>
             @endif
 
         </div>
@@ -271,17 +312,87 @@ $displayTitle = $clip->display_title;
     </div>
 </div>
 
-{{-- CLIP TITLE (rename) --}}
+{{-- CLIP BASIC SETTINGS --}}
 <div class="studio-tool-row">
-    <span class="studio-tool-row__label">Clip Title</span>
+    <span class="studio-tool-row__label">Clip Name</span>
     <form method="POST" action="{{ route('studio.rename', $clip) }}" class="studio-inline-form">
         @csrf
         @method('PATCH')
-        <input type="text" name="title" class="sh-input sh-input--sm" value="{{ $clip->title }}" placeholder="Enter a title for this clip">
-        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Save</button>
+        <input type="text" name="title" class="sh-input sh-input--sm" value="{{ $clip->title }}" placeholder="Name this clip">
+        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Save Name</button>
     </form>
 </div>
 
+@if($audioAsset && $audioAsset->cdn_url && $audioAsset->type !== 'uploaded_audio')
+{{-- AUDIO REGENERATION --}}
+<div class="sh-card studio-audio-regenerate-card" id="studio-audio-regenerate">
+    <div class="sh-card__header">Regenerate Audio</div>
+    <div class="sh-card__body">
+        @if(isset($audioJob) && $audioJob)
+            <div class="sh-notice sh-notice--info studio-notice">Audio regeneration is already running. The current audio stays playable until the new version is ready.</div>
+        @else
+            <p class="studio-video-help" style="margin-top:0;">Create a new audio version using the same lyrics, title, and language. The current audio stays safe unless the new version succeeds.</p>
+            @if($reel && $reel->cdn_url)
+                <p class="studio-video-help" style="margin-top:0.45rem;">After regenerating audio, recreate the reel so the reel uses the new audio.</p>
+            @endif
+
+            @php
+                $styleOptions = [
+                    'ps' => ['pashto_folk'=>'Pashto folk','attan_wedding'=>'Attan / wedding','rubab_tabla'=>'Rubab and tabla','slow_ghazal'=>'Slow Pashto ghazal','sad_migration'=>'Sad migration song','romantic'=>'Romantic','patriotic'=>'Patriotic','modern_emotional'=>'Modern emotional'],
+                    'fa' => ['classical_persian'=>'Classical Persian','afghan_folk'=>'Afghan folk','ghazal'=>'Ghazal','pop'=>'Modern pop','romantic'=>'Romantic','sad'=>'Sad and reflective'],
+                    'ur' => ['ghazal'=>'Ghazal','qawwali'=>'Qawwali','classical'=>'Classical','romantic'=>'Romantic','sad'=>'Sad','pop'=>'Modern pop'],
+                    'ar' => ['arabic_classical'=>'Arabic classical','khaleeji'=>'Khaleeji','romantic'=>'Romantic','sad'=>'Sad','pop'=>'Modern pop'],
+                    'hi' => ['bollywood'=>'Bollywood','classical'=>'Hindustani classical','folk'=>'Indian folk','romantic'=>'Romantic','sad'=>'Sad and emotional','devotional'=>'Devotional'],
+                    'en' => ['pop'=>'Pop','folk'=>'Folk','rnb'=>'R&B / Soul','cinematic'=>'Cinematic','acoustic'=>'Acoustic','sad'=>'Sad and emotional'],
+                ];
+                $currentStyleOptions = $styleOptions[$clip->language] ?? $styleOptions['en'];
+            @endphp
+
+            <form method="POST" action="{{ route('studio.audio.regenerate', $clip) }}" onsubmit="return confirm('Regenerate this audio? This will use credits and create a new audio result for this clip.');">
+                @csrf
+
+                <div class="sh-field" style="margin-bottom:0.75rem;">
+                    <label class="sh-label">Edit Lyrics / Poem for This Regeneration</label>
+                    <textarea name="lyrics" class="sh-textarea {{ $isRtl ? 'sh-textarea--rtl' : 'sh-textarea--ltr' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}" rows="6">{{ $clip->lyrics_input }}</textarea>
+                    <p class="studio-video-help" style="margin-top:0.4rem;">Changes here are used for the new audio generation. The current audio stays safe while the new version is created.</p>
+                </div>
+
+                <div class="studio-cover-grid">
+                    <div class="sh-field">
+                        <label class="sh-label">Music Style</label>
+                        <select name="style" class="sh-select sh-select--sm">
+                            <option value="">Keep flexible</option>
+                            @foreach($currentStyleOptions as $styleValue => $styleLabel)
+                                <option value="{{ $styleValue }}">{{ $styleLabel }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    @if($audioAsset->type === 'song_audio')
+                    <div class="sh-field">
+                        <label class="sh-label">Voice Preference</label>
+                        <select name="voice" class="sh-select sh-select--sm">
+                            <option value="no_preference">No preference</option>
+                            <option value="male">Male vocal</option>
+                            <option value="female">Female vocal</option>
+                        </select>
+                    </div>
+                    @endif
+                </div>
+
+                <div class="sh-field" style="margin-top:0.75rem;">
+                    <label class="sh-label">Creative Direction <span class="studio-optional">(optional)</span></label>
+                    <input type="text" name="creative_direction" class="sh-input sh-input--sm" placeholder="e.g. slower, more emotional, traditional instruments, stronger Pashto folk feeling">
+                </div>
+
+                <div style="margin-top:0.85rem;">
+                    <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">Start Audio Regeneration</button>
+                </div>
+            </form>
+        @endif
+    </div>
+</div>
+@endif
 
 
 {{-- COVER IMAGE --}}
@@ -297,6 +408,7 @@ $displayTitle = $clip->display_title;
             <p class="studio-video-help">Add a cover before creating a reel. A cover-based reel usually looks richer.</p>
         @endif
 
+        <div class="studio-reel-style__label" style="margin-top:1rem; margin-bottom:0.55rem;">Upload / Replace Cover</div>
         <form method="POST" action="{{ route('studio.cover.upload', $clip) }}" enctype="multipart/form-data" class="studio-cover-upload-form">
             @csrf
             <div class="studio-cover-upload-row">
@@ -323,7 +435,8 @@ $displayTitle = $clip->display_title;
         @endif
 
         <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08);">
-            <div class="studio-reel-style__label" style="margin-bottom:0.65rem;">AI Cover Generator</div>
+            <div class="studio-reel-style__label" style="margin-bottom:0.4rem;">Generate Cover with AI</div>
+            <p class="studio-video-help" style="margin-top:0; margin-bottom:0.75rem;">Use AI to create a new cover from the song mood and your visual direction.</p>
             <form method="POST" action="{{ route('studio.cover', $clip) }}">
                 @csrf
                 <div class="studio-cover-grid">
@@ -367,7 +480,7 @@ $displayTitle = $clip->display_title;
                 </div>
                 <div style="margin-top:0.85rem;">
                     <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm">
-                        {{ $coverAsset ? 'Regenerate AI Cover' : 'Generate AI Cover' }}
+                        {{ $coverAsset ? 'Generate New AI Cover' : 'Generate AI Cover' }}
                     </button>
                 </div>
             </form>
@@ -379,19 +492,19 @@ $displayTitle = $clip->display_title;
 <div class="sh-card studio-video-card" id="studio-video">
     <div class="sh-card__header">Uploaded Video Asset</div>
     <div class="sh-card__body">
-        <p class="studio-video-help">Manage your uploaded video source. Uploaded-video reels use your song audio, not the video's sound.</p>
+        <p class="studio-video-help">Optional: upload your own video to use as the reel visual. The final reel will use your generated song audio, not the video's original sound.</p>
         @if($uploadedVideo && $uploadedVideo->cdn_url)
             <video class="studio-video-preview" src="{{ $uploadedVideo->cdn_url }}" controls playsinline muted></video>
             <div class="studio-video-actions">
                 <form method="POST" action="{{ route('studio.video.delete', $clip) }}" onsubmit="return confirm('Remove this uploaded video?');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Remove Video</button>
+                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Remove Uploaded Video</button>
                 </form>
                 <form method="POST" action="{{ route('studio.video.upload', $clip) }}" enctype="multipart/form-data" class="studio-video-upload-form">
                     @csrf
                     <input type="file" name="video_file" id="video_file_replace" accept=".mp4,.mov,.webm" class="studio-cover-upload-input js-video-input" data-name-target="video-file-name-replace">
-                    <label for="video_file_replace" class="sh-btn sh-btn--ghost sh-btn--sm">Choose New Video</label>
+                    <label for="video_file_replace" class="sh-btn sh-btn--ghost sh-btn--sm">Choose Replacement Video</label>
                     <span class="studio-cover-upload-name" id="video-file-name-replace">MP4, MOV, or WebM — max 100MB</span>
                     <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm" disabled>Replace Video</button>
                 </form>
@@ -401,7 +514,7 @@ $displayTitle = $clip->display_title;
                 @csrf
                 <div class="studio-cover-upload-row">
                     <input type="file" name="video_file" id="video_file" accept=".mp4,.mov,.webm" class="studio-cover-upload-input js-video-input" data-name-target="video-file-name">
-                    <label for="video_file" class="sh-btn sh-btn--ghost sh-btn--sm studio-cover-upload-label">Choose Video</label>
+                    <label for="video_file" class="sh-btn sh-btn--ghost sh-btn--sm studio-cover-upload-label">Choose Video File</label>
                     <span class="studio-cover-upload-name" id="video-file-name">MP4, MOV, or WebM — max 100MB</span>
                     <button type="submit" class="sh-btn sh-btn--primary sh-btn--sm" disabled>Upload Video</button>
                 </div>
@@ -468,11 +581,14 @@ $displayTitle = $clip->display_title;
             @endif
 
             @if($reel && $reel->cdn_url)
-                <form method="POST" action="{{ route('studio.reel.delete', $clip) }}" style="margin-top:1rem;" onsubmit="return confirm('Delete this reel video? The audio, cover, and uploaded video will stay safe.');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Current Reel</button>
-                </form>
+                <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08);">
+                    <span class="studio-reel-style__label">Manage current reel</span>
+                    <form method="POST" action="{{ route('studio.reel.delete', $clip) }}" style="margin-top:0.55rem;" onsubmit="return confirm('Delete this reel video? The audio, cover, and uploaded video will stay safe.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="sh-btn sh-btn--ghost sh-btn--sm">Delete Current Reel</button>
+                    </form>
+                </div>
             @endif
         @endif
     </div>
@@ -480,7 +596,7 @@ $displayTitle = $clip->display_title;
 
 {{-- LYRICS --}}
 @if($clip->lyrics_input && $typeLabel !== 'Bed Music')
-<div class="sh-card studio-lyrics-card">
+<div class="sh-card studio-lyrics-card" id="studio-lyrics">
     <div class="sh-card__header">{{ $isRtl ? 'Lyrics / Poem' : 'Lyrics' }}</div>
     <div class="sh-card__body">
         <div class="studio-lyrics {{ $isRtl ? 'studio-lyrics--rtl' : 'studio-lyrics--ltr' }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
@@ -630,6 +746,80 @@ function studioShare(btn) {
         if (e.key === 'ArrowLeft')  { audio.currentTime = Math.max(0, audio.currentTime - 5); }
         updateBar();
     });
+})();
+
+
+// ── Studio expandable cards ─────────────────────────────────────────
+(function () {
+    var defaults = {
+        "studio-audio-regenerate": {{ isset($audioJob) && $audioJob ? 'true' : 'false' }},
+        "studio-cover": {{ $coverAsset ? 'false' : 'true' }},
+        "studio-video": false,
+        "studio-reel-creation": {{ $reel ? 'false' : 'true' }},
+        "studio-lyrics": false
+    };
+
+    function setupCard(id) {
+        var card = document.getElementById(id);
+        if (!card) return;
+
+        var header = card.querySelector('.sh-card__header');
+        var body = card.querySelector('.sh-card__body');
+        if (!header || !body) return;
+
+        header.style.cursor = 'pointer';
+        header.setAttribute('role', 'button');
+        header.setAttribute('tabindex', '0');
+
+        var arrow = document.createElement('span');
+        arrow.className = 'studio-card-toggle-arrow';
+        arrow.textContent = '›';
+        arrow.style.float = 'right';
+        arrow.style.transition = 'transform 0.2s ease';
+        header.appendChild(arrow);
+
+        function setOpen(open) {
+            body.style.display = open ? '' : 'none';
+            arrow.style.transform = open ? 'rotate(90deg)' : '';
+            card.classList.toggle('studio-card--open', open);
+            header.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
+        setOpen(defaults[id] === true);
+
+        header.addEventListener('click', function () {
+            setOpen(body.style.display === 'none');
+        });
+
+        header.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setOpen(body.style.display === 'none');
+            }
+        });
+    }
+
+    [
+        "studio-audio-regenerate",
+        "studio-cover",
+        "studio-video",
+        "studio-reel-creation",
+        "studio-lyrics"
+    ].forEach(setupCard);
+
+    window.openStudioCard = function (id) {
+        var card = document.getElementById(id);
+        if (!card) return;
+
+        var header = card.querySelector('.sh-card__header');
+        var body = card.querySelector('.sh-card__body');
+
+        if (body && body.style.display === 'none' && header) {
+            header.click();
+        }
+
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
 })();
 
 // ── Reel polling ────────────────────────────────────────────────────

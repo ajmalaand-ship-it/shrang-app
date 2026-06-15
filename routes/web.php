@@ -17,6 +17,7 @@ use App\Http\Controllers\Studio\ClipController;
 use App\Http\Controllers\Studio\CoverController;
 use App\Http\Controllers\Studio\ReelController;
 use App\Http\Controllers\Studio\UploadedVideoController;
+use App\Http\Controllers\Studio\AudioController;
 use App\Http\Controllers\Payments\CheckoutController;
 use App\Http\Controllers\DashboardController;
 
@@ -72,6 +73,7 @@ Route::middleware(["auth"])->group(function () {
     Route::get("/studio/{clip}", [ClipController::class, "show"])->name("studio.show");
     Route::patch("/studio/{clip}/visibility", [ClipController::class, "updateVisibility"])->name("studio.visibility");
     Route::patch("/studio/{clip}/rename", [ClipController::class, "rename"])->name("studio.rename");
+    Route::post("/studio/{clip}/audio/regenerate", [AudioController::class, "regenerate"])->name("studio.audio.regenerate");
     Route::delete("/studio/{clip}", [ClipController::class, "destroy"])->name("studio.delete");
     Route::post("/studio/{clip}/cover", [CoverController::class, "store"])->name("studio.cover");
     Route::post("/studio/{clip}/cover/upload", [CoverController::class, "upload"])->name("studio.cover.upload");

@@ -36,7 +36,15 @@ class ClipController extends Controller
             ->where('job_class', 'LIKE', '%GenerateReelJob%')
             ->latest()
             ->first();
-        return view('pages.studio.index', compact('clip', 'latestJob', 'audioAsset', 'coverAsset', 'uploadedVideo', 'uploadedVideoEnabled', 'reel', 'reelJob', 'coverJob'));
+        $audioJob = $clip->generationJobs()
+            ->where(function ($query) {
+                $query->where('job_class', 'LIKE', '%GenerateSongJob%')
+                    ->orWhere('job_class', 'LIKE', '%GenerateBedMusicJob%');
+            })
+            ->whereIn('status', ['pending', 'running'])
+            ->latest()
+            ->first();
+        return view('pages.studio.index', compact('clip', 'latestJob', 'audioAsset', 'coverAsset', 'uploadedVideo', 'uploadedVideoEnabled', 'reel', 'reelJob', 'coverJob', 'audioJob'));
     }
     public function updateVisibility(Request $request, Clip $clip): RedirectResponse
     {

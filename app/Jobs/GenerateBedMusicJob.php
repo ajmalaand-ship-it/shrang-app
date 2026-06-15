@@ -31,7 +31,11 @@ class GenerateBedMusicJob implements ShouldQueue
             $result = $aiService->generateBed(array_merge($this->params, ["prompt" => $prompt]));
             if ($result["status"] === "done") {
                 $job->update(["status" => "done", "progress_pct" => 100, "credits_charged" => $job->credits_reserved, "completed_at" => now(), "provider_response" => $result]);
-                Clip::where("id", $job->clip_id)->update(["status" => "ready"]);
+                $clipUpdate = ["status" => "ready"];
+                if (($this->params["is_regeneration"] ?? false) === true && isset($this->params["lyrics"])) {
+                    $clipUpdate["lyrics_input"] = $this->params["lyrics"];
+                }
+                Clip::where("id", $job->clip_id)->update($clipUpdate);
                 $creditService->commitReservation($this->generationJobId);
                 $audioData = $result["audio_data"] ?? null;
                 $audioUrl  = $result["audio_url"] ?? null;
@@ -43,6 +47,11 @@ class GenerateBedMusicJob implements ShouldQueue
                         $storageKey = $filename;
                         $audioUrl   = Storage::disk("public")->url($filename);
                     }
+                    // Make this regenerated audio the active primary audio
+                    MediaAsset::where("clip_id", $job->clip_id)
+                        ->whereIn("type", ["song_audio", "bed_audio", "uploaded_audio"])
+                        ->update(["is_primary" => false]);
+
                     MediaAsset::create([
                         "clip_id"           => $job->clip_id,
                         "user_id"           => $this->params["user_id"],
@@ -68,7 +77,11 @@ class GenerateBedMusicJob implements ShouldQueue
     private function handleFailure(GenerationJob $job, string $error, CreditService $creditService): void
     {
         $job->update(["status" => "failed", "error_message" => $error, "completed_at" => now()]);
-        Clip::where("id", $job->clip_id)->update(["status" => "failed"]);
+        if (($this->params["is_regeneration"] ?? false) === true) {
+            Clip::where("id", $job->clip_id)->update(["status" => "ready"]);
+        } else {
+            Clip::where("id", $job->clip_id)->update(["status" => "failed"]);
+        }
         $creditService->releaseReservation($this->generationJobId);
         Log::error("GenerateBedMusicJob failed", ["generation_job_id" => $this->generationJobId, "error" => $error]);
     }

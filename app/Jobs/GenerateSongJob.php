@@ -67,6 +67,11 @@ class GenerateSongJob implements ShouldQueue
             }
             // File is confirmed saved — now update DB
             $audioUrl = Storage::disk("public")->url($filename);
+            // Make this regenerated audio the active primary audio
+            MediaAsset::where("clip_id", $job->clip_id)
+                ->whereIn("type", ["song_audio", "bed_audio", "uploaded_audio"])
+                ->update(["is_primary" => false]);
+
             // Create media asset
             MediaAsset::create([
                 "clip_id"           => $job->clip_id,
@@ -89,7 +94,11 @@ class GenerateSongJob implements ShouldQueue
                 "completed_at"     => now(),
                 "provider_response"=> $result,
             ]);
-            Clip::where("id", $job->clip_id)->update(["status" => "ready"]);
+            $clipUpdate = ["status" => "ready"];
+            if (($this->params["is_regeneration"] ?? false) === true && isset($this->params["lyrics"])) {
+                $clipUpdate["lyrics_input"] = $this->params["lyrics"];
+            }
+            Clip::where("id", $job->clip_id)->update($clipUpdate);
             $creditService->commitReservation($this->generationJobId);
             // Diagnostic success log
             Log::info("Audio file saved", [
@@ -107,7 +116,11 @@ class GenerateSongJob implements ShouldQueue
     private function handleFailure(GenerationJob $job, string $error, CreditService $creditService): void
     {
         $job->update(["status" => "failed", "error_message" => $error, "completed_at" => now()]);
-        Clip::where("id", $job->clip_id)->update(["status" => "failed"]);
+        if (($this->params["is_regeneration"] ?? false) === true) {
+            Clip::where("id", $job->clip_id)->update(["status" => "ready"]);
+        } else {
+            Clip::where("id", $job->clip_id)->update(["status" => "failed"]);
+        }
         $creditService->releaseReservation($this->generationJobId);
         Log::error("GenerateSongJob failed", [
             "generation_job_id" => $this->generationJobId,
