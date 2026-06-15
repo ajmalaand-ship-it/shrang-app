@@ -56,12 +56,12 @@
                 $type  = $audio?->type === 'bed_audio' ? 'Background Music' : 'Song';
                 $langNames = ["ps"=>"Pashto","fa"=>"Dari","ur"=>"Urdu","ar"=>"Arabic","hi"=>"Hindi","en"=>"English"];
             @endphp
-            <a href="{{ route('player.show', $clip->slug) }}" class="home-featured__card" aria-label="Open {{ $clip->title }}">
+            <a href="{{ route('player.show', $clip->slug) }}" class="home-featured__card" aria-label="Open {{ $clip->display_title }}">
                 <div class="home-featured__cover">
                     @if($reel)
                         <video class="home-featured__img home-featured__reel" src="{{ $reel->cdn_url }}" muted loop playsinline preload="metadata" @if($cover) poster="{{ $cover->cdn_url }}" @endif></video>
                     @elseif($cover)
-                        <img src="{{ $cover->cdn_url }}" alt="{{ $clip->title }}" class="home-featured__img">
+                        <img src="{{ $cover->cdn_url }}" alt="{{ $clip->display_title }}" class="home-featured__img">
                     @else
                         <div class="home-featured__placeholder">
                             <span>♪</span>
@@ -70,7 +70,7 @@
                     @endif
                 </div>
                 <div class="home-featured__info">
-                    <div class="home-featured__title">{{ $clip->title }}</div>
+                    <div class="home-featured__title" dir="{{ $clip->script_direction ?? 'auto' }}">{{ $clip->display_title }}</div>
                     <div class="home-featured__meta">
                         <span class="sh-badge sh-badge--lang">{{ $langNames[$clip->language] ?? strtoupper($clip->language) }}</span>
                         <span class="sh-badge">{{ $type }}</span>

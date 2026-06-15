@@ -52,54 +52,40 @@
                 $liked = in_array($clip->id, $likedIds);
                 $type  = $audio?->type === 'bed_audio' ? 'Bed Music' : 'Song';
             @endphp
-            <div class="discover-card {{ !$cover ? 'discover-card--no-cover' : '' }} {{ $reel ? 'discover-card--has-reel' : '' }}" data-slug="{{ $clip->slug }}">
+            <div class="discover-card {{ !$cover ? 'discover-card--no-cover' : '' }} {{ $reel ? 'discover-card--has-reel' : '' }}"
+                 data-slug="{{ $clip->slug }}"
+                 data-url="{{ route('player.show', $clip->slug) }}"
+                 role="link"
+                 tabindex="0">
 
                 {{-- Cover --}}
                 <div class="discover-card__cover">
                     @if($reel)
                         <video class="discover-card__cover-img discover-card__cover-reel" src="{{ $reel->cdn_url }}" muted loop playsinline preload="metadata" @if($cover) poster="{{ $cover->cdn_url }}" @endif></video>
                     @elseif($cover)
-                        <img src="{{ $cover->cdn_url }}" alt="{{ $clip->title }}" class="discover-card__cover-img">
+                        <img src="{{ $cover->cdn_url }}" alt="{{ $clip->display_title }}" class="discover-card__cover-img">
                     @else
                         <div class="discover-card__cover-placeholder">
                             <span class="discover-card__cover-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="40" height="40"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
                         </div>
                     @endif
-                    <div class="discover-card__cover-overlay">
-                        <div class="discover-card__badges">
-                            @php $langNames = ["ps"=>"Pashto","fa"=>"Dari","ur"=>"Urdu","ar"=>"Arabic","hi"=>"Hindi","en"=>"English"]; @endphp
-                            <span class="sh-badge sh-badge--lang">{{ $langNames[$clip->language] ?? strtoupper($clip->language) }}</span>
-                            <span class="sh-badge">{{ $type }}</span>
-                            @if($clip->is_pinned) <span class="sh-badge" style="color:var(--sh-gold);">📌 Pinned</span> @endif
-                        </div>
-                        @if($audio)
-                        <button class="discover-card__play-btn" onclick="togglePlay(this, '{{ $audio->cdn_url }}', '{{ $clip->slug }}')" aria-label="Play">
-                            <span class="discover-card__play-icon">▶</span>
-                        </button>
-                        @endif
-                    </div>
+                    <div class="discover-card__cover-overlay"></div>
                 </div>
 
                 {{-- Info --}}
                 <div class="discover-card__body">
-                    <div class="discover-card__title">{{ $clip->title }}</div>
+                    @php $langNames = ["ps"=>"Pashto","fa"=>"Dari","ur"=>"Urdu","ar"=>"Arabic","hi"=>"Hindi","en"=>"English"]; @endphp
+                    <div class="discover-card__title" dir="{{ $clip->script_direction ?? 'auto' }}">{{ $clip->display_title }}</div>
+                    <div class="discover-card__meta-tags">
+                        <span>{{ $langNames[$clip->language] ?? strtoupper($clip->language) }}</span>
+                        <span>{{ $type }}</span>
+                        @if($clip->is_pinned) <span>Featured</span> @endif
+                    </div>
                     @if($clip->lyrics_public && $clip->lyrics_input)
                         <div class="discover-card__excerpt {{ $clip->script_direction === 'rtl' ? 'sh-script-rtl' : '' }}" dir="{{ $clip->script_direction }}">
                             {{ Str::limit($clip->lyrics_input, 80) }}
                         </div>
                     @endif
-
-                    {{-- Audio player (hidden, shown on play) --}}
-                    <audio class="discover-card__audio" preload="none" style="display:none;">
-                        @if($audio)<source src="{{ $audio->cdn_url }}" type="audio/mpeg">@endif
-                    </audio>
-
-                    {{-- Stats --}}
-                    <div class="discover-card__stats">
-                        <span title="Plays">▶ {{ number_format($clip->play_count ?? 0) }}</span>
-                        <span title="Likes">♥ {{ number_format($clip->like_count ?? 0) }}</span>
-                        <span title="Downloads">↓ {{ number_format($clip->download_count ?? 0) }}</span>
-                    </div>
 
                     {{-- Actions --}}
                     <div class="discover-card__actions">
@@ -108,15 +94,6 @@
                                 data-liked="{{ $liked ? '1' : '0' }}">
                             ♥ <span class="like-count">{{ number_format($clip->like_count ?? 0) }}</span>
                         </button>
-                        @if($clip->allow_download && $audio)
-                        <button class="sh-btn sh-btn--sm sh-btn--ghost discover-download-btn"
-                                data-slug="{{ $clip->slug }}">
-                            ↓ MP3
-                        </button>
-                        @endif
-                        @if($reel)
-                        <a href="{{ $reel->cdn_url }}" download class="sh-btn sh-btn--sm sh-btn--ghost">↓ Reel</a>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -126,35 +103,26 @@
     @endif
 </div>
 
-<audio id="global-player" style="display:none;"></audio>
 @endsection
 
 @section('page_js')
 <script>
 const csrfToken = document.querySelector('meta[name=csrf-token]').content;
-let currentSlug = null;
-let playTimer = null;
 
-function togglePlay(btn, audioUrl, slug) {
-    const globalPlayer = document.getElementById('global-player');
-    const icon = btn.querySelector('.discover-card__play-icon');
-    if (currentSlug === slug && !globalPlayer.paused) {
-        globalPlayer.pause();
-        icon.textContent = '▶';
-        currentSlug = null;
-        clearTimeout(playTimer);
-        return;
-    }
-    document.querySelectorAll('.discover-card__play-icon').forEach(i => i.textContent = '▶');
-    clearTimeout(playTimer);
-    globalPlayer.src = audioUrl;
-    globalPlayer.play();
-    icon.textContent = '⏸';
-    currentSlug = slug;
-    playTimer = setTimeout(() => {
-        fetch('/discover/' + slug + '/play', {method:'POST', headers:{'X-CSRF-TOKEN':csrfToken,'Accept':'application/json'}});
-    }, 5000);
-}
+document.querySelectorAll('.discover-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+        if (e.target.closest('button, a')) return;
+        window.location.href = this.dataset.url;
+    });
+
+    card.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            if (e.target.closest('button, a')) return;
+            e.preventDefault();
+            window.location.href = this.dataset.url;
+        }
+    });
+});
 
 document.querySelectorAll('.discover-like-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -169,22 +137,6 @@ document.querySelectorAll('.discover-like-btn').forEach(btn => {
                 this.classList.toggle('sh-btn--primary');
                 this.classList.toggle('sh-btn--ghost');
                 this.querySelector('.like-count').textContent = data.count.toLocaleString();
-            }
-        });
-    });
-});
-
-document.querySelectorAll('.discover-download-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const slug = this.dataset.slug;
-        fetch('/discover/' + slug + '/download', {method:'POST', headers:{'X-CSRF-TOKEN':csrfToken,'Accept':'application/json'}})
-        .then(r => r.json())
-        .then(data => {
-            if (data.url) {
-                const a = document.createElement('a');
-                a.href = data.url;
-                a.download = '';
-                a.click();
             }
         });
     });

@@ -1857,3 +1857,149 @@ input[type="password"] {
     min-width: 6rem;
     justify-content: center;
 }
+
+/* Discover clean card-action model */
+.discover-card {
+    cursor: pointer;
+}
+
+.discover-card:focus-visible {
+    outline: 2px solid var(--sh-orange);
+    outline-offset: 3px;
+}
+
+.discover-card__actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.9rem;
+}
+
+.discover-card__actions .discover-like-btn {
+    min-width: 6rem;
+    justify-content: center;
+}
+
+.discover-card__cover-reel {
+    pointer-events: none;
+}
+
+@media (max-width: 640px) {
+    .discover-card__cover-reel {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .discover-card--has-reel .discover-card__cover {
+        background: var(--sh-dark-3);
+    }
+}
+
+/* Discover compact title and tags */
+.discover-card__title {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    margin-bottom: 0.45rem;
+}
+
+.discover-card__meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.55rem;
+}
+
+.discover-card__meta-tags span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.45rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--sh-border);
+    background: rgba(255,255,255,0.04);
+    color: var(--sh-text-muted);
+    font-size: 0.72rem;
+    line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+    .discover-card__title {
+        font-size: 0.9rem;
+    }
+
+    .discover-card__meta-tags span {
+        font-size: 0.7rem;
+    }
+}
+
+/* Public cards: force visible compact titles */
+.discover-card__title,
+.home-featured__title {
+    display: block;
+    color: var(--sh-text) !important;
+    font-weight: 700;
+    opacity: 1 !important;
+    visibility: visible !important;
+    text-decoration: none;
+}
+
+.discover-card__body,
+.home-featured__info {
+    color: var(--sh-text);
+}
+
+.discover-card__title {
+    margin-top: 0;
+    margin-bottom: 0.45rem;
+}
+
+.home-featured__title {
+    margin-top: 0;
+    margin-bottom: 0.45rem;
+    line-height: 1.35;
+}
+
+.home-featured__meta,
+.discover-card__meta-tags {
+    color: var(--sh-text-muted);
+}
+
+/* Public cards: compact RTL-aware titles */
+.discover-card__title,
+.home-featured__title {
+    font-size: 0.86rem !important;
+    line-height: 1.35 !important;
+    font-weight: 700 !important;
+    color: var(--sh-text) !important;
+    margin: 0 0 0.4rem !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.discover-card__title[dir="rtl"],
+.discover-card__title:dir(rtl),
+.home-featured__title[dir="rtl"],
+.home-featured__title:dir(rtl) {
+    font-family: var(--sh-font-rtl), Vazirmatn, Tahoma, Arial, sans-serif !important;
+    direction: rtl;
+    text-align: right;
+    letter-spacing: 0;
+    line-height: 1.55 !important;
+}
+
+.discover-card__title[dir="auto"],
+.home-featured__title[dir="auto"] {
+    unicode-bidi: plaintext;
+}
+
+@media (max-width: 640px) {
+    .discover-card__title,
+    .home-featured__title {
+        font-size: 0.82rem !important;
+        -webkit-line-clamp: 2;
+    }
+}
