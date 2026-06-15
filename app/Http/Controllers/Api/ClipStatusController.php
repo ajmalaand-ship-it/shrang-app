@@ -17,11 +17,22 @@ class ClipStatusController extends Controller
             ->where('job_class', 'LIKE', '%Cover%')
             ->latest()
             ->first();
+        $reelAsset = $clip->mediaAssets()
+            ->where('type', 'reel_video')
+            ->where('is_primary', true)
+            ->first();
+        $reelJob = $clip->generationJobs()
+            ->where('job_class', 'LIKE', '%GenerateReelJob%')
+            ->latest()
+            ->first();
         return response()->json([
             'clip_status'   => $clip->status,
             'cover_ready'   => $coverAsset ? true : false,
             'cover_url'     => $coverAsset ? $coverAsset->cdn_url : null,
             'cover_status'  => $coverJob ? $coverJob->status : null,
+            'reel_ready'    => $reelAsset ? true : false,
+            'reel_url'      => $reelAsset ? $reelAsset->cdn_url : null,
+            'reel_status'   => $reelJob ? $reelJob->status : null,
         ]);
     }
 }

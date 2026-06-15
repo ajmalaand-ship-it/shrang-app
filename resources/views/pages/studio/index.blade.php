@@ -837,7 +837,8 @@ function studioShare(btn) {
             })
             .then(function(r) { return r.json(); })
             .then(function(d) {
-                if (d.cover_status === "done" || tries % 5 === 0) { location.reload(); }
+                if (d.reel_ready) { location.reload(); }
+                else if (d.reel_status === "failed") { location.reload(); }
                 else { setTimeout(pollReel, 5000); }
             })
             .catch(function() { setTimeout(pollReel, 7000); });

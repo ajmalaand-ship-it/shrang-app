@@ -1,8 +1,12 @@
 <nav class="sh-nav" id="sh-nav">
     <div class="sh-nav__inner">
         <a href="/" class="sh-nav__logo">
-            <span class="sh-nav__logo-ar">شرنګ</span>
-            <span class="sh-nav__logo-en">Shrang</span>
+            <img src="/favicons/logo-mark.png" srcset="/favicons/logo-mark.png 1x, /favicons/logo-mark-2x.png 2x" alt="Shrang" class="sh-nav__logo-icon" width="34" height="34">
+            @if(($locale ?? 'en') === 'ps')
+                <span class="sh-nav__logo-text sh-nav__logo-text--ar">شرنګ</span>
+            @else
+                <span class="sh-nav__logo-text sh-nav__logo-text--en">Shrang</span>
+            @endif
         </a>
         <ul class="sh-nav__links">
             @auth
