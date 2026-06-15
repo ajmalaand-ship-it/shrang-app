@@ -23,11 +23,9 @@ class PlayerController extends Controller
         $downloadUrl = $audioAsset ? $this->mediaService->signedDownloadUrl($audioAsset) : null;
         $shareUrl    = route("player.show", $clip->slug);
         $embedCode   = '<iframe src="' . route("player.show", $clip->slug) . '" width="100%" height="180" frameborder="0" allow="autoplay"></iframe>';
-        // OG image smart selection: reel thumbnail > cover > null
+        // OG image uses cover until reel thumbnail extraction is available.
+        // Do not use MP4 reel URL as og:image.
         $ogImageUrl  = $coverUrl;
-        if ($reelUrl) {
-            $ogImageUrl = $reelUrl;
-        }
         return view("pages.player.show", compact(
             "clip", "audioUrl", "coverUrl", "reelUrl", "downloadUrl", "shareUrl", "embedCode", "ogImageUrl"
         ));

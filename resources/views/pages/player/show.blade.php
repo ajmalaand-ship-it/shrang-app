@@ -3,20 +3,24 @@
 @section('head_extra')
 <x-og-meta
     :title="$clip->display_title . ' — Shrang'"
-    :description="Str::limit($clip->lyrics_input, 160)"
-    :imageUrl="$coverUrl ?? ''"
+    :description="Str::limit(preg_replace('/\s+/u', ' ', trim($clip->lyrics_input ?? '')), 160)"
+    :imageUrl="$ogImageUrl ?? ''"
     :pageUrl="$shareUrl"
 />
 @endsection
 @section('content')
 <div class="sh-page-wrap player-wrap">
 
-    {{-- Cover --}}
+    {{-- Reel / Cover --}}
     @php
         $langNames = ["ps"=>"Pashto","fa"=>"Dari","ur"=>"Urdu","ar"=>"Arabic","hi"=>"Hindi","en"=>"English"];
         $langLabel = $langNames[$clip->language] ?? strtoupper($clip->language);
     @endphp
-    @if($coverUrl)
+    @if($reelUrl)
+    <div class="player-cover player-cover--reel">
+        <video src="{{ $reelUrl }}" class="player-cover__video" controls playsinline preload="metadata"></video>
+    </div>
+    @elseif($coverUrl)
     <div class="player-cover">
         <img src="{{ $coverUrl }}" alt="{{ $clip->display_title }}" class="player-cover__img">
         <div class="player-cover__overlay">
@@ -60,6 +64,13 @@
             @else
                 <div class="sh-notice sh-notice--info">Audio not available.</div>
             @endif
+
+            {{-- Metadata --}}
+            <div class="player-meta-row">
+                <span>{{ $langLabel }}</span>
+                <span>{{ $clip->type === 'bed_music' ? 'Background Music' : 'Song' }}</span>
+                <span>{{ $clip->created_at ? $clip->created_at->format('M j, Y') : '' }}</span>
+            </div>
 
             {{-- Download row (primary actions) --}}
             <div class="player-actions player-actions--downloads">
@@ -109,7 +120,7 @@
                 <label class="sh-label">Share link</label>
                 <div class="player-share-box__row">
                     <input type="text" class="sh-input" value="{{ $shareUrl }}" readonly id="share-url-input">
-                    <button type="button" class="sh-btn sh-btn--ghost sh-btn--sm" onclick="copyShareUrl()">Copy</button>
+                    <button type="button" class="sh-btn sh-btn--ghost sh-btn--sm" onclick="copyShareUrl(this)">Copy</button>
                 </div>
             </div>
 
@@ -118,7 +129,7 @@
                 <summary class="player-share-box__summary">Show embed code</summary>
                 <div class="player-share-box__row" style="margin-top:0.5rem;">
                     <input type="text" class="sh-input" value="{{ $embedCode }}" readonly id="embed-input">
-                    <button type="button" class="sh-btn sh-btn--ghost sh-btn--sm" onclick="copyEmbed()">Copy</button>
+                    <button type="button" class="sh-btn sh-btn--ghost sh-btn--sm" onclick="copyEmbed(this)">Copy</button>
                 </div>
             </details>
 
@@ -128,6 +139,17 @@
                 <a href="/" class="player-brand-mark__logo">
                     <span class="player-brand-mark__logo-ar">شرنګ</span>
                     <span class="player-brand-mark__logo-en">Shrang</span>
+                </a>
+            </div>
+
+            {{-- Visitor CTA --}}
+            <div class="player-cta">
+                <div class="player-cta__text">
+                    <strong>Create your own song</strong>
+                    <span>Turn your poem or lyrics into music and a shareable reel.</span>
+                </div>
+                <a href="{{ route('create') }}" class="sh-btn sh-btn--primary">
+                    Start Creating
                 </a>
             </div>
         </div>
@@ -150,19 +172,52 @@
 @endsection
 @section('page_js')
 <script>
-function copyShareUrl() {
-    var input = document.getElementById('share-url-input');
+function copyToClipboard(input, message, button) {
+    if (!input) return;
+
     input.select();
-    navigator.clipboard.writeText(input.value).then(function() {
-        showCopied();
-    });
+    input.setSelectionRange(0, 99999);
+
+    function confirmCopied() {
+        showCopied(message);
+
+        if (button) {
+            var originalText = button.textContent;
+            button.textContent = 'Copied';
+            button.disabled = true;
+
+            setTimeout(function() {
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 1600);
+        }
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(input.value).then(confirmCopied).catch(function() {
+            document.execCommand('copy');
+            confirmCopied();
+        });
+    } else {
+        document.execCommand('copy');
+        confirmCopied();
+    }
 }
-function copyEmbed() {
-    var input = document.getElementById('embed-input');
-    input.select();
-    navigator.clipboard.writeText(input.value).then(function() {
-        showCopied();
-    });
+
+function copyShareUrl(button) {
+    copyToClipboard(
+        document.getElementById('share-url-input'),
+        'Share link copied',
+        button || null
+    );
+}
+
+function copyEmbed(button) {
+    copyToClipboard(
+        document.getElementById('embed-input'),
+        'Embed code copied',
+        button || null
+    );
 }
 document.getElementById('share-btn').addEventListener('click', function() {
     var url = this.getAttribute('data-url');
@@ -173,10 +228,17 @@ document.getElementById('share-btn').addEventListener('click', function() {
         copyShareUrl();
     }
 });
-function showCopied() {
+function showCopied(message) {
     var el = document.getElementById('share-copied');
+    if (!el) return;
+
+    el.textContent = message || 'Copied';
     el.style.opacity = '1';
-    setTimeout(function() { el.style.opacity = '0'; }, 2000);
+
+    clearTimeout(window.shrangCopiedTimer);
+    window.shrangCopiedTimer = setTimeout(function() {
+        el.style.opacity = '0';
+    }, 2200);
 }
 
 // ── Public Player — branded audio player ─────────────────────
